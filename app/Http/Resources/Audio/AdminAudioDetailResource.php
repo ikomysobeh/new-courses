@@ -88,7 +88,7 @@ class AdminAudioDetailResource extends AudioResource
             'file_size_bytes'  => $fileSizeBytes,
             'file_size'        => $fileSizeBytes !== null ? $this->formatBytes($fileSizeBytes) : null,
             'mime_type'        => $mimeType,
-            'stats'            => [
+            'status'            => [
                 'total_listeners'     => $totalListeners,
                 'completion_rate'     => $completionRate,
                 'average_progress'    => $avgProgress,
