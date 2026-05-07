@@ -72,6 +72,26 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'report_to');
     }
 
+    public function courseRegistrations(): HasMany
+    {
+        return $this->hasMany(CourseRegistration::class);
+    }
+
+    public function courseCompletions(): HasMany
+    {
+        return $this->hasMany(CourseCompletion::class);
+    }
+
+    public function courseAssignments(): HasMany
+    {
+        return $this->hasMany(CourseAssignment::class);
+    }
+
+    public function clockings(): HasMany
+    {
+        return $this->hasMany(Clocking::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

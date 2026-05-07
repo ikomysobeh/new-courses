@@ -25,7 +25,10 @@ class AudioAssignmentController extends Controller
 
         $assignments = $this->audioService->getAssignmentsList($filters, $perPage);
 
-        return AudioAssignmentResource::collection($assignments);
+        return AudioAssignmentResource::collection($assignments)
+            ->additional([
+                'cards' => $this->audioService->getAdminAudioAssignmentCards(),
+            ]);
     }
 
     /**

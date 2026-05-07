@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreAudioRequest;
 use App\Http\Requests\Admin\UpdateAudioRequest;
+use App\Http\Resources\Audio\AdminAudioDetailResource;
 use App\Http\Resources\Audio\AudioResource;
 use App\Models\Audio;
 use App\Services\Audio\AudioService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AudioController extends Controller
 {
@@ -47,11 +50,27 @@ class AudioController extends Controller
     /**
      * Get audio details by id.
      */
-    public function getById(int $id): AudioResource
+    public function getById(int $id): AdminAudioDetailResource
     {
         $audio = $this->audioService->findAudioForAdminOrFail($id);
 
-        return new AudioResource($audio);
+        return new AdminAudioDetailResource($audio);
+    }
+
+    /**
+     * Stream audio file for admin preview.
+     */
+    public function stream(int $id): BinaryFileResponse
+    {
+        $audio = Audio::query()->findOrFail($id);
+
+        abort_if(
+            ! $audio->local_path || ! Storage::disk('local')->exists($audio->local_path),
+            404,
+            'Audio file not found.'
+        );
+
+        return response()->file(Storage::disk('local')->path($audio->local_path));
     }
 
     /**

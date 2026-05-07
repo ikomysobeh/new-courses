@@ -29,7 +29,10 @@ class UserController extends Controller
 
         $users = $this->userService->getAll($filters, $perPage);
 
-        return UserListResource::collection($users);
+        return UserListResource::collection($users)
+            ->additional([
+                'cards' => $this->userService->getCards(),
+            ]);
     }
 
     /**

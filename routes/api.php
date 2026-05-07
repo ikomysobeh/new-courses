@@ -9,6 +9,11 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\User\AuthController as UserAuthController;
 use App\Http\Controllers\User\AudioLearningController;
+use App\Http\Controllers\Admin\CourseController as AdminCourseController;
+use App\Http\Controllers\Admin\CourseAssignmentController;
+use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\User\CourseController as UserCourseController;
+use App\Http\Controllers\User\ClockingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -58,6 +63,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/getAll', [AudioController::class, 'getAll'])->name('admin.audio.getAll');
             Route::post('/create', [AudioController::class, 'create'])->name('admin.audio.create');
             Route::get('/getById/{id}', [AudioController::class, 'getById'])->name('admin.audio.getById');
+            Route::get('/stream/{id}', [AudioController::class, 'stream'])->name('admin.audio.stream');
             Route::put('/update/{id}', [AudioController::class, 'update'])->name('admin.audio.update');
             Route::delete('/delete/{id}', [AudioController::class, 'delete'])->name('admin.audio.delete');
         });
@@ -67,6 +73,29 @@ Route::prefix('admin')->group(function () {
             Route::get('/getAll', [AudioAssignmentController::class, 'getAll'])->name('admin.audio-assignments.getAll');
             Route::post('/create', [AudioAssignmentController::class, 'create'])->name('admin.audio-assignments.create');
             Route::delete('/delete/{id}', [AudioAssignmentController::class, 'delete'])->name('admin.audio-assignments.delete');
+        });
+
+        // Course routes
+        Route::prefix('courses')->group(function () {
+            Route::get('/getAll', [AdminCourseController::class, 'getAll'])->name('admin.courses.getAll');
+            Route::post('/create', [AdminCourseController::class, 'create'])->name('admin.courses.create');
+            Route::get('/getById/{id}', [AdminCourseController::class, 'getById'])->name('admin.courses.getById');
+            Route::put('/update/{id}', [AdminCourseController::class, 'update'])->name('admin.courses.update');
+            Route::delete('/delete/{id}', [AdminCourseController::class, 'delete'])->name('admin.courses.delete');
+        });
+
+        // Course assignment routes
+        Route::prefix('course-assignments')->group(function () {
+            Route::get('/getAll', [CourseAssignmentController::class, 'getAll'])->name('admin.course-assignments.getAll');
+            Route::post('/create', [CourseAssignmentController::class, 'create'])->name('admin.course-assignments.create');
+            Route::delete('/delete/{id}', [CourseAssignmentController::class, 'delete'])->name('admin.course-assignments.delete');
+        });
+
+        // Attendance (clocking) routes
+        Route::prefix('attendance')->group(function () {
+            Route::get('/getAll', [AttendanceController::class, 'getAll'])->name('admin.attendance.getAll');
+            Route::put('/update/{id}', [AttendanceController::class, 'update'])->name('admin.attendance.update');
+            Route::delete('/delete/{id}', [AttendanceController::class, 'delete'])->name('admin.attendance.delete');
         });
     });
 });
@@ -80,6 +109,24 @@ Route::prefix('user')->group(function () {
             Route::get('/getById/{id}', [AudioLearningController::class, 'getById'])->name('user.audio.getById');
             Route::get('/stream/{id}', [AudioLearningController::class, 'stream'])->name('user.audio.stream');
             Route::post('/progress/update/{audioId}', [AudioLearningController::class, 'updateProgress'])->name('user.audio.progress.update');
+        });
+
+        // Course routes
+        Route::prefix('courses')->group(function () {
+            Route::get('/getAll', [UserCourseController::class, 'getAll'])->name('user.courses.getAll');
+            Route::get('/getById/{id}', [UserCourseController::class, 'getById'])->name('user.courses.getById');
+            Route::post('/enroll/{courseId}', [UserCourseController::class, 'enroll'])->name('user.courses.enroll');
+            Route::post('/complete/{courseId}', [UserCourseController::class, 'complete'])->name('user.courses.complete');
+            Route::post('/submitRating/{courseId}', [UserCourseController::class, 'submitRating'])->name('user.courses.submitRating');
+            Route::get('/my-enrollments', [UserCourseController::class, 'myEnrollments'])->name('user.courses.myEnrollments');
+        });
+
+        // Clocking routes
+        Route::prefix('clocking')->group(function () {
+            Route::post('/clockIn', [ClockingController::class, 'clockIn'])->name('user.clocking.clockIn');
+            Route::post('/clockOut', [ClockingController::class, 'clockOut'])->name('user.clocking.clockOut');
+            Route::get('/history', [ClockingController::class, 'history'])->name('user.clocking.history');
+            Route::get('/active', [ClockingController::class, 'active'])->name('user.clocking.active');
         });
     });
 });

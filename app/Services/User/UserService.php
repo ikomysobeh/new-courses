@@ -8,6 +8,32 @@ use Illuminate\Validation\ValidationException;
 
 class UserService
 {
+    public function getCards(): array
+    {
+        return [
+            [
+                'key' => 'total_users',
+                'title' => 'Total Users',
+                'value' => User::query()->count(),
+            ],
+            [
+                'key' => 'admin_users',
+                'title' => 'Admin Users',
+                'value' => User::query()->where('role', 'admin')->count(),
+            ],
+            [
+                'key' => 'regular_users',
+                'title' => 'Regular Users',
+                'value' => User::query()->where('role', 'user')->count(),
+            ],
+            [
+                'key' => 'users_with_manager',
+                'title' => 'Users With Manager',
+                'value' => User::query()->whereNotNull('report_to')->count(),
+            ],
+        ];
+    }
+
     public function getAll(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = User::query()

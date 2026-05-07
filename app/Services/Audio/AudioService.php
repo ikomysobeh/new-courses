@@ -80,6 +80,27 @@ class AudioService
         ];
     }
 
+    public function getAdminAudioAssignmentCards(): array
+    {
+        return [
+            [
+                'key' => 'total_audio_assignments',
+                'title' => 'Total Audio Assignments',
+                'value' => AudioAssignment::query()->count(),
+            ],
+            [
+                'key' => 'assigned_users',
+                'title' => 'Users With Audio Assignments',
+                'value' => AudioAssignment::query()->distinct('user_id')->count('user_id'),
+            ],
+            [
+                'key' => 'assigned_audios',
+                'title' => 'Audios With Assignments',
+                'value' => AudioAssignment::query()->distinct('audio_id')->count('audio_id'),
+            ],
+        ];
+    }
+
     public function getUserAudioCards(User $user): array
     {
         $totalAssigned = AudioAssignment::query()
@@ -230,7 +251,7 @@ class AudioService
 
             if (isset($data['thumbnail']) && $data['thumbnail'] instanceof UploadedFile) {
                 $payload['thumbnail_path'] = $this->storeThumbnail($data['thumbnail']);
-                $this->deleteStoredFile($audio->thumbnail_path);
+                $this->deleteThumbnail($audio->thumbnail_path);
             }
 
             $audio->update($payload);
@@ -523,7 +544,11 @@ class AudioService
     public function findAudioForAdminOrFail(int $audioId): Audio
     {
         return Audio::query()
-            ->with('audioCategory')
+            ->with([
+                'audioCategory',
+                'assignments.user',
+                'progress',
+            ])
             ->findOrFail($audioId);
     }
 
@@ -563,7 +588,18 @@ class AudioService
 
     private function storeThumbnail(UploadedFile $file): string
     {
-        return $file->store('audios/thumbnails', 'local');
+        return $file->store('audios/thumbnails', 'public');
+    }
+
+    private function deleteThumbnail(?string $path): void
+    {
+        if (! $path) {
+            return;
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     private function deleteStoredFile(?string $path): void

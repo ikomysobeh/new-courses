@@ -27,7 +27,10 @@ class DepartmentController extends Controller
     {
         $departments = $this->departmentService->getAll();
 
-        return DepartmentTreeResource::collection($departments);
+        return DepartmentTreeResource::collection($departments)
+            ->additional([
+                'cards' => $this->departmentService->getCards(),
+            ]);
     }
 
     /**

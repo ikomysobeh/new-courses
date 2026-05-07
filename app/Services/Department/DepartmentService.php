@@ -3,6 +3,7 @@
 namespace App\Services\Department;
 
 use App\Models\Department;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -10,6 +11,27 @@ use Illuminate\Validation\ValidationException;
 
 class DepartmentService
 {
+    public function getCards(): array
+    {
+        return [
+            [
+                'key' => 'total_departments',
+                'title' => 'Total Departments',
+                'value' => Department::query()->count(),
+            ],
+            [
+                'key' => 'root_departments',
+                'title' => 'Root Departments',
+                'value' => Department::query()->whereNull('parent_id')->count(),
+            ],
+            [
+                'key' => 'users_with_department',
+                'title' => 'Users With Department',
+                'value' => User::query()->whereNotNull('department_id')->count(),
+            ],
+        ];
+    }
+
     public function getAll(): Collection
     {
         return Department::query()

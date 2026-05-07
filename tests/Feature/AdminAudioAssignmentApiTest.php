@@ -80,6 +80,34 @@ class AdminAudioAssignmentApiTest extends TestCase
         });
     }
 
+    public function test_get_all_audio_assignments_returns_cards(): void
+    {
+        $token = $this->adminToken();
+        $audio = $this->createAudio();
+        $admin = User::query()->where('email', 'admin@newproject.test')->firstOrFail();
+        $user = User::factory()->create();
+
+        AudioAssignment::query()->create([
+            'audio_id' => $audio->id,
+            'user_id' => $user->id,
+            'assigned_by' => $admin->id,
+            'assigned_at' => now(),
+            'notification_sent' => false,
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson('/api/admin/audio-assignments/getAll');
+
+        $response->assertOk()->assertJsonStructure([
+            'data',
+            'meta',
+            'cards' => [
+                '*' => ['key', 'title', 'value'],
+            ],
+        ]);
+        $response->assertJsonPath('cards.0.key', 'total_audio_assignments');
+    }
+
     public function test_delete_assignment_hard_deletes_record(): void
     {
         $token = $this->adminToken();

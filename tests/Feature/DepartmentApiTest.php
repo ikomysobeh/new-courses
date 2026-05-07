@@ -35,7 +35,14 @@ class DepartmentApiTest extends TestCase
                 'data' => [
                     '*' => ['id', 'name', 'slug', 'parent_id', 'users', 'children'],
                 ],
+                'cards' => [
+                    '*' => ['key', 'title', 'value'],
+                ],
             ]);
+
+        $response->assertJsonPath('cards.0.key', 'total_departments');
+        $response->assertJsonPath('cards.1.key', 'root_departments');
+        $response->assertJsonPath('cards.2.key', 'users_with_department');
     }
 
     public function test_admin_can_create_department(): void

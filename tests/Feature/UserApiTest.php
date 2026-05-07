@@ -42,7 +42,15 @@ class UserApiTest extends TestCase
             ->assertJsonStructure([
                 'data',
                 'meta' => ['current_page', 'total', 'per_page'],
+                'cards' => [
+                    '*' => ['key', 'title', 'value'],
+                ],
             ]);
+
+        $response->assertJsonPath('cards.0.key', 'total_users');
+        $response->assertJsonPath('cards.1.key', 'admin_users');
+        $response->assertJsonPath('cards.2.key', 'regular_users');
+        $response->assertJsonPath('cards.3.key', 'users_with_manager');
     }
 
     public function test_get_all_requires_authentication(): void
