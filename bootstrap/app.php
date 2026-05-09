@@ -17,5 +17,22 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\App\Exceptions\Quiz\QuizNotAvailableException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        });
+        $exceptions->render(function (\App\Exceptions\Quiz\QuizNotAssignedException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        });
+        $exceptions->render(function (\App\Exceptions\Quiz\AlreadyPassedException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        });
+        $exceptions->render(function (\App\Exceptions\Quiz\MaxAttemptsReachedException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        });
+        $exceptions->render(function (\App\Exceptions\Quiz\RetryDelayActiveException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        });
+        $exceptions->render(function (\App\Exceptions\Quiz\DeadlinePassedException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        });
     })->create();

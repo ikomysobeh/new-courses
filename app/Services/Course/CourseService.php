@@ -242,13 +242,66 @@ class CourseService
             ]);
         }
 
-        $assignment = CourseAssignment::query()->create([
-            'course_id'               => $courseId,
-            'user_id'                 => $userId,
-            'assigned_by'             => $admin->id,
-            'course_availability_id'  => $availabilityId,
-            'assigned_at'             => now(),
-        ]);
+        $alreadyRegistered = CourseRegistration::query()
+            ->where('course_id', $courseId)
+            ->where('user_id', $userId)
+            ->exists();
+
+        if ($alreadyRegistered) {
+            throw ValidationException::withMessages([
+                'user_id' => ['This user is already enrolled in the specified course.'],
+            ]);
+        }
+
+        $assignment = DB::transaction(function () use ($courseId, $userId, $availabilityId, $admin) {
+            if ($availabilityId !== null) {
+                /** @var CourseAvailability $availability */
+                $availability = CourseAvailability::query()
+                    ->lockForUpdate()
+                    ->findOrFail($availabilityId);
+
+                if ((int) $availability->course_id !== $courseId) {
+                    throw ValidationException::withMessages([
+                        'course_availability_id' => ['The specified availability does not belong to this course.'],
+                    ]);
+                }
+
+                if ($availability->status !== 'active') {
+                    throw ValidationException::withMessages([
+                        'course_availability_id' => ['This availability is no longer active.'],
+                    ]);
+                }
+
+                if ($availability->end_date && now()->gt($availability->end_date->endOfDay())) {
+                    throw ValidationException::withMessages([
+                        'course_availability_id' => ['This availability has already ended.'],
+                    ]);
+                }
+
+                $assignedCount = CourseAssignment::query()
+                    ->where('course_availability_id', $availabilityId)
+                    ->count();
+                $registeredCount = CourseRegistration::query()
+                    ->where('course_availability_id', $availabilityId)
+                    ->count();
+                $usedSeats = $assignedCount + $registeredCount;
+                $capacity = (int) ($availability->capacity ?? 0);
+
+                if ($capacity > 0 && $usedSeats >= $capacity) {
+                    throw ValidationException::withMessages([
+                        'course_availability_id' => ['No seats are available in this session.'],
+                    ]);
+                }
+            }
+
+            return CourseAssignment::query()->create([
+                'course_id'               => $courseId,
+                'user_id'                 => $userId,
+                'assigned_by'             => $admin->id,
+                'course_availability_id'  => $availabilityId,
+                'assigned_at'             => now(),
+            ]);
+        });
 
         CourseAssigned::dispatch($course, $user, $admin);
 
@@ -343,12 +396,6 @@ class CourseService
                 ]);
             }
 
-            if ($availability->sessions <= 0) {
-                throw ValidationException::withMessages([
-                    'course_availability_id' => ['No seats are available in this session.'],
-                ]);
-            }
-
             $alreadyEnrolled = CourseRegistration::query()
                 ->where('user_id', $user->id)
                 ->where('course_id', $courseId)
@@ -360,6 +407,23 @@ class CourseService
                 ]);
             }
 
+            $assignedCount = CourseAssignment::query()
+                ->where('course_availability_id', $availabilityId)
+                ->where('user_id', '!=', $user->id)
+                ->count();
+            $registeredCount = CourseRegistration::query()
+                ->where('course_availability_id', $availabilityId)
+                ->where('user_id', '!=', $user->id)
+                ->count();
+            $usedSeats = $assignedCount + $registeredCount;
+            $capacity = (int) ($availability->capacity ?? 0);
+
+            if ($capacity > 0 && $usedSeats >= $capacity) {
+                throw ValidationException::withMessages([
+                    'course_availability_id' => ['No seats are available in this session.'],
+                ]);
+            }
+
             $registration = CourseRegistration::query()->create([
                 'user_id'                 => $user->id,
                 'course_id'               => $courseId,
@@ -367,8 +431,6 @@ class CourseService
                 'status'                  => 'in_progress',
                 'registered_at'           => now(),
             ]);
-
-            $availability->decrement('sessions');
 
             return $registration;
         });

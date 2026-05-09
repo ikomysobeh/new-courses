@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\Course;
 
+use App\Models\CourseAssignment;
+use App\Models\CourseRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +16,16 @@ class CourseAvailabilityResource extends JsonResource
             $days = array_values(array_filter(explode(',', $this->days_of_week)));
         }
 
+        $capacity = (int) ($this->capacity ?? 0);
+        $assignedCount = CourseAssignment::query()
+            ->where('course_availability_id', $this->id)
+            ->count();
+        $registeredCount = CourseRegistration::query()
+            ->where('course_availability_id', $this->id)
+            ->count();
+        $usedSeats = $assignedCount + $registeredCount;
+        $availableSpots = $capacity > 0 ? max(0, $capacity - $usedSeats) : 0;
+
         return [
             'id'                       => $this->id,
             'course_id'                => $this->course_id,
@@ -21,8 +33,8 @@ class CourseAvailabilityResource extends JsonResource
             'end_date'                 => $this->end_date?->toIso8601String(),
             'capacity'                 => $this->capacity,
             'sessions'                 => $this->sessions,
-            'available_spots'          => $this->sessions,
-            'is_full'                  => $this->sessions <= 0,
+            'available_spots'          => $availableSpots,
+            'is_full'                  => $capacity > 0 ? $availableSpots <= 0 : false,
             'duration_weeks'           => $this->duration_weeks,
             'status'                   => $this->status,
             'notes'                    => $this->notes,

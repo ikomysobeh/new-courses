@@ -1,7 +1,7 @@
 {
     "openapi": "3.1.0",
     "info": {
-        "title": "New Courses \u2013 Admin API",
+        "title": "New Courses – Admin API",
         "version": "1.0.0",
         "description": "API for New Courses project. Admin endpoints use /api/admin and user learning endpoints use /api/user. Protected endpoints require a Bearer token."
     },
@@ -152,12 +152,86 @@
                                                 "to",
                                                 "total"
                                             ]
+                                        },
+                                        "cards": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_clocking_records"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Clocking Records"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "active_sessions"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Active Sessions"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_hours_logged"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Hours Logged"
+                                                        },
+                                                        "value": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 3,
+                                            "maxItems": 3,
+                                            "additionalItems": false
                                         }
                                     },
                                     "required": [
                                         "data",
                                         "links",
-                                        "meta"
+                                        "meta",
+                                        "cards"
                                     ]
                                 }
                             }
@@ -879,12 +953,87 @@
                                                 "to",
                                                 "total"
                                             ]
+                                        },
+                                        "cards": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_audio_assignments"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Audio Assignments"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "assigned_users"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Users With Audio Assignments"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "assigned_audios"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Audios With Assignments"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 3,
+                                            "maxItems": 3,
+                                            "additionalItems": false
                                         }
                                     },
                                     "required": [
                                         "data",
                                         "links",
-                                        "meta"
+                                        "meta",
+                                        "cards"
                                     ]
                                 }
                             }
@@ -1420,12 +1569,109 @@
                                                 "to",
                                                 "total"
                                             ]
+                                        },
+                                        "cards": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_courses"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Courses"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "published_courses"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Published Courses"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "public_courses"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Public Courses"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_course_registrations"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Course Registrations"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 4,
+                                            "maxItems": 4,
+                                            "additionalItems": false
                                         }
                                     },
                                     "required": [
                                         "data",
                                         "links",
-                                        "meta"
+                                        "meta",
+                                        "cards"
                                     ]
                                 }
                             }
@@ -1757,12 +2003,87 @@
                                                 "to",
                                                 "total"
                                             ]
+                                        },
+                                        "cards": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_course_assignments"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Course Assignments"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "assigned_users"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Users With Course Assignments"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "assigned_courses"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Courses With Assignments"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 3,
+                                            "maxItems": 3,
+                                            "additionalItems": false
                                         }
                                     },
                                     "required": [
                                         "data",
                                         "links",
-                                        "meta"
+                                        "meta",
+                                        "cards"
                                     ]
                                 }
                             }
@@ -1882,10 +2203,85 @@
                                             "items": {
                                                 "$ref": "#/components/schemas/DepartmentTreeResource"
                                             }
+                                        },
+                                        "cards": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_departments"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Departments"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "root_departments"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Root Departments"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "users_with_department"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Users With Department"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 3,
+                                            "maxItems": 3,
+                                            "additionalItems": false
                                         }
                                     },
                                     "required": [
-                                        "data"
+                                        "data",
+                                        "cards"
                                     ]
                                 }
                             }
@@ -2052,6 +2448,943 @@
                 }
             }
         },
+        "/admin/quizzes/getAll": {
+            "get": {
+                "operationId": "admin.quizzes.getAll",
+                "summary": "List all quizzes for admin",
+                "tags": [
+                    "Admin - Quiz"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `QuizResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/QuizResource"
+                                            }
+                                        },
+                                        "cards": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_quizzes"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Quizzes"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "draft_quizzes"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Draft Quizzes"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "published_quizzes"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Published Quizzes"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "archived_quizzes"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Archived Quizzes"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 4,
+                                            "maxItems": 4,
+                                            "additionalItems": false
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "cards"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/quizzes/create": {
+            "post": {
+                "operationId": "admin.quizzes.create",
+                "summary": "Create a new quiz",
+                "tags": [
+                    "Admin - Quiz"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreQuizRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`QuizResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/QuizResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/quizzes/getById/{id}": {
+            "get": {
+                "operationId": "admin.quizzes.getById",
+                "summary": "Get quiz details with questions",
+                "tags": [
+                    "Admin - Quiz"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`QuizResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/QuizResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/quizzes/update/{id}": {
+            "put": {
+                "operationId": "admin.quizzes.update",
+                "summary": "Update quiz fields",
+                "tags": [
+                    "Admin - Quiz"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateQuizRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`QuizResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/QuizResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/quizzes/delete/{id}": {
+            "delete": {
+                "operationId": "admin.quizzes.delete",
+                "summary": "Soft delete a quiz",
+                "tags": [
+                    "Admin - Quiz"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Quiz deleted successfully."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/quiz-answers/grade/{answerId}": {
+            "post": {
+                "operationId": "admin.quiz-answers.grade",
+                "summary": "Manually grade a text quiz answer",
+                "tags": [
+                    "Admin - QuizAnswer"
+                ],
+                "parameters": [
+                    {
+                        "name": "answerId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ManualGradeAnswerRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`QuizAnswerAdminResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/QuizAnswerAdminResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/quiz-assignments/getAll": {
+            "get": {
+                "operationId": "admin.quiz-assignments.getAll",
+                "summary": "List quiz assignments",
+                "tags": [
+                    "Admin - QuizAssignment"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `QuizAssignmentResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/QuizAssignmentResource"
+                                            }
+                                        },
+                                        "cards": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_assignments"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Assignments"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "notified_assignments"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Notified Assignments"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "pending_notifications"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Pending Notifications"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 3,
+                                            "maxItems": 3,
+                                            "additionalItems": false
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "cards"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/quiz-assignments/create": {
+            "post": {
+                "operationId": "admin.quiz-assignments.create",
+                "summary": "Assign a quiz to one or more users",
+                "tags": [
+                    "Admin - QuizAssignment"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreQuizAssignmentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Array of `QuizAssignmentResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/QuizAssignmentResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/quiz-assignments/delete/{id}": {
+            "delete": {
+                "operationId": "admin.quiz-assignments.delete",
+                "summary": "Remove a quiz assignment",
+                "tags": [
+                    "Admin - QuizAssignment"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Quiz assignment deleted successfully."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/quizzes/{quizId}/attempts/getAll": {
+            "get": {
+                "operationId": "admin.quiz-attempts.getAll",
+                "summary": "List all attempts for a given quiz",
+                "tags": [
+                    "Admin - QuizAttempt"
+                ],
+                "parameters": [
+                    {
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `QuizAttemptAdminResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/QuizAttemptAdminResource"
+                                            }
+                                        },
+                                        "cards": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_attempts"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Attempts"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "passed_attempts"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Passed Attempts"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "failed_attempts"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Failed Attempts"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "average_score"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Average Score"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 4,
+                                            "maxItems": 4,
+                                            "additionalItems": false
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "cards"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/quizzes/{quizId}/attempts/getById/{attemptId}": {
+            "get": {
+                "operationId": "admin.quiz-attempts.getById",
+                "summary": "Get a single attempt with all answers",
+                "tags": [
+                    "Admin - QuizAttempt"
+                ],
+                "parameters": [
+                    {
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "attemptId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`QuizAttemptAdminResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/QuizAttemptAdminResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/quizzes/{quizId}/questions/create": {
+            "post": {
+                "operationId": "admin.quiz-questions.create",
+                "summary": "Add a question to a quiz",
+                "tags": [
+                    "Admin - QuizQuestion"
+                ],
+                "parameters": [
+                    {
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreQuizQuestionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`QuizQuestionResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/QuizQuestionResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/quizzes/{quizId}/questions/update/{questionId}": {
+            "put": {
+                "operationId": "admin.quiz-questions.update",
+                "summary": "Update a quiz question",
+                "tags": [
+                    "Admin - QuizQuestion"
+                ],
+                "parameters": [
+                    {
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "questionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateQuizQuestionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`QuizQuestionResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/QuizQuestionResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/quizzes/{quizId}/questions/delete/{questionId}": {
+            "delete": {
+                "operationId": "admin.quiz-questions.delete",
+                "summary": "Delete a quiz question",
+                "tags": [
+                    "Admin - QuizQuestion"
+                ],
+                "parameters": [
+                    {
+                        "name": "quizId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "questionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Question deleted successfully."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/admin/users/getAll": {
             "get": {
                 "operationId": "admin.users.getAll",
@@ -2188,12 +3521,109 @@
                                                 "to",
                                                 "total"
                                             ]
+                                        },
+                                        "cards": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "total_users"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Total Users"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "admin_users"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Admin Users"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "regular_users"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Regular Users"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "key": {
+                                                            "type": "string",
+                                                            "const": "users_with_manager"
+                                                        },
+                                                        "title": {
+                                                            "type": "string",
+                                                            "const": "Users With Manager"
+                                                        },
+                                                        "value": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "key",
+                                                        "title",
+                                                        "value"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 4,
+                                            "maxItems": 4,
+                                            "additionalItems": false
                                         }
                                     },
                                     "required": [
                                         "data",
                                         "links",
-                                        "meta"
+                                        "meta",
+                                        "cards"
                                     ]
                                 }
                             }
@@ -3520,6 +4950,238 @@
                     }
                 }
             }
+        },
+        "/user/quizzes/getAll": {
+            "get": {
+                "operationId": "user.quizzes.getAll",
+                "summary": "Get all quizzes assigned to the authenticated user",
+                "tags": [
+                    "User - Quiz"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `UserQuizResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/UserQuizResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/user/quizzes/getById/{id}": {
+            "get": {
+                "operationId": "user.quizzes.getById",
+                "summary": "Get quiz details with questions (no correct answers exposed)",
+                "tags": [
+                    "User - Quiz"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`UserQuizResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserQuizResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/user/quizzes/{id}/start": {
+            "post": {
+                "operationId": "user.quizzes.start",
+                "summary": "Start a new quiz attempt",
+                "tags": [
+                    "User - Quiz"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "`UserQuizAttemptResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserQuizAttemptResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/user/quizzes/{id}/submit/{attemptId}": {
+            "post": {
+                "operationId": "user.quizzes.submit",
+                "summary": "Submit answers for an in-progress attempt",
+                "tags": [
+                    "User - Quiz"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "attemptId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SubmitQuizAnswersRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`UserQuizAttemptResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserQuizAttemptResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/user/quizzes/{id}/result/{attemptId}": {
+            "get": {
+                "operationId": "user.quizzes.result",
+                "summary": "Get the result of a completed attempt",
+                "tags": [
+                    "User - Quiz"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "attemptId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`UserQuizAttemptResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserQuizAttemptResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -3580,10 +5242,7 @@
                         "type": "boolean"
                     },
                     "progress": {
-                        "type": [
-                            "object",
-                            "null"
-                        ],
+                        "type": "object",
                         "properties": {
                             "current_time": {
                                 "type": "number"
@@ -3650,6 +5309,91 @@
                                 "type": "null"
                             }
                         ]
+                    },
+                    "status": {
+                        "type": "object",
+                        "properties": {
+                            "total_listeners": {
+                                "type": "integer"
+                            },
+                            "completion_rate": {
+                                "type": "number"
+                            },
+                            "average_progress": {
+                                "type": "number"
+                            },
+                            "total_hours_listened": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "total_listeners",
+                            "completion_rate",
+                            "average_progress",
+                            "total_hours_listened"
+                        ]
+                    },
+                    "listeners": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "user": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "email"
+                                    ]
+                                },
+                                "progress_percentage": {
+                                    "type": "number"
+                                },
+                                "current_position_seconds": {
+                                    "type": "integer"
+                                },
+                                "total_duration_seconds": {
+                                    "type": "integer"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "const": "not_started"
+                                },
+                                "listening_time_minutes": {
+                                    "type": "integer"
+                                },
+                                "last_accessed_at": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "assigned_at": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "user",
+                                "progress_percentage",
+                                "current_position_seconds",
+                                "total_duration_seconds",
+                                "status",
+                                "listening_time_minutes",
+                                "last_accessed_at",
+                                "assigned_at"
+                            ]
+                        }
                     }
                 },
                 "required": [
@@ -3660,13 +5404,14 @@
                     "audio_category_id",
                     "thumbnail_path",
                     "has_audio_file",
-                    "progress",
                     "created_at",
                     "updated_at",
                     "stream_url",
                     "file_size_bytes",
                     "file_size",
-                    "mime_type"
+                    "mime_type",
+                    "status",
+                    "listeners"
                 ],
                 "title": "AdminAudioDetailResource"
             },
@@ -3954,10 +5699,7 @@
                         "type": "boolean"
                     },
                     "progress": {
-                        "type": [
-                            "object",
-                            "null"
-                        ],
+                        "type": "object",
                         "properties": {
                             "current_time": {
                                 "type": "number"
@@ -4006,7 +5748,6 @@
                     "audio_category_id",
                     "thumbnail_path",
                     "has_audio_file",
-                    "progress",
                     "created_at",
                     "updated_at"
                 ],
@@ -4264,7 +6005,7 @@
                     },
                     "days_of_week": {
                         "type": "array",
-                        "items": {}
+                        "items": []
                     },
                     "session_time_shift_1": {
                         "type": [
@@ -4641,6 +6382,545 @@
                 ],
                 "title": "LoginRequest"
             },
+            "ManualGradeAnswerRequest": {
+                "type": "object",
+                "properties": {
+                    "points_earned": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "points_earned"
+                ],
+                "title": "ManualGradeAnswerRequest"
+            },
+            "QuizAnswerAdminResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "quiz_question_id": {
+                        "type": "string"
+                    },
+                    "answer": {
+                        "type": "string"
+                    },
+                    "is_correct": {
+                        "type": "string"
+                    },
+                    "points_earned": {
+                        "type": "string"
+                    },
+                    "question": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "question_text": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "points": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "question_text",
+                            "type",
+                            "points"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "quiz_question_id",
+                    "answer",
+                    "is_correct",
+                    "points_earned",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "QuizAnswerAdminResource",
+                "example": {
+                    "id": 1,
+                    "quiz_question_id": 1,
+                    "answer": "PHP: Hypertext Preprocessor",
+                    "is_correct": true,
+                    "points_earned": 10,
+                    "question": {
+                        "id": 1,
+                        "question_text": "What does PHP stand for?",
+                        "type": "radio",
+                        "points": 10
+                    },
+                    "created_at": "2026-05-07T11:25:00.000000Z",
+                    "updated_at": "2026-05-07T11:25:00.000000Z"
+                }
+            },
+            "QuizAssignmentResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "quiz_id": {
+                        "type": "integer"
+                    },
+                    "user": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "email"
+                        ]
+                    },
+                    "assigned_by": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "email"
+                        ]
+                    },
+                    "assigned_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "notification_sent": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "quiz_id",
+                    "assigned_at",
+                    "notification_sent",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "QuizAssignmentResource",
+                "example": {
+                    "id": 1,
+                    "quiz_id": 1,
+                    "user": {
+                        "id": 2,
+                        "name": "Jane Smith",
+                        "email": "jane@example.com"
+                    },
+                    "assigned_by": {
+                        "id": 1,
+                        "name": "Admin User",
+                        "email": "admin@newproject.test"
+                    },
+                    "assigned_at": "2026-05-07T09:00:00.000000Z",
+                    "notification_sent": true,
+                    "created_at": "2026-05-07T09:00:00.000000Z",
+                    "updated_at": "2026-05-07T09:00:00.000000Z"
+                }
+            },
+            "QuizAttemptAdminResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "quiz_id": {
+                        "type": "string"
+                    },
+                    "user_id": {
+                        "type": "string"
+                    },
+                    "attempt_number": {
+                        "type": "string"
+                    },
+                    "started_at": {
+                        "type": "string"
+                    },
+                    "completed_at": {
+                        "type": "string"
+                    },
+                    "score": {
+                        "type": "string"
+                    },
+                    "manual_score": {
+                        "type": "string"
+                    },
+                    "total_score": {
+                        "type": "string"
+                    },
+                    "passed": {
+                        "type": "boolean"
+                    },
+                    "submitted_after_deadline": {
+                        "type": "boolean"
+                    },
+                    "user": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "email"
+                        ]
+                    },
+                    "answers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/QuizAnswerAdminResource"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "quiz_id",
+                    "user_id",
+                    "attempt_number",
+                    "started_at",
+                    "completed_at",
+                    "score",
+                    "manual_score",
+                    "total_score",
+                    "passed",
+                    "submitted_after_deadline",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "QuizAttemptAdminResource",
+                "example": {
+                    "id": 1,
+                    "quiz_id": 1,
+                    "user_id": 2,
+                    "attempt_number": 1,
+                    "started_at": "2026-05-07T11:00:00.000000Z",
+                    "completed_at": "2026-05-07T11:25:00.000000Z",
+                    "score": 20,
+                    "manual_score": 5,
+                    "total_score": 25,
+                    "passed": true,
+                    "submitted_after_deadline": false,
+                    "user": {
+                        "id": 2,
+                        "name": "Jane Smith",
+                        "email": "jane@example.com"
+                    },
+                    "answers": [
+                        {
+                            "id": 1,
+                            "quiz_question_id": 1,
+                            "answer": "PHP: Hypertext Preprocessor",
+                            "is_correct": true,
+                            "points_earned": 10,
+                            "question": {
+                                "id": 1,
+                                "question_text": "What does PHP stand for?",
+                                "type": "radio",
+                                "points": 10
+                            },
+                            "created_at": "2026-05-07T11:25:00.000000Z",
+                            "updated_at": "2026-05-07T11:25:00.000000Z"
+                        }
+                    ],
+                    "created_at": "2026-05-07T11:00:00.000000Z",
+                    "updated_at": "2026-05-07T11:25:00.000000Z"
+                }
+            },
+            "QuizQuestionResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "quiz_id": {
+                        "type": "integer"
+                    },
+                    "question_text": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "points": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "options": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": []
+                    },
+                    "correct_answer": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": []
+                    },
+                    "correct_answer_explanation": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "order": {
+                        "type": "integer"
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "quiz_id",
+                    "question_text",
+                    "type",
+                    "points",
+                    "options",
+                    "correct_answer",
+                    "correct_answer_explanation",
+                    "order",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "QuizQuestionResource",
+                "example": {
+                    "id": 1,
+                    "quiz_id": 1,
+                    "question_text": "What does PHP stand for?",
+                    "type": "radio",
+                    "points": 10,
+                    "options": [
+                        "Personal Home Page",
+                        "PHP: Hypertext Preprocessor",
+                        "Preprocessed HTML Page"
+                    ],
+                    "correct_answer": [
+                        "PHP: Hypertext Preprocessor"
+                    ],
+                    "correct_answer_explanation": "PHP originally stood for \"Personal Home Page\" but now officially stands for \"PHP: Hypertext Preprocessor\".",
+                    "order": 1,
+                    "created_at": "2026-05-07T10:00:00.000000Z",
+                    "updated_at": "2026-05-07T10:00:00.000000Z"
+                }
+            },
+            "QuizResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "course_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "course_online_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "module_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "required_to_proceed": {
+                        "type": "boolean"
+                    },
+                    "max_attempts": {
+                        "type": "integer"
+                    },
+                    "retry_delay_hours": {
+                        "type": "integer"
+                    },
+                    "show_correct_answers": {
+                        "type": "string"
+                    },
+                    "deadline": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "time_limit_minutes": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "total_points": {
+                        "type": "integer"
+                    },
+                    "pass_threshold": {
+                        "type": "number"
+                    },
+                    "questions_count": {
+                        "anyOf": [
+                            {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    "questions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/QuizQuestionResource"
+                        }
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "title",
+                    "description",
+                    "course_id",
+                    "course_online_id",
+                    "module_id",
+                    "status",
+                    "required_to_proceed",
+                    "max_attempts",
+                    "retry_delay_hours",
+                    "show_correct_answers",
+                    "deadline",
+                    "time_limit_minutes",
+                    "total_points",
+                    "pass_threshold",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "QuizResource",
+                "example": {
+                    "id": 1,
+                    "title": "PHP Fundamentals Quiz",
+                    "description": "Test your knowledge of core PHP concepts.",
+                    "course_id": 1,
+                    "course_online_id": null,
+                    "module_id": null,
+                    "status": "published",
+                    "required_to_proceed": true,
+                    "max_attempts": 3,
+                    "retry_delay_hours": 24,
+                    "show_correct_answers": "after_pass",
+                    "deadline": "2026-12-31T23:59:59.000000Z",
+                    "time_limit_minutes": 30,
+                    "total_points": 25,
+                    "pass_threshold": 80,
+                    "questions_count": 3,
+                    "created_at": "2026-05-07T10:00:00.000000Z",
+                    "updated_at": "2026-05-07T10:00:00.000000Z"
+                }
+            },
             "StoreAudioAssignmentRequest": {
                 "type": "object",
                 "properties": {
@@ -4905,6 +7185,337 @@
                 ],
                 "title": "StoreCourseRequest"
             },
+            "StoreQuizAssignmentRequest": {
+                "type": "object",
+                "properties": {
+                    "quiz_id": {
+                        "type": "integer"
+                    },
+                    "send_notification": {
+                        "type": "boolean"
+                    },
+                    "user_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "minItems": 1
+                    }
+                },
+                "required": [
+                    "quiz_id",
+                    "user_ids"
+                ],
+                "title": "StoreQuizAssignmentRequest",
+                "example": {
+                    "quiz_id": 1,
+                    "user_ids": [
+                        2,
+                        3,
+                        4
+                    ],
+                    "send_notification": true
+                }
+            },
+            "StoreQuizQuestionRequest": {
+                "type": "object",
+                "properties": {
+                    "question_text": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "radio",
+                            "checkbox",
+                            "text"
+                        ]
+                    },
+                    "points": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 0
+                    },
+                    "correct_answer_explanation": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "order": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 0
+                    },
+                    "options": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "correct_answer": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "question_text",
+                    "type"
+                ],
+                "title": "StoreQuizQuestionRequest",
+                "example": {
+                    "question_text": "Which of the following are valid PHP scalar types?",
+                    "type": "checkbox",
+                    "points": 15,
+                    "options": [
+                        "string",
+                        "integer",
+                        "float",
+                        "boolean",
+                        "collection"
+                    ],
+                    "correct_answer": [
+                        "string",
+                        "integer",
+                        "float",
+                        "boolean"
+                    ],
+                    "correct_answer_explanation": "PHP scalar types are: string, integer, float and boolean.",
+                    "order": 2
+                }
+            },
+            "StoreQuizRequest": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "course_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "course_online_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "module_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "required_to_proceed": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "max_attempts": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1
+                    },
+                    "retry_delay_hours": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 0
+                    },
+                    "show_correct_answers": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "never",
+                            "after_pass",
+                            "after_max_attempts",
+                            "always"
+                        ]
+                    },
+                    "deadline": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "time_limit_minutes": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1
+                    },
+                    "status": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "draft",
+                            "published",
+                            "archived"
+                        ]
+                    },
+                    "pass_threshold": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "questions": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "question_text": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "radio",
+                                        "checkbox",
+                                        "text"
+                                    ]
+                                },
+                                "points": {
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ],
+                                    "minimum": 0
+                                },
+                                "options": {
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ],
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "correct_answer": {
+                                    "type": [
+                                        "array",
+                                        "null"
+                                    ],
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "correct_answer_explanation": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "order": {
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ],
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "title"
+                ],
+                "title": "StoreQuizRequest",
+                "example": {
+                    "title": "PHP Fundamentals Quiz",
+                    "description": "Test your knowledge of core PHP concepts.",
+                    "course_id": 1,
+                    "course_online_id": null,
+                    "module_id": null,
+                    "required_to_proceed": true,
+                    "max_attempts": 3,
+                    "retry_delay_hours": 24,
+                    "show_correct_answers": "after_pass",
+                    "deadline": "2026-12-31T23:59:59Z",
+                    "time_limit_minutes": 30,
+                    "status": "draft",
+                    "pass_threshold": 80,
+                    "questions": [
+                        {
+                            "question_text": "What does PHP stand for?",
+                            "type": "radio",
+                            "points": 10,
+                            "options": [
+                                "Personal Home Page",
+                                "PHP: Hypertext Preprocessor",
+                                "Preprocessed HTML Page"
+                            ],
+                            "correct_answer": [
+                                "PHP: Hypertext Preprocessor"
+                            ],
+                            "correct_answer_explanation": "PHP originally stood for \"Personal Home Page\" but now officially stands for \"PHP: Hypertext Preprocessor\".",
+                            "order": 1
+                        },
+                        {
+                            "question_text": "Which of the following are valid PHP scalar types?",
+                            "type": "checkbox",
+                            "points": 15,
+                            "options": [
+                                "string",
+                                "integer",
+                                "float",
+                                "boolean",
+                                "collection"
+                            ],
+                            "correct_answer": [
+                                "string",
+                                "integer",
+                                "float",
+                                "boolean"
+                            ],
+                            "correct_answer_explanation": "PHP scalar types are: string, integer, float and boolean.",
+                            "order": 2
+                        },
+                        {
+                            "question_text": "Explain the difference between == and === in PHP.",
+                            "type": "text",
+                            "points": null,
+                            "order": 3
+                        }
+                    ]
+                }
+            },
             "SubmitCourseRatingRequest": {
                 "type": "object",
                 "properties": {
@@ -4925,6 +7536,51 @@
                     "rating"
                 ],
                 "title": "SubmitCourseRatingRequest"
+            },
+            "SubmitQuizAnswersRequest": {
+                "type": "object",
+                "properties": {
+                    "answers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "quiz_question_id": {
+                                    "type": "integer"
+                                },
+                                "answer": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "required": [
+                                "quiz_question_id",
+                                "answer"
+                            ]
+                        },
+                        "minItems": 1
+                    }
+                },
+                "required": [
+                    "answers"
+                ],
+                "title": "SubmitQuizAnswersRequest",
+                "example": {
+                    "answers": [
+                        {
+                            "quiz_question_id": 1,
+                            "answer": "PHP: Hypertext Preprocessor"
+                        },
+                        {
+                            "quiz_question_id": 2,
+                            "answer": "string"
+                        },
+                        {
+                            "quiz_question_id": 3,
+                            "answer": "The == operator compares values with type coercion, while === compares both value and type strictly."
+                        }
+                    ]
+                }
             },
             "UpdateAttendanceRequest": {
                 "type": "object",
@@ -5204,6 +7860,132 @@
                 },
                 "title": "UpdateCourseRequest"
             },
+            "UpdateQuizQuestionRequest": {
+                "type": "object",
+                "properties": {
+                    "question_text": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "radio",
+                            "checkbox",
+                            "text"
+                        ]
+                    },
+                    "points": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 0
+                    },
+                    "correct_answer_explanation": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "order": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "options": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "correct_answer": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "title": "UpdateQuizQuestionRequest",
+                "example": {
+                    "question_text": "Which of the following are PHP scalar types? (revised)",
+                    "points": 20,
+                    "order": 2
+                }
+            },
+            "UpdateQuizRequest": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "required_to_proceed": {
+                        "type": "boolean"
+                    },
+                    "max_attempts": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "retry_delay_hours": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "show_correct_answers": {
+                        "type": "string",
+                        "enum": [
+                            "never",
+                            "after_pass",
+                            "after_max_attempts",
+                            "always"
+                        ]
+                    },
+                    "deadline": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "time_limit_minutes": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "published",
+                            "archived"
+                        ]
+                    },
+                    "pass_threshold": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                    }
+                },
+                "title": "UpdateQuizRequest",
+                "example": {
+                    "title": "PHP Fundamentals Quiz – Revised",
+                    "status": "published",
+                    "max_attempts": 5,
+                    "pass_threshold": 70
+                }
+            },
             "UserListResource": {
                 "type": "object",
                 "properties": {
@@ -5290,6 +8072,203 @@
                     "created_at"
                 ],
                 "title": "UserListResource"
+            },
+            "UserQuizAttemptResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "quiz_id": {
+                        "type": "string"
+                    },
+                    "attempt_number": {
+                        "type": "string"
+                    },
+                    "started_at": {
+                        "type": "string"
+                    },
+                    "completed_at": {
+                        "type": "string"
+                    },
+                    "score": {
+                        "type": "string"
+                    },
+                    "manual_score": {
+                        "type": "string"
+                    },
+                    "total_score": {
+                        "type": "string"
+                    },
+                    "passed": {
+                        "type": "boolean"
+                    },
+                    "answers": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "quiz_id",
+                    "attempt_number",
+                    "started_at",
+                    "completed_at",
+                    "score",
+                    "manual_score",
+                    "total_score",
+                    "passed",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "UserQuizAttemptResource",
+                "example": {
+                    "id": 1,
+                    "quiz_id": 1,
+                    "attempt_number": 1,
+                    "started_at": "2026-05-07T11:00:00.000000Z",
+                    "completed_at": "2026-05-07T11:25:00.000000Z",
+                    "score": 20,
+                    "manual_score": 5,
+                    "total_score": 25,
+                    "passed": true,
+                    "answers": [
+                        {
+                            "id": 1,
+                            "quiz_question_id": 1,
+                            "answer": "PHP: Hypertext Preprocessor",
+                            "points_earned": 10
+                        },
+                        {
+                            "id": 2,
+                            "quiz_question_id": 2,
+                            "answer": "string",
+                            "points_earned": null
+                        }
+                    ],
+                    "created_at": "2026-05-07T11:00:00.000000Z",
+                    "updated_at": "2026-05-07T11:25:00.000000Z"
+                }
+            },
+            "UserQuizQuestionResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "quiz_id": {
+                        "type": "string"
+                    },
+                    "question_text": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "points": {
+                        "type": "string"
+                    },
+                    "options": {
+                        "type": "string"
+                    },
+                    "order": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "quiz_id",
+                    "question_text",
+                    "type",
+                    "points",
+                    "options",
+                    "order"
+                ],
+                "title": "UserQuizQuestionResource",
+                "example": {
+                    "id": 1,
+                    "quiz_id": 1,
+                    "question_text": "What does PHP stand for?",
+                    "type": "radio",
+                    "points": 10,
+                    "options": [
+                        "Personal Home Page",
+                        "PHP: Hypertext Preprocessor",
+                        "Preprocessed HTML Page"
+                    ],
+                    "order": 1
+                }
+            },
+            "UserQuizResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "pass_threshold": {
+                        "type": "string"
+                    },
+                    "total_points": {
+                        "type": "string"
+                    },
+                    "time_limit_minutes": {
+                        "type": "string"
+                    },
+                    "deadline": {
+                        "type": "string"
+                    },
+                    "show_correct_answers": {
+                        "type": "string"
+                    },
+                    "questions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/UserQuizQuestionResource"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "title",
+                    "description",
+                    "pass_threshold",
+                    "total_points",
+                    "time_limit_minutes",
+                    "deadline",
+                    "show_correct_answers",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "UserQuizResource",
+                "example": {
+                    "id": 1,
+                    "title": "PHP Fundamentals Quiz",
+                    "description": "Test your knowledge of core PHP concepts.",
+                    "pass_threshold": 80,
+                    "total_points": 25,
+                    "time_limit_minutes": 30,
+                    "deadline": "2026-12-31T23:59:59.000000Z",
+                    "show_correct_answers": "after_pass",
+                    "created_at": "2026-05-07T10:00:00.000000Z",
+                    "updated_at": "2026-05-07T10:00:00.000000Z"
+                }
             },
             "UserResource": {
                 "type": "object",

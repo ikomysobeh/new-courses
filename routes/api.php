@@ -12,8 +12,17 @@ use App\Http\Controllers\User\AudioLearningController;
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\CourseAssignmentController;
 use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\Admin\VideoController;
+use App\Http\Controllers\Admin\QuizController as AdminQuizController;
+use App\Http\Controllers\Admin\QuizQuestionController;
+use App\Http\Controllers\Admin\QuizAttemptController;
+use App\Http\Controllers\Admin\QuizAnswerController;
+use App\Http\Controllers\Admin\QuizAssignmentController;
 use App\Http\Controllers\User\CourseController as UserCourseController;
 use App\Http\Controllers\User\ClockingController;
+use App\Http\Controllers\User\QuizController as UserQuizController;
+use App\Http\Controllers\Admin\OnlineCourse\OnlineCourseController;
+use App\Http\Controllers\Admin\OnlineCourse\OnlineCourseAssignmentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -84,6 +93,21 @@ Route::prefix('admin')->group(function () {
             Route::delete('/delete/{id}', [AdminCourseController::class, 'delete'])->name('admin.courses.delete');
         });
 
+        // Video routes
+        Route::prefix('videos')->group(function () {
+            Route::get('/getAll', [VideoController::class, 'getAll'])->name('admin.videos.getAll');
+            Route::post('/create', [VideoController::class, 'create'])->name('admin.videos.create');
+            Route::get('/getById/{id}', [VideoController::class, 'getById'])->name('admin.videos.getById');
+            Route::put('/update/{id}', [VideoController::class, 'update'])->name('admin.videos.update');
+            Route::delete('/delete/{id}', [VideoController::class, 'delete'])->name('admin.videos.delete');
+            Route::post('/upload-chunk', [VideoController::class, 'uploadChunk'])->name('admin.videos.upload-chunk');
+            Route::delete('/upload-chunk/revert', [VideoController::class, 'revertChunk'])->name('admin.videos.upload-chunk.revert');
+            Route::post('/{id}/retry-transcode', [VideoController::class, 'retryTranscode'])->name('admin.videos.retry-transcode');
+            Route::get('/{id}/subtitle', [VideoController::class, 'getSubtitle'])->name('admin.videos.subtitle.get');
+            Route::post('/{id}/subtitle', [VideoController::class, 'uploadSubtitle'])->name('admin.videos.subtitle.upload');
+            Route::delete('/{id}/subtitle', [VideoController::class, 'deleteSubtitle'])->name('admin.videos.subtitle.delete');
+        });
+
         // Course assignment routes
         Route::prefix('course-assignments')->group(function () {
             Route::get('/getAll', [CourseAssignmentController::class, 'getAll'])->name('admin.course-assignments.getAll');
@@ -96,6 +120,58 @@ Route::prefix('admin')->group(function () {
             Route::get('/getAll', [AttendanceController::class, 'getAll'])->name('admin.attendance.getAll');
             Route::put('/update/{id}', [AttendanceController::class, 'update'])->name('admin.attendance.update');
             Route::delete('/delete/{id}', [AttendanceController::class, 'delete'])->name('admin.attendance.delete');
+        });
+
+        // Quiz routes
+        Route::prefix('quizzes')->group(function () {
+            Route::get('/getAll', [AdminQuizController::class, 'getAll'])->name('admin.quizzes.getAll');
+            Route::post('/create', [AdminQuizController::class, 'create'])->name('admin.quizzes.create');
+            Route::get('/getById/{id}', [AdminQuizController::class, 'getById'])->name('admin.quizzes.getById');
+            Route::put('/update/{id}', [AdminQuizController::class, 'update'])->name('admin.quizzes.update');
+            Route::delete('/delete/{id}', [AdminQuizController::class, 'delete'])->name('admin.quizzes.delete');
+
+            // Quiz question routes (nested under quiz)
+            Route::prefix('{quizId}/questions')->group(function () {
+                Route::post('/create', [QuizQuestionController::class, 'create'])->name('admin.quiz-questions.create');
+                Route::put('/update/{questionId}', [QuizQuestionController::class, 'update'])->name('admin.quiz-questions.update');
+                Route::delete('/delete/{questionId}', [QuizQuestionController::class, 'delete'])->name('admin.quiz-questions.delete');
+            });
+
+            // Quiz attempt routes (nested under quiz)
+            Route::prefix('{quizId}/attempts')->group(function () {
+                Route::get('/getAll', [QuizAttemptController::class, 'getAll'])->name('admin.quiz-attempts.getAll');
+                Route::get('/getById/{attemptId}', [QuizAttemptController::class, 'getById'])->name('admin.quiz-attempts.getById');
+            });
+        });
+
+        // Quiz answer manual grading
+        Route::prefix('quiz-answers')->group(function () {
+            Route::post('/grade/{answerId}', [QuizAnswerController::class, 'grade'])->name('admin.quiz-answers.grade');
+        });
+
+        // Quiz assignment routes
+        Route::prefix('quiz-assignments')->group(function () {
+            Route::get('/getAll', [QuizAssignmentController::class, 'getAll'])->name('admin.quiz-assignments.getAll');
+            Route::post('/create', [QuizAssignmentController::class, 'create'])->name('admin.quiz-assignments.create');
+            Route::delete('/delete/{id}', [QuizAssignmentController::class, 'delete'])->name('admin.quiz-assignments.delete');
+        });
+
+        // Online course routes — all course, module, and content management
+        Route::prefix('online-courses')->group(function () {
+            Route::get('/getAll',          [OnlineCourseController::class, 'getAll'])         ->name('admin.online-courses.getAll');
+            Route::post('/create',         [OnlineCourseController::class, 'create'])         ->name('admin.online-courses.create');
+            Route::get('/getById/{id}',    [OnlineCourseController::class, 'getById'])        ->name('admin.online-courses.getById');
+            Route::put('/update/{id}',     [OnlineCourseController::class, 'update'])         ->name('admin.online-courses.update');
+            Route::delete('/delete/{id}',  [OnlineCourseController::class, 'delete'])         ->name('admin.online-courses.delete');
+            Route::post('/upload-pdf',     [OnlineCourseController::class, 'uploadPdf'])      ->name('admin.online-courses.upload-pdf');
+            Route::put('/modules/reorder', [OnlineCourseController::class, 'reorderModules']) ->name('admin.online-courses.modules.reorder');
+        });
+
+        // Online course assignment routes
+        Route::prefix('online-course-assignments')->group(function () {
+            Route::get('/getAll',         [OnlineCourseAssignmentController::class, 'getAll'])  ->name('admin.online-course-assignments.getAll');
+            Route::post('/create',        [OnlineCourseAssignmentController::class, 'create'])  ->name('admin.online-course-assignments.create');
+            Route::delete('/delete/{id}', [OnlineCourseAssignmentController::class, 'delete'])  ->name('admin.online-course-assignments.delete');
         });
     });
 });
@@ -127,6 +203,15 @@ Route::prefix('user')->group(function () {
             Route::post('/clockOut', [ClockingController::class, 'clockOut'])->name('user.clocking.clockOut');
             Route::get('/history', [ClockingController::class, 'history'])->name('user.clocking.history');
             Route::get('/active', [ClockingController::class, 'active'])->name('user.clocking.active');
+        });
+
+        // Quiz routes
+        Route::prefix('quizzes')->group(function () {
+            Route::get('/getAll', [UserQuizController::class, 'getAll'])->name('user.quizzes.getAll');
+            Route::get('/getById/{id}', [UserQuizController::class, 'getById'])->name('user.quizzes.getById');
+            Route::post('/{id}/start', [UserQuizController::class, 'start'])->name('user.quizzes.start');
+            Route::post('/{id}/submit/{attemptId}', [UserQuizController::class, 'submit'])->name('user.quizzes.submit');
+            Route::get('/{id}/result/{attemptId}', [UserQuizController::class, 'result'])->name('user.quizzes.result');
         });
     });
 });
