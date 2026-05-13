@@ -14,7 +14,7 @@ class ClockInRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'course_id' => ['nullable', 'integer', 'exists:courses,id'],
+            'course_id' => ['required', 'integer', 'exists:courses,id'],
         ];
     }
 }
