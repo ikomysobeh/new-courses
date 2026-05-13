@@ -11,7 +11,14 @@ class ClockingResource extends JsonResource
     {
         return [
             'id'                   => $this->id,
-            'user_id'              => $this->user_id,
+            'user'                 => $this->whenLoaded('user', function () {
+                return [
+                    'id'    => $this->user->id,
+                    'name'  => $this->user->name,
+                    'email' => $this->user->email,
+                    // Add more user fields as needed
+                ];
+            }),
             'course_id'            => $this->course_id,
             'clock_in'             => $this->clock_in?->toIso8601String(),
             'clock_out'            => $this->clock_out?->toIso8601String(),
