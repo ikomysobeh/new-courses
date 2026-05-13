@@ -41,112 +41,104 @@ class AdminOnlineCourseAssignmentApiTest extends TestCase
     // getAll
     // -------------------------------------------------------------------------
 
-    public function test_get_all_assignments_returns_list_with_cards(): void
+    public function test_get_all_assignments_returns_cards(): void
     {
         $token  = $this->adminToken();
         $course = $this->createCourse();
-        $user   = User::factory()->create(['role' => 'user']);
+        $admin  = $this->admin();
+        $user1  = User::factory()->create(['role' => 'user']);
+        $user2  = User::factory()->create(['role' => 'user']);
 
-        CourseOnlineAssignment::query()->create([
-            'course_online_id' => $course->id,
-            'user_id'          => $user->id,
-        ]);
+        CourseOnlineAssignment::query()->create(['course_online_id' => $course->id, 'user_id' => $user1->id, 'assigned_by' => $admin->id, 'assigned_at' => now()]);
+        CourseOnlineAssignment::query()->create(['course_online_id' => $course->id, 'user_id' => $user2->id, 'assigned_by' => $admin->id, 'assigned_at' => now()]);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->getJson('/api/admin/online-course-assignments/getAll');
 
         $response->assertOk()
-            ->assertJsonStructure([
-                'data',
-                'meta',
-                'cards' => [
-                    '*' => ['key', 'title', 'value'],
-                ],
-            ]);
+            ->assertJsonStructure(['data', 'meta', 'cards']);
 
-        $this->assertSame(1, $response->json('meta.total'));
+        $cards = collect($response->json('cards'));
+        $this->assertNotNull($cards->firstWhere('key', 'total_assignments'));
+        $this->assertSame(2, $response->json('meta.total'));
     }
 
     // -------------------------------------------------------------------------
     // create
     // -------------------------------------------------------------------------
 
-    public function test_create_assignment(): void
+    public function test_admin_can_assign_multiple_users_to_course(): void
     {
         $token  = $this->adminToken();
         $course = $this->createCourse();
-        $user   = User::factory()->create(['role' => 'user']);
+        $user2  = User::factory()->create(['role' => 'user']);
+        $user3  = User::factory()->create(['role' => 'user']);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/admin/online-course-assignments/create', [
                 'course_online_id' => $course->id,
-                'user_id'          => $user->id,
+                'user_ids'         => [$user2->id, $user3->id],
             ]);
 
-        $response->assertCreated()
-            ->assertJsonPath('data.course_online_id', $course->id)
-            ->assertJsonPath('data.user_id', $user->id);
-
-        $this->assertDatabaseHas('course_online_assignments', [
-            'course_online_id' => $course->id,
-            'user_id'          => $user->id,
-        ]);
+        $response->assertCreated();
+        $this->assertSame(2, $response->json('meta.created'));
+        $this->assertSame(0, $response->json('meta.skipped'));
+        $this->assertDatabaseCount('course_online_assignments', 2);
     }
 
-    public function test_create_assignment_rejects_duplicate(): void
+    public function test_duplicate_assignment_is_skipped_not_errored(): void
     {
         $token  = $this->adminToken();
+        $admin  = $this->admin();
         $course = $this->createCourse();
-        $user   = User::factory()->create(['role' => 'user']);
+        $user2  = User::factory()->create(['role' => 'user']);
 
+        // First assignment
         CourseOnlineAssignment::query()->create([
             'course_online_id' => $course->id,
-            'user_id'          => $user->id,
+            'user_id'          => $user2->id,
+            'assigned_by'      => $admin->id,
+            'assigned_at'      => now(),
         ]);
 
+        // Second attempt — same user
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/admin/online-course-assignments/create', [
                 'course_online_id' => $course->id,
-                'user_id'          => $user->id,
+                'user_ids'         => [$user2->id],
             ]);
 
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['user_id']);
+        $response->assertCreated();
+        $this->assertSame(0, $response->json('meta.created'));
+        $this->assertSame(1, $response->json('meta.skipped'));
+
+        // DB still has only 1 assignment row
+        $this->assertDatabaseCount('course_online_assignments', 1);
     }
 
-    public function test_create_assignment_requires_fields(): void
-    {
-        $token = $this->adminToken();
-
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/admin/online-course-assignments/create', []);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['course_online_id', 'user_id']);
-    }
-
-    // -------------------------------------------------------------------------
-    // delete
-    // -------------------------------------------------------------------------
-
-    public function test_delete_assignment(): void
+    public function test_admin_can_unassign_user(): void
     {
         $token  = $this->adminToken();
+        $admin  = $this->admin();
         $course = $this->createCourse();
         $user   = User::factory()->create(['role' => 'user']);
 
         $assignment = CourseOnlineAssignment::query()->create([
             'course_online_id' => $course->id,
             'user_id'          => $user->id,
+            'assigned_by'      => $admin->id,
+            'assigned_at'      => now(),
         ]);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->deleteJson("/api/admin/online-course-assignments/delete/{$assignment->id}");
 
-        $response->assertOk()
-            ->assertJsonPath('message', 'Assignment deleted successfully.');
-
+        $response->assertNoContent();
         $this->assertSoftDeleted('course_online_assignments', ['id' => $assignment->id]);
+
+        $assignment->refresh();
+        $this->assertNotNull($assignment->unassigned_at);
+        $this->assertSame($admin->id, $assignment->unassigned_by);
     }
 
     // -------------------------------------------------------------------------

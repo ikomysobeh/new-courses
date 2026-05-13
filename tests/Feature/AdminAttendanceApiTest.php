@@ -23,12 +23,12 @@ class AdminAttendanceApiTest extends TestCase
         ])->json('data.token');
     }
 
-    private function createClocking(User $user): Clocking
+    private function createClocking(User $user, array $overrides = []): Clocking
     {
-        return Clocking::query()->create([
+        return Clocking::query()->create(array_merge([
             'user_id'  => $user->id,
             'clock_in' => now()->subHour(),
-        ]);
+        ], $overrides));
     }
 
     public function test_admin_can_get_all_clocking_records(): void
@@ -50,6 +50,29 @@ class AdminAttendanceApiTest extends TestCase
         ]);
         $response->assertJsonPath('cards.0.key', 'total_clocking_records');
         $this->assertGreaterThanOrEqual(2, count($response->json('data')));
+    }
+
+    public function test_admin_can_filter_clocking_records(): void
+    {
+        $token = $this->adminToken();
+        $user  = User::factory()->create(['role' => 'user']);
+
+        $this->createClocking($user, [
+            'rating'   => 5,
+            'clock_in' => now()->subDays(2),
+        ]);
+
+        $this->createClocking($user, [
+            'rating'   => 3,
+            'clock_in' => now()->subDays(10),
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->getJson('/api/admin/attendance/getAll?rating=5&start_date=' . now()->subDays(3)->toDateString() . '&end_date=' . now()->toDateString());
+
+        $response->assertOk();
+        $this->assertCount(1, $response->json('data'));
+        $this->assertSame(5, $response->json('data.0.rating'));
     }
 
     public function test_admin_can_update_clocking_record(): void

@@ -19,8 +19,16 @@ class CourseModuleResource extends JsonResource
             'has_quiz'           => $this->has_quiz,
             'quiz_required'      => $this->quiz_required,
             'contents'           => ModuleContentResource::collection($this->whenLoaded('contents')),
-            'created_at'         => $this->created_at,
-            'updated_at'         => $this->updated_at,
+            'quiz'               => $this->whenLoaded('quiz', fn () =>
+                $this->quiz ? [
+                    'id'              => $this->quiz->id,
+                    'title'           => $this->quiz->title,
+                    'status'          => $this->quiz->status,
+                    'questions_count' => $this->quiz->questions()->count(),
+                ] : null
+            ),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

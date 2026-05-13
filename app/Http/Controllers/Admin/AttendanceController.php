@@ -17,7 +17,13 @@ class AttendanceController extends Controller
     /** Get all clocking records (admin view, paginated). */
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $records = $this->clockingService->getAllForAdmin($request->only('user_id', 'course_id'));
+        $records = $this->clockingService->getAllForAdmin($request->only([
+            'user_id',
+            'course_id',
+            'rating',
+            'start_date',
+            'end_date',
+        ]));
 
         return ClockingResource::collection($records)
             ->additional([

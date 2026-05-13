@@ -13,10 +13,15 @@ class ModuleContentPdf extends Model
     protected $fillable = [
         'module_content_id',
         'file_path',
-        'original_filename',
-        'file_size',
-        'page_count',
+        'pdf_page_count',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'pdf_page_count' => 'integer',
+        ];
+    }
 
     public function content(): BelongsTo
     {

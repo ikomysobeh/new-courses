@@ -14,7 +14,7 @@ class UploadCoursePdfRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pdf' => ['required', 'file', 'mimes:pdf', 'max:51200'], // max 50 MB
+            'pdf_file' => ['required', 'file', 'mimes:pdf', 'max:51200'], // max 50 MB
         ];
     }
 }

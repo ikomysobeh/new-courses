@@ -13,18 +13,36 @@ class ModuleContent extends Model
 
     protected $fillable = [
         'module_id',
-        'name',
-        'description',
         'content_type',
+        'title',
+        'description',
         'order_number',
-        'content_id',
-        'text_body',
-        'estimated_duration',
+        'video_id',
+        'duration',
+        'thumbnail_path',
+        'is_required',
+        'is_active',
+        'attachment_path',
+        'attachment_name',
+        'attachment_extension',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_required' => 'boolean',
+            'is_active'   => 'boolean',
+        ];
+    }
 
     public function module(): BelongsTo
     {
         return $this->belongsTo(CourseModule::class, 'module_id');
+    }
+
+    public function video(): BelongsTo
+    {
+        return $this->belongsTo(Video::class, 'video_id');
     }
 
     public function pdf(): HasOne

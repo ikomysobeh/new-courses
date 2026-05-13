@@ -12,9 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('module_content_id')->unique()->constrained('module_contents')->cascadeOnDelete();
             $table->string('file_path', 500);
-            $table->string('original_filename', 255);
-            $table->unsignedBigInteger('file_size')->nullable(); // bytes
-            $table->unsignedInteger('page_count')->nullable();
+            $table->unsignedInteger('pdf_page_count')->nullable();
             $table->timestamps();
         });
     }

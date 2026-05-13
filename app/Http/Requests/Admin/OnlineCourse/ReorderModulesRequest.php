@@ -14,10 +14,9 @@ class ReorderModulesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'course_online_id'           => ['required', 'integer', 'exists:course_onlines,id'],
-            'modules'                    => ['required', 'array', 'min:1'],
-            'modules.*.id'               => ['required', 'integer', 'exists:course_modules,id'],
-            'modules.*.order_number'     => ['required', 'integer', 'min:1'],
+            'order'                  => ['required', 'array', 'min:1'],
+            'order.*.module_id'      => ['required', 'integer', 'exists:course_modules,id'],
+            'order.*.order_number'   => ['required', 'integer', 'min:1'],
         ];
     }
 }

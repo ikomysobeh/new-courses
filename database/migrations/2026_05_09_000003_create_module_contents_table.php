@@ -11,18 +11,22 @@ return new class extends Migration
         Schema::create('module_contents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('module_id')->constrained('course_modules')->restrictOnDelete();
-            $table->string('name');
+            $table->enum('content_type', ['video', 'pdf']);
+            $table->string('title');
             $table->text('description')->nullable();
-            $table->enum('content_type', ['video', 'pdf', 'audio', 'text']);
             $table->unsignedInteger('order_number');
-            $table->unsignedBigInteger('content_id')->nullable(); // FK to video/audio/etc (polymorphic by content_type)
-            $table->text('text_body')->nullable(); // for content_type = text
-            $table->unsignedInteger('estimated_duration')->nullable(); // minutes
+            $table->foreignId('video_id')->nullable()->constrained('videos')->restrictOnDelete();
+            $table->unsignedInteger('duration')->nullable(); // seconds
+            $table->string('thumbnail_path')->nullable();
+            $table->boolean('is_required')->default(true);
+            $table->boolean('is_active')->default(true);
+            $table->string('attachment_path')->nullable();
+            $table->string('attachment_name')->nullable();
+            $table->string('attachment_extension')->nullable();
             $table->timestamps();
 
             $table->unique(['module_id', 'order_number']);
             $table->index('module_id');
-            $table->index('content_type');
         });
     }
 

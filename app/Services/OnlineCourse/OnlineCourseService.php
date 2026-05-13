@@ -5,6 +5,7 @@ namespace App\Services\OnlineCourse;
 use App\Models\CourseAnalytics;
 use App\Models\CourseModule;
 use App\Models\CourseOnline;
+use App\Models\CourseOnlineAssignment;
 use App\Models\ModuleContent;
 use App\Models\ModuleContentPdf;
 use App\Models\User;
@@ -12,6 +13,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class OnlineCourseService
 {
@@ -38,8 +40,9 @@ class OnlineCourseService
         return CourseOnline::query()
             ->with([
                 'creator',
+                'modules.contents.video',
                 'modules.contents.pdf',
-                'analytics',
+                'modules.quiz',
             ])
             ->findOrFail($id);
     }
@@ -51,25 +54,25 @@ class OnlineCourseService
             unset($data['modules']);
 
             $data['created_by'] = $admin->id;
+            $data['status']     = $data['status'] ?? 'draft';
 
             /** @var CourseOnline $course */
             $course = CourseOnline::query()->create($data);
+
+            // Auto-create analytics stub row (all zeros via column defaults)
+            CourseAnalytics::query()->create([
+                'course_online_id' => $course->id,
+            ]);
 
             foreach ($modules as $moduleData) {
                 $this->createModule($course->id, $moduleData);
             }
 
-            CourseAnalytics::query()->create([
-                'course_online_id' => $course->id,
-                'total_modules'    => count($modules),
-                'total_contents'   => collect($modules)->sum(fn($m) => count($m['contents'] ?? [])),
-            ]);
-
-            return $course->load(['creator', 'modules.contents.pdf', 'analytics']);
+            return $this->getCourseById($course->id);
         });
     }
 
-    public function updateCourse(int $id, array $data): CourseOnline
+    public function updateCourse(int $id, array $data, User $admin): CourseOnline
     {
         return DB::transaction(function () use ($id, $data) {
             /** @var CourseOnline $course */
@@ -88,17 +91,22 @@ class OnlineCourseService
                 $this->syncModules($course, $modules);
             }
 
-            $this->refreshAnalytics($course);
-
-            return $course->load(['creator', 'modules.contents.pdf', 'analytics']);
+            return $this->getCourseById($course->id);
         });
     }
 
     public function deleteCourse(int $id): void
     {
-        DB::transaction(function () use ($id) {
-            /** @var CourseOnline $course */
-            $course = CourseOnline::query()->findOrFail($id);
+        /** @var CourseOnline $course */
+        $course = CourseOnline::query()->findOrFail($id);
+
+        // Block deletion if course has active assignments
+        if ($course->assignments()->whereNull('deleted_at')->exists()) {
+            abort(422, 'Cannot delete a course with active assignments.');
+        }
+
+        DB::transaction(function () use ($course) {
+            $course->load('modules.contents.pdf');
 
             foreach ($course->modules as $module) {
                 $this->deleteModuleWithContent($module);
@@ -110,36 +118,48 @@ class OnlineCourseService
 
     public function uploadPdf(UploadedFile $file): array
     {
-        $filename  = $file->getClientOriginalName();
-        $path      = $file->store('online-courses/pdfs', 'local');
-        $fileSize  = $file->getSize();
+        $uuid      = (string) Str::uuid();
+        $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+        $path      = "course-pdfs/{$uuid}_{$sanitized}";
+
+        Storage::disk('local')->put($path, $file->getContent());
 
         return [
-            'file_path'         => $path,
-            'original_filename' => $filename,
-            'file_size'         => $fileSize,
+            'file_path'  => $path,
+            'file_size'  => $file->getSize(),
         ];
     }
 
     public function reorderModules(array $data): void
     {
-        DB::transaction(function () use ($data) {
-            $courseId = $data['course_online_id'];
-            $offset   = 100000;
+        $order     = $data['order'];
+        $moduleIds = collect($order)->pluck('module_id')->toArray();
 
-            // First pass: move to temporary high order_numbers to avoid unique conflicts
-            foreach ($data['modules'] as $item) {
+        $modules = CourseModule::query()->whereIn('id', $moduleIds)->get();
+
+        if ($modules->count() !== count($moduleIds)) {
+            abort(422, 'One or more modules not found.');
+        }
+
+        $courseIds = $modules->pluck('course_online_id')->unique();
+        if ($courseIds->count() > 1) {
+            abort(422, 'All modules must belong to the same course.');
+        }
+
+        DB::transaction(function () use ($order) {
+            $offset = 100000;
+
+            // First pass: temporary high numbers to avoid unique constraint conflicts
+            foreach ($order as $item) {
                 CourseModule::query()
-                    ->where('id', $item['id'])
-                    ->where('course_online_id', $courseId)
+                    ->where('id', $item['module_id'])
                     ->update(['order_number' => $item['order_number'] + $offset]);
             }
 
-            // Second pass: set final order_numbers
-            foreach ($data['modules'] as $item) {
+            // Second pass: set final order numbers
+            foreach ($order as $item) {
                 CourseModule::query()
-                    ->where('id', $item['id'])
-                    ->where('course_online_id', $courseId)
+                    ->where('id', $item['module_id'])
                     ->update(['order_number' => $item['order_number']]);
             }
         });
@@ -147,16 +167,16 @@ class OnlineCourseService
 
     public function getAdminCourseCards(): array
     {
-        $total     = CourseOnline::query()->count();
-        $published = CourseOnline::query()->where('status', 'published')->count();
-        $draft     = CourseOnline::query()->where('status', 'draft')->count();
-        $archived  = CourseOnline::query()->where('status', 'archived')->count();
+        $total       = CourseOnline::query()->count();
+        $published   = CourseOnline::query()->where('status', 'published')->count();
+        $draft       = CourseOnline::query()->where('status', 'draft')->count();
+        $enrollments = CourseOnlineAssignment::query()->whereNull('deleted_at')->count();
 
         return [
-            ['key' => 'total_courses',     'title' => 'Total Courses',     'value' => $total],
-            ['key' => 'published_courses',  'title' => 'Published Courses', 'value' => $published],
-            ['key' => 'draft_courses',      'title' => 'Draft Courses',     'value' => $draft],
-            ['key' => 'archived_courses',   'title' => 'Archived Courses',  'value' => $archived],
+            ['key' => 'total_courses',    'title' => 'Total Courses',     'value' => $total],
+            ['key' => 'published_courses', 'title' => 'Published Courses', 'value' => $published],
+            ['key' => 'draft_courses',     'title' => 'Draft Courses',     'value' => $draft],
+            ['key' => 'total_enrollments', 'title' => 'Total Enrollments', 'value' => $enrollments],
         ];
     }
 
@@ -195,9 +215,11 @@ class OnlineCourseService
         $content = ModuleContent::query()->create($contentData);
 
         if ($pdfMeta && $content->content_type === 'pdf') {
-            ModuleContentPdf::query()->create(array_merge($pdfMeta, [
+            ModuleContentPdf::query()->create([
                 'module_content_id' => $content->id,
-            ]));
+                'file_path'         => $pdfMeta['file_path'],
+                'pdf_page_count'    => $pdfMeta['pdf_page_count'] ?? null,
+            ]);
         }
 
         return $content;
@@ -205,12 +227,12 @@ class OnlineCourseService
 
     private function syncModules(CourseOnline $course, array $modules): void
     {
-        $existingIds  = $course->modules()->pluck('id')->toArray();
-        $incomingIds  = collect($modules)->pluck('id')->filter()->map(fn($v) => (int) $v)->toArray();
-        $toDeleteIds  = array_diff($existingIds, $incomingIds);
+        $existingIds = $course->modules()->pluck('id')->toArray();
+        $incomingIds = collect($modules)->pluck('id')->filter()->map(fn ($v) => (int) $v)->toArray();
+        $toDeleteIds = array_diff($existingIds, $incomingIds);
 
         foreach ($toDeleteIds as $moduleId) {
-            $module = CourseModule::query()->find($moduleId);
+            $module = CourseModule::query()->with('contents.pdf')->find($moduleId);
             if ($module) {
                 $this->deleteModuleWithContent($module);
             }
@@ -218,8 +240,7 @@ class OnlineCourseService
 
         foreach ($modules as $moduleData) {
             if (!empty($moduleData['id'])) {
-                // Update existing module
-                $module = CourseModule::query()->findOrFail($moduleData['id']);
+                $module   = CourseModule::query()->findOrFail($moduleData['id']);
                 $contents = null;
                 if (array_key_exists('contents', $moduleData)) {
                     $contents = $moduleData['contents'];
@@ -228,23 +249,22 @@ class OnlineCourseService
                 $module->update($moduleData);
 
                 if ($contents !== null) {
-                    $this->syncContents($module, $contents);
+                    $this->syncModuleContent($module, $contents);
                 }
             } else {
-                // Create new module
                 $this->createModule($course->id, $moduleData);
             }
         }
     }
 
-    private function syncContents(CourseModule $module, array $contents): void
+    private function syncModuleContent(CourseModule $module, array $contents): void
     {
         $existingIds = $module->contents()->pluck('id')->toArray();
-        $incomingIds = collect($contents)->pluck('id')->filter()->map(fn($v) => (int) $v)->toArray();
+        $incomingIds = collect($contents)->pluck('id')->filter()->map(fn ($v) => (int) $v)->toArray();
         $toDeleteIds = array_diff($existingIds, $incomingIds);
 
         foreach ($toDeleteIds as $contentId) {
-            $content = ModuleContent::query()->find($contentId);
+            $content = ModuleContent::query()->with('pdf')->find($contentId);
             if ($content) {
                 $this->deleteContentWithPdf($content);
             }
@@ -254,13 +274,29 @@ class OnlineCourseService
             if (!empty($contentData['id'])) {
                 $content = ModuleContent::query()->findOrFail($contentData['id']);
                 $pdfMeta = $contentData['pdf'] ?? null;
-                unset($contentData['id'], $contentData['content_type'], $contentData['pdf']); // content_type immutable
+
+                // content_type is immutable — never overwrite
+                unset($contentData['id'], $contentData['content_type'], $contentData['pdf']);
                 $content->update($contentData);
 
-                if ($pdfMeta && $content->content_type === 'pdf') {
+                if ($content->content_type === 'pdf' && $pdfMeta) {
+                    $existingPdf = $content->pdf;
+
+                    // Delete old file from storage if path changed
+                    if ($existingPdf
+                        && isset($pdfMeta['file_path'])
+                        && $existingPdf->file_path !== $pdfMeta['file_path']) {
+                        if (Storage::disk('local')->exists($existingPdf->file_path)) {
+                            Storage::disk('local')->delete($existingPdf->file_path);
+                        }
+                    }
+
                     $content->pdf()->updateOrCreate(
                         ['module_content_id' => $content->id],
-                        $pdfMeta
+                        [
+                            'file_path'      => $pdfMeta['file_path'],
+                            'pdf_page_count' => $pdfMeta['pdf_page_count'] ?? null,
+                        ]
                     );
                 }
             } else {
@@ -271,36 +307,30 @@ class OnlineCourseService
 
     private function deleteModuleWithContent(CourseModule $module): void
     {
+        if (!$module->relationLoaded('contents')) {
+            $module->load('contents.pdf');
+        }
+
         foreach ($module->contents as $content) {
             $this->deleteContentWithPdf($content);
         }
+
         $module->delete();
     }
 
     private function deleteContentWithPdf(ModuleContent $content): void
     {
         if ($content->content_type === 'pdf') {
-            $pdf = $content->pdf;
+            $pdf = $content->relationLoaded('pdf') ? $content->pdf : $content->pdf()->first();
             if ($pdf) {
-                Storage::disk('local')->delete($pdf->file_path);
+                if (Storage::disk('local')->exists($pdf->file_path)) {
+                    Storage::disk('local')->delete($pdf->file_path);
+                }
                 $pdf->delete();
             }
         }
+
         $content->delete();
     }
-
-    private function refreshAnalytics(CourseOnline $course): void
-    {
-        $course->loadCount('modules');
-        $moduleIds     = $course->modules()->pluck('id');
-        $totalContents = ModuleContent::query()->whereIn('module_id', $moduleIds)->count();
-
-        $course->analytics()->updateOrCreate(
-            ['course_online_id' => $course->id],
-            [
-                'total_modules'  => $course->modules_count,
-                'total_contents' => $totalContents,
-            ]
-        );
-    }
 }
+

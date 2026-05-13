@@ -13,10 +13,25 @@ class CourseAnalytics extends Model
     protected $fillable = [
         'course_online_id',
         'total_enrollments',
-        'total_completions',
-        'total_modules',
-        'total_contents',
+        'active_learners',
+        'completed_learners',
+        'completion_rate',
+        'dropout_rate',
+        'average_session_duration_minutes',
+        'average_video_completion_rate',
+        'cheating_incidents_count',
+        'last_calculated_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'completion_rate'              => 'float',
+            'dropout_rate'                => 'float',
+            'average_video_completion_rate' => 'float',
+            'last_calculated_at'          => 'datetime',
+        ];
+    }
 
     public function course(): BelongsTo
     {

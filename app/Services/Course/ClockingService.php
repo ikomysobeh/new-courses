@@ -147,6 +147,18 @@ class ClockingService
             $query->where('course_id', $filters['course_id']);
         }
 
+        if (! empty($filters['rating'])) {
+            $query->where('rating', $filters['rating']);
+        }
+
+        if (! empty($filters['start_date'])) {
+            $query->whereDate('clock_in', '>=', $filters['start_date']);
+        }
+
+        if (! empty($filters['end_date'])) {
+            $query->whereDate('clock_in', '<=', $filters['end_date']);
+        }
+
         return $query->paginate(15);
     }
 

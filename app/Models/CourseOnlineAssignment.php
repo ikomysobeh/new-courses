@@ -14,7 +14,26 @@ class CourseOnlineAssignment extends Model
     protected $fillable = [
         'course_online_id',
         'user_id',
+        'assigned_by',
+        'assigned_at',
+        'deadline',
+        'is_overdue',
+        'deadline_notification_sent_at',
+        'unassigned_at',
+        'unassigned_by',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_overdue'                    => 'boolean',
+            'assigned_at'                   => 'datetime',
+            'deadline'                      => 'datetime',
+            'deadline_notification_sent_at' => 'datetime',
+            'unassigned_at'                 => 'datetime',
+            'deleted_at'                    => 'datetime',
+        ];
+    }
 
     public function course(): BelongsTo
     {
@@ -24,5 +43,10 @@ class CourseOnlineAssignment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function assignedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_by');
     }
 }

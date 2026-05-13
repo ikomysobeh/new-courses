@@ -23,6 +23,13 @@ use App\Http\Controllers\User\ClockingController;
 use App\Http\Controllers\User\QuizController as UserQuizController;
 use App\Http\Controllers\Admin\OnlineCourse\OnlineCourseController;
 use App\Http\Controllers\Admin\OnlineCourse\OnlineCourseAssignmentController;
+use App\Http\Controllers\Admin\VideoCategoryController;
+use App\Http\Controllers\Admin\EvaluationConfigController;
+use App\Http\Controllers\Admin\EvaluationTypeController;
+use App\Http\Controllers\Admin\EvaluationController;
+use App\Http\Controllers\Admin\EvaluationHistoryController;
+use App\Http\Controllers\Admin\EvaluationNotificationController;
+use App\Http\Controllers\User\UserEvaluationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -91,6 +98,14 @@ Route::prefix('admin')->group(function () {
             Route::get('/getById/{id}', [AdminCourseController::class, 'getById'])->name('admin.courses.getById');
             Route::put('/update/{id}', [AdminCourseController::class, 'update'])->name('admin.courses.update');
             Route::delete('/delete/{id}', [AdminCourseController::class, 'delete'])->name('admin.courses.delete');
+        });
+         // Video category routes
+        Route::prefix('video-categories')->group(function () {
+            Route::get('/getAll',        [VideoCategoryController::class, 'getAll'])  ->name('admin.video-categories.getAll');
+            Route::post('/create',       [VideoCategoryController::class, 'create'])  ->name('admin.video-categories.create');
+            Route::get('/getById/{id}',  [VideoCategoryController::class, 'getById'])->name('admin.video-categories.getById');
+            Route::put('/update/{id}',   [VideoCategoryController::class, 'update'])  ->name('admin.video-categories.update');
+            Route::delete('/delete/{id}',[VideoCategoryController::class, 'delete'])  ->name('admin.video-categories.delete');
         });
 
         // Video routes
@@ -173,6 +188,49 @@ Route::prefix('admin')->group(function () {
             Route::post('/create',        [OnlineCourseAssignmentController::class, 'create'])  ->name('admin.online-course-assignments.create');
             Route::delete('/delete/{id}', [OnlineCourseAssignmentController::class, 'delete'])  ->name('admin.online-course-assignments.delete');
         });
+
+        // Evaluation config routes
+        Route::prefix('evaluation-configs')->group(function () {
+            Route::get('/getAll',          [EvaluationConfigController::class, 'getAll'])      ->name('admin.evaluation-configs.getAll');
+            Route::post('/create',         [EvaluationConfigController::class, 'create'])      ->name('admin.evaluation-configs.create');
+            Route::put('/update/{id}',     [EvaluationConfigController::class, 'update'])      ->name('admin.evaluation-configs.update');
+            Route::delete('/delete/{id}',  [EvaluationConfigController::class, 'delete'])      ->name('admin.evaluation-configs.delete');
+            Route::post('/{id}/types/create', [EvaluationConfigController::class, 'createType'])->name('admin.evaluation-configs.types.create');
+        });
+
+        // Evaluation type routes
+        Route::prefix('evaluation-types')->group(function () {
+            Route::put('/update/{id}',    [EvaluationTypeController::class, 'update'])->name('admin.evaluation-types.update');
+            Route::delete('/delete/{id}', [EvaluationTypeController::class, 'delete'])->name('admin.evaluation-types.delete');
+        });
+
+        // Evaluation routes (regular + online unified)
+        Route::prefix('evaluations')->group(function () {
+            Route::get('/getAll',           [EvaluationController::class, 'getAll'])      ->name('admin.evaluations.getAll');
+            Route::get('/getById/{id}',     [EvaluationController::class, 'getById'])     ->name('admin.evaluations.getById');
+            Route::post('/create',          [EvaluationController::class, 'create'])      ->name('admin.evaluations.create');
+            Route::post('/bulk-create',     [EvaluationController::class, 'bulkCreate'])  ->name('admin.evaluations.bulk-create');
+            Route::put('/update/{id}',      [EvaluationController::class, 'update'])      ->name('admin.evaluations.update');
+            Route::delete('/delete/{id}',   [EvaluationController::class, 'delete'])      ->name('admin.evaluations.delete');
+            Route::get('/users',            [EvaluationController::class, 'users'])       ->name('admin.evaluations.users');
+            Route::get('/user-courses',     [EvaluationController::class, 'userCourses']) ->name('admin.evaluations.user-courses');
+        });
+
+        // Evaluation history routes
+        Route::prefix('evaluation-history')->group(function () {
+            Route::get('/getAll',          [EvaluationHistoryController::class, 'getAll'])       ->name('admin.evaluation-history.getAll');
+            Route::get('/getById/{id}',    [EvaluationHistoryController::class, 'getById'])      ->name('admin.evaluation-history.getById');
+            Route::get('/analytics',       [EvaluationHistoryController::class, 'analytics'])    ->name('admin.evaluation-history.analytics');
+            Route::get('/export',          [EvaluationHistoryController::class, 'export'])       ->name('admin.evaluation-history.export');
+            Route::get('/export-summary',  [EvaluationHistoryController::class, 'exportSummary'])->name('admin.evaluation-history.export-summary');
+        });
+
+        // Evaluation notification routes
+        Route::prefix('evaluation-notifications')->group(function () {
+            Route::get('/getAll',  [EvaluationNotificationController::class, 'getAll']) ->name('admin.evaluation-notifications.getAll');
+            Route::post('/preview',[EvaluationNotificationController::class, 'preview'])->name('admin.evaluation-notifications.preview');
+            Route::post('/send',   [EvaluationNotificationController::class, 'send'])   ->name('admin.evaluation-notifications.send');
+        });
     });
 });
 
@@ -212,6 +270,12 @@ Route::prefix('user')->group(function () {
             Route::post('/{id}/start', [UserQuizController::class, 'start'])->name('user.quizzes.start');
             Route::post('/{id}/submit/{attemptId}', [UserQuizController::class, 'submit'])->name('user.quizzes.submit');
             Route::get('/{id}/result/{attemptId}', [UserQuizController::class, 'result'])->name('user.quizzes.result');
+        });
+
+        // User evaluation routes
+        Route::prefix('evaluations')->group(function () {
+            Route::get('/getAll',       [UserEvaluationController::class, 'getAll'])   ->name('user.evaluations.getAll');
+            Route::get('/getById/{id}', [UserEvaluationController::class, 'getById'])  ->name('user.evaluations.getById');
         });
     });
 });

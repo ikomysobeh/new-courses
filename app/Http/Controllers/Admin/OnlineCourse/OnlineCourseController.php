@@ -13,6 +13,7 @@ use App\Services\OnlineCourse\OnlineCourseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class OnlineCourseController extends Controller
 {
@@ -47,21 +48,21 @@ class OnlineCourseController extends Controller
 
     public function update(UpdateOnlineCourseRequest $request, int $id): OnlineCourseDetailResource
     {
-        $course = $this->service->updateCourse($id, $request->validated());
+        $course = $this->service->updateCourse($id, $request->validated(), $request->user());
 
         return new OnlineCourseDetailResource($course);
     }
 
-    public function delete(int $id): JsonResponse
+    public function delete(int $id): Response
     {
         $this->service->deleteCourse($id);
 
-        return response()->json(['message' => 'Online course deleted successfully.']);
+        return response()->noContent();
     }
 
     public function uploadPdf(UploadCoursePdfRequest $request): JsonResponse
     {
-        $result = $this->service->uploadPdf($request->file('pdf'));
+        $result = $this->service->uploadPdf($request->file('pdf_file'));
 
         return response()->json($result);
     }

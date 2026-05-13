@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class CourseModule extends Model
 {
@@ -37,5 +38,10 @@ class CourseModule extends Model
     public function contents(): HasMany
     {
         return $this->hasMany(ModuleContent::class, 'module_id')->orderBy('order_number');
+    }
+
+    public function quiz(): HasOne
+    {
+        return $this->hasOne(Quiz::class, 'module_id');
     }
 }

@@ -10,16 +10,27 @@ class ModuleContentResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'                 => $this->id,
-            'module_id'          => $this->module_id,
-            'name'               => $this->name,
-            'description'        => $this->description,
-            'content_type'       => $this->content_type,
-            'order_number'       => $this->order_number,
-            'content_id'         => $this->content_id,
-            'text_body'          => $this->text_body,
-            'estimated_duration' => $this->estimated_duration,
-            'pdf'                => $this->whenLoaded('pdf', fn () =>
+            'id'                   => $this->id,
+            'module_id'            => $this->module_id,
+            'content_type'         => $this->content_type,
+            'title'                => $this->title,
+            'description'          => $this->description,
+            'order_number'         => $this->order_number,
+            'duration'             => $this->duration,
+            'thumbnail_path'       => $this->thumbnail_path,
+            'is_required'          => $this->is_required,
+            'is_active'            => $this->is_active,
+            'attachment_path'      => $this->attachment_path,
+            'attachment_name'      => $this->attachment_name,
+            'attachment_extension' => $this->attachment_extension,
+            'video'                => $this->whenLoaded('video', fn () =>
+                $this->video ? [
+                    'id'               => $this->video->id,
+                    'name'             => $this->video->name,
+                    'transcode_status' => $this->video->transcode_status,
+                ] : null
+            ),
+            'pdf' => $this->whenLoaded('pdf', fn () =>
                 $this->pdf ? new ModuleContentPdfResource($this->pdf) : null
             ),
             'created_at' => $this->created_at,

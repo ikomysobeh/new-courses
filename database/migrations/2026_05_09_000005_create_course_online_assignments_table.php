@@ -12,6 +12,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('course_online_id')->constrained('course_onlines')->restrictOnDelete();
             $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
+            $table->foreignId('assigned_by')->constrained('users')->restrictOnDelete();
+            $table->timestamp('assigned_at');
+            $table->dateTime('deadline')->nullable();
+            $table->boolean('is_overdue')->default(false);
+            $table->dateTime('deadline_notification_sent_at')->nullable();
+            $table->timestamp('unassigned_at')->nullable();
+            $table->foreignId('unassigned_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
 

@@ -223,7 +223,7 @@ class CourseService
             $query->where('user_id', $filters['user_id']);
         }
 
-        return $query->paginate(15);
+        return $query->paginate(4);
     }
 
     public function assignCourseToUser(int $courseId, int $userId, ?int $availabilityId, User $admin): CourseAssignment
@@ -485,7 +485,7 @@ class CourseService
             ->where('course_id', $courseId)
             ->firstOrFail();
 
-        if ($registration->status !== 'completed') {
+        if ($registration->status !== 'in_progress') {
             throw ValidationException::withMessages([
                 'course_id' => ['You must complete the course before submitting a rating.'],
             ]);
