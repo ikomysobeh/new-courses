@@ -13,15 +13,29 @@ class QuizAttemptController extends Controller
     public function __construct(private readonly QuizAttemptService $attemptService) {}
 
     /**
-     * List all attempts for a given quiz.
+     * List all attempts for a given quiz, with optional filters.
+     *
+     * Available filters (query params):
+     * - user_id: int — filter by user
+     * - passed: bool — filter by pass/fail
+     * - submitted_after_deadline: bool — filter by late submissions
+     * - attempt_number: int — filter by attempt number
      */
     public function getAll(int $quizId): AnonymousResourceCollection
     {
-        $attempts = QuizAttempt::query()
+        $query = QuizAttempt::query()
             ->with('user')
-            ->where('quiz_id', $quizId)
-            ->orderByDesc('id')
-            ->get();
+            ->where('quiz_id', $quizId);
+
+        if (request()->has('user_id')) {
+            $query->where('user_id', request('user_id'));
+        }
+            // Only filter by status if provided
+        if (request()->has('status')) {
+            $query->where('status', request('status'));
+        }
+
+        $attempts = $query->orderByDesc('id')->get();
 
         return QuizAttemptAdminResource::collection($attempts)
             ->additional(['cards' => $this->attemptService->getAdminAttemptCards($quizId)]);
