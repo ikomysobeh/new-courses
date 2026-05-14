@@ -14,6 +14,7 @@ class QuizResource extends JsonResource
             'title'                => $this->title,
             'description'          => $this->description,
             'course_id'            => $this->course_id,
+            'course_name'          => $this->whenLoaded('course', fn () => $this->course?->name),
             'course_online_id'     => $this->course_online_id,
             'module_id'            => $this->module_id,
             'status'               => $this->status,

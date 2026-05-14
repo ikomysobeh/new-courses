@@ -16,7 +16,7 @@ class QuizService
 
     public function getAllForAdmin(array $filters = []): Collection
     {
-        $query = Quiz::query()->withCount('questions');
+        $query = Quiz::query()->with(['course'])->withCount('questions');
 
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
