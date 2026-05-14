@@ -2,10 +2,14 @@
 
 namespace App\Services\Quiz;
 
+use App\Mail\QuizAssignedUserMail;
+use App\Models\Quiz;
 use App\Models\QuizAssignment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class QuizAssignmentService
 {
@@ -39,13 +43,22 @@ class QuizAssignmentService
 
             $newUserIds = array_values(array_diff($userIds, $existing));
 
-            foreach ($newUserIds as $userId) {
-                QuizAssignment::query()->create([
-                    'user_id'     => $userId,
-                    'quiz_id'     => $quizId,
-                    'assigned_by' => $assignedBy,
-                    'assigned_at' => Carbon::now(),
-                ]);
+            if (!empty($newUserIds)) {
+                $quiz = Quiz::query()
+                    ->with(['course', 'courseOnline'])
+                    ->findOrFail($quizId);
+
+                foreach ($newUserIds as $userId) {
+                    QuizAssignment::query()->create([
+                        'user_id'     => $userId,
+                        'quiz_id'     => $quizId,
+                        'assigned_by' => $assignedBy,
+                        'assigned_at' => Carbon::now(),
+                    ]);
+
+                    $user = User::query()->findOrFail($userId);
+                    Mail::to($user->email)->queue(new QuizAssignedUserMail($quiz, $user));
+                }
             }
 
             return $newUserIds;

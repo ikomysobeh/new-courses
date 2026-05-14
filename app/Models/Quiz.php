@@ -48,6 +48,11 @@ class Quiz extends Model
         return $this->belongsTo(Course::class);
     }
 
+    public function courseOnline(): BelongsTo
+    {
+        return $this->belongsTo(CourseOnline::class, 'course_online_id');
+    }
+
     public function questions(): HasMany
     {
         return $this->hasMany(QuizQuestion::class)->orderBy('order');

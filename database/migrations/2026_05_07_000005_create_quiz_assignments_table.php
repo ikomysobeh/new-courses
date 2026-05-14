@@ -25,8 +25,7 @@ return new class extends Migration
             $table->timestamp('assigned_at');
             $table->boolean('notification_sent')->default(false);
             $table->timestamps();
-            $table->softDeletes();
-
+            
             $table->unique(['user_id', 'quiz_id']);
             $table->index(['quiz_id', 'user_id']);
             $table->index('notification_sent');
