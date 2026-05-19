@@ -30,6 +30,10 @@ use App\Http\Controllers\Admin\EvaluationController;
 use App\Http\Controllers\Admin\EvaluationHistoryController;
 use App\Http\Controllers\Admin\EvaluationNotificationController;
 use App\Http\Controllers\User\UserEvaluationController;
+use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
+use App\Http\Controllers\Admin\BugReportController;
+use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\User\FeedbackController as UserFeedbackController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -231,6 +235,31 @@ Route::prefix('admin')->group(function () {
             Route::post('/preview',[EvaluationNotificationController::class, 'preview'])->name('admin.evaluation-notifications.preview');
             Route::post('/send',   [EvaluationNotificationController::class, 'send'])   ->name('admin.evaluation-notifications.send');
         });
+
+        // Feedback routes
+        Route::prefix('feedback')->group(function () {
+            Route::get('/getAll',       [AdminFeedbackController::class, 'getAll'])  ->name('admin.feedback.getAll');
+            Route::get('/getById/{id}', [AdminFeedbackController::class, 'getById']) ->name('admin.feedback.getById');
+            Route::put('/respond/{id}', [AdminFeedbackController::class, 'respond']) ->name('admin.feedback.respond');
+            Route::put('/status/{id}',  [AdminFeedbackController::class, 'status'])  ->name('admin.feedback.status');
+        });
+
+        // Bug report routes
+        Route::prefix('bug-reports')->group(function () {
+            Route::get('/getAll',         [BugReportController::class, 'getAll'])  ->name('admin.bug-reports.getAll');
+            Route::get('/getById/{id}',   [BugReportController::class, 'getById']) ->name('admin.bug-reports.getById');
+            Route::post('/create',        [BugReportController::class, 'create'])  ->name('admin.bug-reports.create');
+            Route::put('/update/{id}',    [BugReportController::class, 'update'])  ->name('admin.bug-reports.update');
+            Route::put('/assign/{id}',    [BugReportController::class, 'assign'])  ->name('admin.bug-reports.assign');
+            Route::put('/resolve/{id}',   [BugReportController::class, 'resolve']) ->name('admin.bug-reports.resolve');
+            Route::delete('/delete/{id}', [BugReportController::class, 'delete'])  ->name('admin.bug-reports.delete');
+        });
+
+        // Activity log routes
+        Route::prefix('activity-logs')->group(function () {
+            Route::get('/getAll',        [ActivityLogController::class, 'getAll']) ->name('admin.activity-logs.getAll');
+            Route::get('/user/{userId}', [ActivityLogController::class, 'user'])   ->name('admin.activity-logs.user');
+        });
     });
 });
 
@@ -274,8 +303,15 @@ Route::prefix('user')->group(function () {
 
         // User evaluation routes
         Route::prefix('evaluations')->group(function () {
-            Route::get('/getAll',       [UserEvaluationController::class, 'getAll'])   ->name('user.evaluations.getAll');
-            Route::get('/getById/{id}', [UserEvaluationController::class, 'getById'])  ->name('user.evaluations.getById');
+            Route::get('/getAll',       [UserEvaluationController::class, 'getAll'])  ->name('user.evaluations.getAll');
+            Route::get('/getById/{id}', [UserEvaluationController::class, 'getById']) ->name('user.evaluations.getById');
+        });
+
+        // User feedback routes
+        Route::prefix('feedback')->group(function () {
+            Route::get('/getAll',       [UserFeedbackController::class, 'getAll'])  ->name('user.feedback.getAll');
+            Route::post('/create',      [UserFeedbackController::class, 'create'])  ->name('user.feedback.create');
+            Route::get('/getById/{id}', [UserFeedbackController::class, 'getById']) ->name('user.feedback.getById');
         });
     });
 });

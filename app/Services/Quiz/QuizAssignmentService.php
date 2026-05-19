@@ -49,15 +49,21 @@ class QuizAssignmentService
                     ->findOrFail($quizId);
 
                 foreach ($newUserIds as $userId) {
-                    QuizAssignment::query()->create([
+                    $assignment = QuizAssignment::query()->create([
                         'user_id'     => $userId,
                         'quiz_id'     => $quizId,
                         'assigned_by' => $assignedBy,
                         'assigned_at' => Carbon::now(),
                     ]);
 
-                    $user = User::query()->findOrFail($userId);
-                    Mail::to($user->email)->queue(new QuizAssignedUserMail($quiz, $user));
+                    try {
+                        $user = User::query()->findOrFail($userId);
+                        Mail::to($user->email)->queue(new QuizAssignedUserMail($quiz, $user));
+                        $this->markNotificationSent($assignment->id);
+                    } catch (\Throwable $e) {
+                        QuizAssignment::query()->where('id', $assignment->id)->update(['notification_sent' => false]);
+                        report($e);
+                    }
                 }
             }
 

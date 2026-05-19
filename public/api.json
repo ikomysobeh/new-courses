@@ -16,6 +16,188 @@
         }
     ],
     "paths": {
+        "/admin/activity-logs/getAll": {
+            "get": {
+                "operationId": "admin.activity-logs.getAll",
+                "tags": [
+                    "Admin - ActivityLog"
+                ],
+                "parameters": [
+                    {
+                        "name": "action",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "model_type",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `ActivityLogResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ActivityLogResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Base path for paginator generated URLs."
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "description": "Number of items shown per page.",
+                                                    "minimum": 0
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/admin/attendance/getAll": {
             "get": {
                 "operationId": "admin.attendance.getAll",
@@ -240,54 +422,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "course_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "rating",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "start_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "end_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/attendance/update/{id}": {
@@ -633,39 +768,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "audio_category_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/audio/create": {
@@ -1121,46 +1224,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "audio_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/audio-assignments/create": {
@@ -1551,6 +1615,433 @@
                 }
             }
         },
+        "/admin/bug-reports/getAll": {
+            "get": {
+                "operationId": "admin.bug-reports.getAll",
+                "tags": [
+                    "Admin - BugReport"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `BugReportResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/BugReportResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Base path for paginator generated URLs."
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "description": "Number of items shown per page.",
+                                                    "minimum": 0
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/bug-reports/getById/{id}": {
+            "get": {
+                "operationId": "admin.bug-reports.getById",
+                "tags": [
+                    "Admin - BugReport"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`BugReportResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/BugReportResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/bug-reports/create": {
+            "post": {
+                "operationId": "admin.bug-reports.create",
+                "tags": [
+                    "Admin - BugReport"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreBugReportRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`BugReportResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/BugReportResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/bug-reports/update/{id}": {
+            "put": {
+                "operationId": "admin.bug-reports.update",
+                "tags": [
+                    "Admin - BugReport"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateBugReportRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`BugReportResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/BugReportResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/bug-reports/assign/{id}": {
+            "put": {
+                "operationId": "admin.bug-reports.assign",
+                "tags": [
+                    "Admin - BugReport"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssignBugReportRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`BugReportResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/BugReportResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/bug-reports/resolve/{id}": {
+            "put": {
+                "operationId": "admin.bug-reports.resolve",
+                "tags": [
+                    "Admin - BugReport"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`BugReportResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/BugReportResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/bug-reports/delete/{id}": {
+            "delete": {
+                "operationId": "admin.bug-reports.delete",
+                "tags": [
+                    "Admin - BugReport"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Bug report deleted successfully."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/admin/courses/getAll": {
             "get": {
                 "operationId": "admin.courses.getAll",
@@ -1798,38 +2289,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "privacy",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/courses/create": {
@@ -2241,31 +2701,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "course_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/course-assignments/create": {
@@ -2770,61 +3206,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "course_type",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "department_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "performance_level",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "start_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "end_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/evaluations/getById/{id}": {
@@ -2935,7 +3317,7 @@
                             "application/json": {
                                 "schema": {
                                     "type": "array",
-                                    "items": []
+                                    "items": {}
                                 }
                             }
                         }
@@ -3053,13 +3435,6 @@
                 ],
                 "parameters": [
                     {
-                        "name": "department_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
                         "name": "course_type",
                         "in": "query",
                         "schema": {
@@ -3103,13 +3478,6 @@
                     "Admin - Evaluation"
                 ],
                 "parameters": [
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
                     {
                         "name": "course_type",
                         "in": "query",
@@ -3530,61 +3898,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "department_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "course_type",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "performance_level",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "start_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "end_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/evaluation-history/getById/{id}": {
@@ -3656,39 +3970,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "department_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "course_type",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "start_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "end_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/evaluation-history/export": {
@@ -3722,53 +4004,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "department_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "course_type",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "performance_level",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "start_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "end_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/evaluation-history/export-summary": {
@@ -3802,25 +4038,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "start_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "end_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/evaluation-notifications/getAll": {
@@ -3956,33 +4174,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "start_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "end_date",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/evaluation-notifications/preview": {
@@ -4210,6 +4402,307 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/feedback/getAll": {
+            "get": {
+                "operationId": "admin.feedback.getAll",
+                "tags": [
+                    "Admin - Feedback"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `FeedbackResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FeedbackResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Base path for paginator generated URLs."
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "description": "Number of items shown per page.",
+                                                    "minimum": 0
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/feedback/getById/{id}": {
+            "get": {
+                "operationId": "admin.feedback.getById",
+                "tags": [
+                    "Admin - Feedback"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`FeedbackResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/FeedbackResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/admin/feedback/respond/{id}": {
+            "put": {
+                "operationId": "admin.feedback.respond",
+                "tags": [
+                    "Admin - Feedback"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RespondFeedbackRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`FeedbackResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/FeedbackResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/feedback/status/{id}": {
+            "put": {
+                "operationId": "admin.feedback.status",
+                "tags": [
+                    "Admin - Feedback"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateFeedbackStatusRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`FeedbackResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/FeedbackResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
@@ -4460,39 +4953,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/online-courses/create": {
@@ -4954,46 +5415,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "course_online_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "is_overdue",
-                        "in": "query",
-                        "schema": {
-                            "type": "boolean"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/online-course-assignments/create": {
@@ -5214,23 +5636,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "course_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/quizzes/create": {
@@ -5585,30 +5991,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "quiz_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "notification_sent",
-                        "in": "query",
-                        "schema": {
-                            "type": "boolean"
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/quiz-assignments/create": {
@@ -5705,7 +6088,7 @@
         "/admin/quizzes/{quizId}/attempts/getAll": {
             "get": {
                 "operationId": "admin.quiz-attempts.getAll",
-                "summary": "List all attempts for a given quiz",
+                "summary": "List all attempts for a given quiz, with optional filters.\r\n\r\nAvailable filters (query params):\r\n- user_id: int \u2014 filter by user\r\n- passed: bool \u2014 filter by pass/fail\r\n- submitted_after_deadline: bool \u2014 filter by late submissions\r\n- attempt_number: int \u2014 filter by attempt number",
                 "tags": [
                     "Admin - QuizAttempt"
                 ],
@@ -6308,46 +6691,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "department_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "user_level_tier_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/users/create": {
@@ -6738,46 +7082,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "video_category_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "transcode_status",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/videos/create": {
@@ -7502,32 +7807,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/admin/video-categories/create": {
@@ -7793,6 +8073,50 @@
                 }
             }
         },
+        "/admin/activity-logs/user/{userId}": {
+            "get": {
+                "operationId": "admin.activity-logs.user",
+                "tags": [
+                    "User - ActivityLog"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `ActivityLogResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ActivityLogResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/user/audio/getAll": {
             "get": {
                 "operationId": "user.audio.getAll",
@@ -8042,39 +8366,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "audio_category_id",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/user/audio/getById/{id}": {
@@ -8252,6 +8544,7 @@
                     "User - Clocking"
                 ],
                 "requestBody": {
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
@@ -8482,17 +8775,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/user/clocking/active": {
@@ -8692,24 +8975,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/user/courses/getById/{id}": {
@@ -8933,6 +9199,263 @@
                                     },
                                     "required": [
                                         "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/user/feedback/getAll": {
+            "get": {
+                "operationId": "user.feedback.getAll",
+                "tags": [
+                    "User - Feedback"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `FeedbackResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FeedbackResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Base path for paginator generated URLs."
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "description": "Number of items shown per page.",
+                                                    "minimum": 0
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/user/feedback/create": {
+            "post": {
+                "operationId": "user.feedback.create",
+                "tags": [
+                    "User - Feedback"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreFeedbackRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`FeedbackResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/FeedbackResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/user/feedback/getById/{id}": {
+            "get": {
+                "operationId": "user.feedback.getById",
+                "tags": [
+                    "User - Feedback"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`FeedbackResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/FeedbackResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "An error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Error overview.",
+                                            "example": "Access denied."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
                                     ]
                                 }
                             }
@@ -9325,17 +9848,7 @@
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
-                },
-                "parameters": [
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer",
-                            "minimum": 1
-                        }
-                    }
-                ]
+                }
             }
         },
         "/user/evaluations/getById/{id}": {
@@ -9408,6 +9921,73 @@
             }
         },
         "schemas": {
+            "ActivityLogResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "action": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "model_type": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "model_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "properties": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {}
+                    },
+                    "user": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "action",
+                    "description",
+                    "model_type",
+                    "model_id",
+                    "properties",
+                    "created_at"
+                ],
+                "title": "ActivityLogResource"
+            },
             "AdminAudioDetailResource": {
                 "type": "object",
                 "properties": {
@@ -9629,6 +10209,18 @@
                     "listeners"
                 ],
                 "title": "AdminAudioDetailResource"
+            },
+            "AssignBugReportRequest": {
+                "type": "object",
+                "properties": {
+                    "assigned_to": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "assigned_to"
+                ],
+                "title": "AssignBugReportRequest"
             },
             "AudioAssignmentResource": {
                 "type": "object",
@@ -9988,6 +10580,89 @@
                 ],
                 "title": "AuthResource"
             },
+            "BugReportResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "priority": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "steps_to_reproduce": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "page_url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "resolved_at": {
+                        "type": "string"
+                    },
+                    "reported_by": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ]
+                    },
+                    "assigned_to": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "priority",
+                    "status",
+                    "title",
+                    "description",
+                    "steps_to_reproduce",
+                    "page_url",
+                    "resolved_at",
+                    "created_at"
+                ],
+                "title": "BugReportResource"
+            },
             "BulkStoreEvaluationRequest": {
                 "type": "object",
                 "properties": {
@@ -10061,12 +10736,12 @@
                 "type": "object",
                 "properties": {
                     "course_id": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ]
+                        "type": "integer"
                     }
                 },
+                "required": [
+                    "course_id"
+                ],
                 "title": "ClockInRequest"
             },
             "ClockOutRequest": {
@@ -10096,8 +10771,24 @@
                     "id": {
                         "type": "integer"
                     },
-                    "user_id": {
-                        "type": "integer"
+                    "user": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "email"
+                        ]
                     },
                     "course_id": {
                         "type": [
@@ -10153,7 +10844,6 @@
                 },
                 "required": [
                     "id",
-                    "user_id",
                     "course_id",
                     "clock_in",
                     "clock_out",
@@ -10382,7 +11072,7 @@
                     },
                     "days_of_week": {
                         "type": "array",
-                        "items": []
+                        "items": {}
                     },
                     "session_time_shift_1": {
                         "type": [
@@ -10989,7 +11679,7 @@
             },
             "EvaluationNotificationPreviewResource": {
                 "type": "array",
-                "items": [],
+                "items": {},
                 "title": "EvaluationNotificationPreviewResource"
             },
             "EvaluationResource": {
@@ -11136,7 +11826,7 @@
             },
             "EvaluationSummaryResource": {
                 "type": "array",
-                "items": [],
+                "items": {},
                 "title": "EvaluationSummaryResource"
             },
             "EvaluationTypeResource": {
@@ -11162,6 +11852,72 @@
                     "score_value"
                 ],
                 "title": "EvaluationTypeResource"
+            },
+            "FeedbackResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "admin_response": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "department": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id",
+                                    "name"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "type",
+                    "title",
+                    "description",
+                    "status",
+                    "admin_response",
+                    "created_at"
+                ],
+                "title": "FeedbackResource"
             },
             "LoginRequest": {
                 "type": "object",
@@ -11364,14 +12120,14 @@
                             "array",
                             "null"
                         ],
-                        "items": []
+                        "items": {}
                     },
                     "evaluation_ids": {
                         "type": [
                             "array",
                             "null"
                         ],
-                        "items": []
+                        "items": {}
                     },
                     "status": {
                         "type": "string"
@@ -11740,6 +12496,9 @@
                     "quiz_id": {
                         "type": "integer"
                     },
+                    "quiz_title": {
+                        "type": "string"
+                    },
                     "user": {
                         "type": "object",
                         "properties": {
@@ -11921,14 +12680,14 @@
                             "array",
                             "null"
                         ],
-                        "items": []
+                        "items": {}
                     },
                     "correct_answer": {
                         "type": [
                             "array",
                             "null"
                         ],
-                        "items": []
+                        "items": {}
                     },
                     "correct_answer_explanation": {
                         "type": [
@@ -11989,6 +12748,9 @@
                             "integer",
                             "null"
                         ]
+                    },
+                    "course_name": {
+                        "type": "string"
                     },
                     "course_online_id": {
                         "type": [
@@ -12118,6 +12880,29 @@
                 ],
                 "title": "ReorderModulesRequest"
             },
+            "RespondFeedbackRequest": {
+                "type": "object",
+                "properties": {
+                    "admin_response": {
+                        "type": "string",
+                        "maxLength": 1000
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "under_review",
+                            "approved",
+                            "rejected"
+                        ]
+                    }
+                },
+                "required": [
+                    "admin_response",
+                    "status"
+                ],
+                "title": "RespondFeedbackRequest"
+            },
             "SendEvaluationNotificationRequest": {
                 "type": "object",
                 "properties": {
@@ -12245,6 +13030,47 @@
                     "audio_category_id"
                 ],
                 "title": "StoreAudioRequest"
+            },
+            "StoreBugReportRequest": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "priority": {
+                        "type": "string",
+                        "enum": [
+                            "low",
+                            "medium",
+                            "high",
+                            "critical"
+                        ]
+                    },
+                    "steps_to_reproduce": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "page_url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri",
+                        "maxLength": 255
+                    }
+                },
+                "required": [
+                    "title",
+                    "description",
+                    "priority"
+                ],
+                "title": "StoreBugReportRequest"
             },
             "StoreCourseAssignmentRequest": {
                 "type": "object",
@@ -12523,6 +13349,34 @@
                     "score_value"
                 ],
                 "title": "StoreEvaluationTypeRequest"
+            },
+            "StoreFeedbackRequest": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "suggestion",
+                            "improvement",
+                            "feature_request",
+                            "general"
+                        ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 2000
+                    }
+                },
+                "required": [
+                    "type",
+                    "title",
+                    "description"
+                ],
+                "title": "StoreFeedbackRequest"
             },
             "StoreOnlineCourseAssignmentRequest": {
                 "type": "object",
@@ -13274,6 +14128,42 @@
                 },
                 "title": "UpdateAudioRequest"
             },
+            "UpdateBugReportRequest": {
+                "type": "object",
+                "properties": {
+                    "priority": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "low",
+                            "medium",
+                            "high",
+                            "critical"
+                        ]
+                    },
+                    "status": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "open",
+                            "in_progress",
+                            "resolved",
+                            "closed"
+                        ]
+                    },
+                    "assigned_to": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    }
+                },
+                "title": "UpdateBugReportRequest"
+            },
             "UpdateCourseRequest": {
                 "type": "object",
                 "properties": {
@@ -13487,6 +14377,24 @@
                     }
                 },
                 "title": "UpdateEvaluationTypeRequest"
+            },
+            "UpdateFeedbackStatusRequest": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "under_review",
+                            "approved",
+                            "rejected"
+                        ]
+                    }
+                },
+                "required": [
+                    "status"
+                ],
+                "title": "UpdateFeedbackStatusRequest"
             },
             "UpdateOnlineCourseRequest": {
                 "type": "object",
