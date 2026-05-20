@@ -14,7 +14,6 @@ use App\Services\Video\VideoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\Storage;
 
 class VideoController extends Controller
 {
@@ -113,32 +112,21 @@ class VideoController extends Controller
 
     public function uploadSubtitle(UpdateVideoSubtitleRequest $request, int $id): VideoDetailResource
     {
-        $video = $this->videoService->getVideoByIdForAdmin($id);
+        $video = $this->videoService->uploadSubtitle($id, $request->file('subtitle_file'));
 
-        if ($video->subtitle_vtt_path && Storage::disk('local')->exists($video->subtitle_vtt_path)) {
-            Storage::disk('local')->delete($video->subtitle_vtt_path);
-        }
+        return new VideoDetailResource($video);
+    }
 
-        $file     = $request->file('subtitle_file');
-        $filename = $id . '_' . $file->getClientOriginalName();
-        $path     = Storage::disk('local')->putFileAs('subtitles', $file, $filename);
+    public function updateSubtitle(UpdateVideoSubtitleRequest $request, int $id): VideoDetailResource
+    {
+        $video = $this->videoService->uploadSubtitle($id, $request->file('subtitle_file'));
 
-        $video->update(['subtitle_vtt_path' => $path]);
-
-        return new VideoDetailResource($video->fresh(['videoCategory', 'creator', 'qualities']));
+        return new VideoDetailResource($video);
     }
 
     public function deleteSubtitle(int $id): JsonResponse
     {
-        $video = $this->videoService->getVideoByIdForAdmin($id);
-
-        abort_if(!$video->subtitle_vtt_path, 422, 'No subtitle to delete.');
-
-        if (Storage::disk('local')->exists($video->subtitle_vtt_path)) {
-            Storage::disk('local')->delete($video->subtitle_vtt_path);
-        }
-
-        $video->update(['subtitle_vtt_path' => null]);
+        $this->videoService->deleteSubtitle($id);
 
         return response()->json(['message' => 'Subtitle deleted.']);
     }

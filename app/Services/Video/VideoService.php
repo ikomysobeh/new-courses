@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Video;
 use App\Models\VideoQuality;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class VideoService
 {
@@ -71,6 +73,35 @@ class VideoService
         $video->update(['transcode_status' => 'pending']);
 
         return $video->fresh(['videoCategory', 'creator', 'qualities']);
+    }
+
+    public function uploadSubtitle(int $id, UploadedFile $file): Video
+    {
+        $video = $this->getVideoByIdForAdmin($id);
+
+        if ($video->subtitle_vtt_path && Storage::disk('local')->exists($video->subtitle_vtt_path)) {
+            Storage::disk('local')->delete($video->subtitle_vtt_path);
+        }
+
+        $filename = $id . '_' . $file->getClientOriginalName();
+        $path     = Storage::disk('local')->putFileAs('subtitles', $file, $filename);
+
+        $video->update(['subtitle_vtt_path' => $path]);
+
+        return $video->fresh(['videoCategory', 'creator', 'qualities']);
+    }
+
+    public function deleteSubtitle(int $id): void
+    {
+        $video = $this->getVideoByIdForAdmin($id);
+
+        abort_if(!$video->subtitle_vtt_path, 422, 'No subtitle to delete.');
+
+        if (Storage::disk('local')->exists($video->subtitle_vtt_path)) {
+            Storage::disk('local')->delete($video->subtitle_vtt_path);
+        }
+
+        $video->update(['subtitle_vtt_path' => null]);
     }
 
     public function getAdminVideoCards(): array

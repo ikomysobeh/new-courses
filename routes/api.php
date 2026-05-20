@@ -124,6 +124,7 @@ Route::prefix('admin')->group(function () {
             Route::post('/{id}/retry-transcode', [VideoController::class, 'retryTranscode'])->name('admin.videos.retry-transcode');
             Route::get('/{id}/subtitle', [VideoController::class, 'getSubtitle'])->name('admin.videos.subtitle.get');
             Route::post('/{id}/subtitle', [VideoController::class, 'uploadSubtitle'])->name('admin.videos.subtitle.upload');
+            Route::put('/{id}/subtitle', [VideoController::class, 'updateSubtitle'])->name('admin.videos.subtitle.update');
             Route::delete('/{id}/subtitle', [VideoController::class, 'deleteSubtitle'])->name('admin.videos.subtitle.delete');
         });
 
