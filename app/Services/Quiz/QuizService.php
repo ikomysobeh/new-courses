@@ -34,6 +34,7 @@ class QuizService
         return Quiz::query()
             ->where('status', 'published')
             ->whereHas('assignments', fn ($q) => $q->where('user_id', $userId))
+            ->withExists(['attempts as user_passed' => fn ($q) => $q->where('user_id', $userId)->where('passed', true)])
             ->get();
     }
 

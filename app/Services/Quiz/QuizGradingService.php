@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class QuizGradingService
 {
-    public function gradeAnswer(string $answer, QuizQuestion $question): array
+    public function gradeAnswer(mixed $answer, QuizQuestion $question): array
     {
         if ($question->type === 'text') {
             return [null, null];
@@ -18,7 +18,7 @@ class QuizGradingService
         $correctAnswer = $question->correct_answer ?? [];
 
         if ($question->type === 'radio') {
-            $submitted = trim($answer);
+            $submitted = trim((string) $answer);
             $correct = trim($correctAnswer[0] ?? '');
             $isCorrect = $submitted === $correct;
 
@@ -26,13 +26,8 @@ class QuizGradingService
         }
 
         if ($question->type === 'checkbox') {
-            $submittedArr = json_decode($answer, true);
-            if (!is_array($submittedArr)) {
-                $submittedArr = [$answer];
-            }
-            sort($submittedArr);
-            $correctArr = $correctAnswer;
-            sort($correctArr);
+            $submittedArr = $this->normalizeCheckboxSelections($answer);
+            $correctArr = $this->normalizeCheckboxSelections($correctAnswer);
             $isCorrect = $submittedArr === $correctArr;
 
             return [$isCorrect, $isCorrect ? (int) $question->points : 0];
@@ -47,11 +42,14 @@ class QuizGradingService
             foreach ($answers as $answerData) {
                 $question = QuizQuestion::query()->findOrFail($answerData['quiz_question_id']);
                 [$isCorrect, $pointsEarned] = $this->gradeAnswer($answerData['answer'], $question);
+                $rawAnswer = $answerData['answer'];
 
                 QuizAnswer::query()->create([
                     'quiz_attempt_id'  => $attempt->id,
                     'quiz_question_id' => $question->id,
-                    'answer'           => $answerData['answer'],
+                    'answer'           => is_array($rawAnswer)
+                        ? json_encode($rawAnswer)
+                        : (string) $rawAnswer,
                     'is_correct'       => $isCorrect,
                     'points_earned'    => $pointsEarned,
                 ]);
@@ -100,5 +98,38 @@ class QuizGradingService
                 'passed'       => $passed,
             ]);
         });
+    }
+
+    private function normalizeCheckboxSelections(mixed $value): array
+    {
+        $items = [];
+
+        if (is_array($value)) {
+            $items = $value;
+        } elseif (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $items = $decoded;
+            } elseif (str_contains($value, ',')) {
+                $items = array_map('trim', explode(',', $value));
+            } else {
+                $items = [trim($value)];
+            }
+        }
+
+        $normalized = array_map(
+            static fn ($item) => trim((string) $item),
+            $items
+        );
+
+        $normalized = array_values(array_filter(
+            $normalized,
+            static fn ($item) => $item !== ''
+        ));
+
+        $normalized = array_values(array_unique($normalized));
+        sort($normalized, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return $normalized;
     }
 }

@@ -13,13 +13,17 @@ class UserQuizAttemptResource extends JsonResource
         return [
             'id'             => $this->id,
             'quiz_id'        => $this->quiz_id,
+            'user_id'        => $this->user_id,
             'attempt_number' => $this->attempt_number,
             'started_at'     => $this->started_at,
             'completed_at'   => $this->completed_at,
+            'submitted_at'   => $this->completed_at,
             'score'          => $this->score,
             'manual_score'   => $this->manual_score,
             'total_score'    => $this->total_score,
+            'total_points'   => $this->quiz?->total_points,
             'passed'         => (bool) $this->passed,
+            'quiz'           => $this->whenLoaded('quiz', fn () => new UserQuizResource($this->quiz)),
             'answers'        => $this->whenLoaded('answers', function () {
                 $includeIsCorrect = $this->resolveIncludeIsCorrect();
 

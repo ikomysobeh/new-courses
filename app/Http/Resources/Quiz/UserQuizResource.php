@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Quiz;
 
+use App\Models\QuizAttempt;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,6 +19,13 @@ class UserQuizResource extends JsonResource
             'time_limit_minutes'   => $this->time_limit_minutes,
             'deadline'             => $this->deadline,
             'show_correct_answers' => $this->show_correct_answers,
+            'user_passed'          => isset($this->user_passed)
+                ? (bool) $this->user_passed
+                : (bool) QuizAttempt::query()
+                    ->where('quiz_id', $this->id)
+                    ->where('user_id', $request->user()->id)
+                    ->where('passed', true)
+                    ->exists(),
             'questions'            => $this->whenLoaded(
                 'questions',
                 fn () => UserQuizQuestionResource::collection($this->questions)
