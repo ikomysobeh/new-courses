@@ -26,6 +26,13 @@ class UserQuizResource extends JsonResource
                     ->where('user_id', $request->user()->id)
                     ->where('passed', true)
                     ->exists(),
+            'user_total_score'     => isset($this->user_total_score)
+                ? (int) $this->user_total_score
+                : (int) QuizAttempt::query()
+                    ->where('quiz_id', $this->id)
+                    ->where('user_id', $request->user()->id)
+                    ->whereNotNull('completed_at')
+                    ->max('total_score'),
             'questions'            => $this->whenLoaded(
                 'questions',
                 fn () => UserQuizQuestionResource::collection($this->questions)

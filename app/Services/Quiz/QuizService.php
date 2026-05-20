@@ -35,6 +35,7 @@ class QuizService
             ->where('status', 'published')
             ->whereHas('assignments', fn ($q) => $q->where('user_id', $userId))
             ->withExists(['attempts as user_passed' => fn ($q) => $q->where('user_id', $userId)->where('passed', true)])
+            ->withMax(['attempts as user_total_score' => fn ($q) => $q->where('user_id', $userId)->whereNotNull('completed_at')], 'total_score')
             ->get();
     }
 
