@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCourseAssignmentRequest;
 use App\Http\Resources\Course\CourseAssignmentResource;
+use App\Mail\CourseAssignedUserMail;
+use App\Models\CourseAssignment;
 use App\Services\Course\CourseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Mail;
 
 class CourseAssignmentController extends Controller
 {
@@ -48,5 +51,29 @@ class CourseAssignmentController extends Controller
         $this->courseService->removeAssignment($id);
 
         return response()->json(['message' => 'Assignment removed successfully.']);
+    }
+
+    /** Resend the magic login link for a course assignment. */
+    public function resendLink(int $id): JsonResponse
+    {
+        $assignment = CourseAssignment::with(['user', 'course', 'assignedBy'])->findOrFail($id);
+        $user       = $assignment->user;
+
+        if (! $user->email) {
+            return response()->json(['message' => 'User does not have an email address.'], 422);
+        }
+
+        $loginLink = $user->generateCourseLoginLink((int) $assignment->course_id);
+
+        Mail::to($user->email)->queue(
+            new CourseAssignedUserMail(
+                course:       $assignment->course,
+                assignedUser: $user,
+                assignedBy:   $assignment->assignedBy,
+                loginLink:    $loginLink,
+            )
+        );
+
+        return response()->json(['message' => 'Login link resent successfully.']);
     }
 }

@@ -23,7 +23,7 @@ class EvaluationNotificationController extends Controller
     public function preview(SendEvaluationNotificationRequest $request): EvaluationNotificationPreviewResource
     {
         $preview = $this->service->previewNotification(
-            $request->input('manager_ids', []),
+            $request->input('user_ids', []),
             $request->only(['start_date', 'end_date'])
         );
 
@@ -33,11 +33,11 @@ class EvaluationNotificationController extends Controller
     public function send(SendEvaluationNotificationRequest $request): JsonResponse
     {
         $result = $this->service->sendNotifications(
-            managerIds: $request->input('manager_ids', []),
-            filters:    $request->only(['start_date', 'end_date']),
-            subject:    $request->validated('subject', 'Evaluation Report'),
-            message:    $request->validated('message', ''),
-            sentBy:     auth()->id(),
+            userIds: $request->input('user_ids', []),
+            filters: $request->only(['start_date', 'end_date']),
+            subject: $request->validated('subject', 'Evaluation Report'),
+            message: $request->validated('message', ''),
+            sentBy:  auth()->id(),
         );
 
         return response()->json($result);

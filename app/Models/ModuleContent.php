@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ModuleContent extends Model
@@ -48,5 +49,10 @@ class ModuleContent extends Model
     public function pdf(): HasOne
     {
         return $this->hasOne(ModuleContentPdf::class, 'module_content_id');
+    }
+
+    public function userProgress(): HasMany
+    {
+        return $this->hasMany(UserContentProgress::class, 'content_id');
     }
 }

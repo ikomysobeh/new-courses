@@ -14,6 +14,9 @@ use App\Services\Video\VideoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class VideoController extends Controller
 {
@@ -129,5 +132,41 @@ class VideoController extends Controller
         $this->videoService->deleteSubtitle($id);
 
         return response()->json(['message' => 'Subtitle deleted.']);
+    }
+
+    /**
+     * Stream the raw video file for admin preview.
+     * Supports Range requests so the browser can seek without downloading the whole file.
+     */
+    public function stream(int $id): BinaryFileResponse
+    {
+        $video = $this->videoService->getVideoByIdForAdmin($id);
+
+        abort_unless(
+            $video->file_path && Storage::disk('local')->exists($video->file_path),
+            404,
+            'Video file not found.'
+        );
+
+        return response()->file(Storage::disk('local')->path($video->file_path));
+    }
+
+    /**
+     * Return the raw VTT subtitle text for admin inspection.
+     */
+    public function streamSubtitle(int $id): Response
+    {
+        $video = $this->videoService->getVideoByIdForAdmin($id);
+
+        abort_unless(
+            $video->subtitle_vtt_path && Storage::disk('local')->exists($video->subtitle_vtt_path),
+            404,
+            'Subtitle file not found.'
+        );
+
+        return response(Storage::disk('local')->get($video->subtitle_vtt_path), 200, [
+            'Content-Type'        => 'text/vtt',
+            'Content-Disposition' => 'inline',
+        ]);
     }
 }

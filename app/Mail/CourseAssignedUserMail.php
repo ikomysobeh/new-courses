@@ -19,6 +19,7 @@ class CourseAssignedUserMail extends Mailable implements ShouldQueue
         public readonly Course $course,
         public readonly User $assignedUser,
         public readonly User $assignedBy,
+        public readonly ?string $loginLink = null,
     ) {}
 
     public function envelope(): Envelope

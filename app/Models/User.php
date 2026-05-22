@@ -133,6 +133,27 @@ class User extends Authenticatable
         );
     }
 
+    public function generateCourseLoginLink(int $courseId): string
+    {
+        $token     = Str::random(64);
+        $expiresAt = now()->addHours(72);
+
+        $this->update([
+            'login_token'            => hash('sha256', $token),
+            'login_token_expires_at' => $expiresAt,
+        ]);
+
+        return URL::temporarySignedRoute(
+            'auth.course-token-login',
+            $expiresAt,
+            [
+                'user'   => $this->id,
+                'course' => $courseId,
+                'token'  => $token,
+            ]
+        );
+    }
+
     public function loginTokenExpired(): bool
     {
         if ($this->login_token_expires_at === null) {

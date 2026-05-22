@@ -19,7 +19,8 @@ class UpdateVideoRequest extends FormRequest
             'video_category_id' => ['nullable', 'integer', 'exists:video_categories,id'],
             'file_size'         => ['nullable', 'integer', 'min:0'],
             'duration_seconds'  => ['nullable', 'integer', 'min:0'],
-            'thumbnail_path'    => ['nullable', 'string'],
+            'thumbnail'         => ['sometimes', 'nullable', 'image', 'max:4096'],
+            'thumbnail_path'    => ['nullable', 'string', 'max:500'],
         ];
     }
 }

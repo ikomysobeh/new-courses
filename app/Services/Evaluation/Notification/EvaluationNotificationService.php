@@ -13,13 +13,15 @@ use Illuminate\Support\Facades\Mail;
 
 class EvaluationNotificationService
 {
-    public function previewNotification(array $managerIds, array $filters): array
+    public function previewNotification(array $userIds, array $filters): array
     {
-        $managers = User::whereIn('id', $managerIds)->get();
+        $users = User::whereIn('id', $userIds)->get();
 
-        $employeeIds = User::whereIn('report_to', $managerIds)->pluck('id')->toArray();
+        // Resolve unique managers from report_to
+        $managerIds = $users->pluck('report_to')->filter()->unique()->values()->toArray();
+        $managers   = User::whereIn('id', $managerIds)->get();
 
-        $evalQuery = Evaluation::whereIn('user_id', $employeeIds);
+        $evalQuery = Evaluation::whereIn('user_id', $userIds);
         if (!empty($filters['start_date'])) {
             $evalQuery->whereDate('created_at', '>=', $filters['start_date']);
         }
@@ -30,12 +32,12 @@ class EvaluationNotificationService
         $evaluationCount = $evalQuery->count();
 
         return [
-            'managers'         => $managers->map(fn(User $m) => [
+            'managers'         => $managers->map(fn (User $m) => [
                 'id'    => $m->id,
                 'name'  => $m->name,
                 'email' => $m->email,
             ])->values()->toArray(),
-            'employee_count'   => count($employeeIds),
+            'employee_count'   => count($userIds),
             'evaluation_count' => $evaluationCount,
             'date_range'       => [
                 'start' => $filters['start_date'] ?? null,
@@ -45,24 +47,41 @@ class EvaluationNotificationService
     }
 
     public function sendNotifications(
-        array  $managerIds,
+        array  $userIds,
         array  $filters,
         string $subject,
         string $message,
         int    $sentBy
     ): array {
-        $sentTo   = [];
-        $failedTo = [];
+        $sentTo    = [];
+        $failedTo  = [];
+        $skippedTo = [];
 
-        $managers = User::whereIn('id', $managerIds)->get();
+        // Group user IDs by their manager (report_to)
+        $users = User::whereIn('id', $userIds)->get();
 
-        // Collect all evaluation IDs covered across all managers
+        $byManager = [];
+        foreach ($users as $user) {
+            if (!$user->report_to) {
+                $skippedTo[] = ['id' => $user->id, 'reason' => 'no_manager'];
+                continue;
+            }
+            $byManager[$user->report_to][] = $user->id;
+        }
+
         $allEvaluationIds = [];
 
-        foreach ($managers as $manager) {
-            try {
-                $employeeIds = User::where('report_to', $manager->id)->pluck('id')->toArray();
+        foreach ($byManager as $managerId => $employeeIds) {
+            $manager = User::find($managerId);
 
+            if (!$manager || !$manager->email) {
+                foreach ($employeeIds as $uid) {
+                    $skippedTo[] = ['id' => $uid, 'reason' => 'manager_has_no_email'];
+                }
+                continue;
+            }
+
+            try {
                 $evalQuery = Evaluation::with(['user', 'course', 'courseOnline'])
                     ->whereIn('user_id', $employeeIds);
 
@@ -74,6 +93,13 @@ class EvaluationNotificationService
                 }
 
                 $evaluations = $evalQuery->get();
+
+                if ($evaluations->isEmpty()) {
+                    foreach ($employeeIds as $uid) {
+                        $skippedTo[] = ['id' => $uid, 'reason' => 'no_evaluations'];
+                    }
+                    continue;
+                }
 
                 foreach ($evaluations->pluck('id')->toArray() as $id) {
                     $allEvaluationIds[] = $id;
@@ -98,9 +124,9 @@ class EvaluationNotificationService
 
         // Determine overall status
         $status = match (true) {
-            count($failedTo) === 0                           => 'sent',
-            count($sentTo) === 0                             => 'failed',
-            default                                          => 'partial',
+            count($failedTo) === 0 => 'sent',
+            count($sentTo) === 0   => 'failed',
+            default                => 'partial',
         };
 
         // Write one notification_sends row
@@ -130,8 +156,10 @@ class EvaluationNotificationService
         return [
             'success_count' => count($sentTo),
             'failed_count'  => count($failedTo),
+            'skipped_count' => count($skippedTo),
             'sent_to'       => $sentTo,
             'failed_to'     => $failedTo,
+            'skipped'       => $skippedTo,
         ];
     }
 

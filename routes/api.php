@@ -33,7 +33,13 @@ use App\Http\Controllers\User\UserEvaluationController;
 use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\BugReportController;
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\UserLevelController;
 use App\Http\Controllers\User\FeedbackController as UserFeedbackController;
+use App\Http\Controllers\Admin\TranscodeCallbackController;
+use App\Http\Controllers\MediaStreamController;
+use App\Http\Controllers\User\UserOnlineCourseController;
+use App\Http\Controllers\User\LearningSessionController;
+use App\Http\Controllers\User\ContentProgressController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -48,6 +54,15 @@ use Illuminate\Support\Facades\Route;
 */
 Route::post('/login', [UnifiedAuthController::class, 'login'])->name('login');
 Route::middleware('auth:sanctum')->post('/logout', [UnifiedAuthController::class, 'logout'])->name('logout');
+
+// Transcode webhook — no auth required (called by external transcoding service)
+Route::post('/transcode/callback', [TranscodeCallbackController::class, 'handle'])->name('transcode.callback');
+
+// Media streaming routes — signed, no auth middleware required
+Route::get('/media/video/{content_id}', [MediaStreamController::class, 'streamVideo'])
+    ->name('media.video')->middleware('signed');
+Route::get('/media/pdf/{content_id}', [MediaStreamController::class, 'streamPdf'])
+    ->name('media.pdf')->middleware('signed');
 
 Route::prefix('admin')->group(function () {
     // Protected admin routes (require authentication)
@@ -65,9 +80,15 @@ Route::prefix('admin')->group(function () {
         // User routes
         Route::prefix('users')->group(function () {
             Route::get('/getAll', [UserController::class, 'getAll'])->name('admin.users.getAll');
+            Route::get('/getById/{id}', [UserController::class, 'getById'])->name('admin.users.getById');
             Route::post('/create', [UserController::class, 'create'])->name('admin.users.create');
             Route::put('/update/{id}', [UserController::class, 'update'])->name('admin.users.update');
             Route::delete('/delete/{id}', [UserController::class, 'delete'])->name('admin.users.delete');
+        });
+
+        // User level routes
+        Route::prefix('user-levels')->group(function () {
+            Route::get('/with-tiers', [UserLevelController::class, 'withTiers'])->name('admin.user-levels.with-tiers');
         });
 
         // Audio category routes
@@ -122,7 +143,9 @@ Route::prefix('admin')->group(function () {
             Route::post('/upload-chunk', [VideoController::class, 'uploadChunk'])->name('admin.videos.upload-chunk');
             Route::delete('/upload-chunk/revert', [VideoController::class, 'revertChunk'])->name('admin.videos.upload-chunk.revert');
             Route::post('/{id}/retry-transcode', [VideoController::class, 'retryTranscode'])->name('admin.videos.retry-transcode');
+            Route::get('/{id}/stream', [VideoController::class, 'stream'])->name('admin.videos.stream');
             Route::get('/{id}/subtitle', [VideoController::class, 'getSubtitle'])->name('admin.videos.subtitle.get');
+            Route::get('/{id}/subtitle/raw', [VideoController::class, 'streamSubtitle'])->name('admin.videos.subtitle.raw');
             Route::post('/{id}/subtitle', [VideoController::class, 'uploadSubtitle'])->name('admin.videos.subtitle.upload');
             Route::put('/{id}/subtitle', [VideoController::class, 'updateSubtitle'])->name('admin.videos.subtitle.update');
             Route::delete('/{id}/subtitle', [VideoController::class, 'deleteSubtitle'])->name('admin.videos.subtitle.delete');
@@ -132,6 +155,7 @@ Route::prefix('admin')->group(function () {
         Route::prefix('course-assignments')->group(function () {
             Route::get('/getAll', [CourseAssignmentController::class, 'getAll'])->name('admin.course-assignments.getAll');
             Route::post('/create', [CourseAssignmentController::class, 'create'])->name('admin.course-assignments.create');
+            Route::post('/{id}/resend-link', [CourseAssignmentController::class, 'resendLink'])->name('admin.course-assignments.resend-link');
             Route::delete('/delete/{id}', [CourseAssignmentController::class, 'delete'])->name('admin.course-assignments.delete');
         });
 
@@ -313,6 +337,23 @@ Route::prefix('user')->group(function () {
             Route::get('/getAll',       [UserFeedbackController::class, 'getAll'])  ->name('user.feedback.getAll');
             Route::post('/create',      [UserFeedbackController::class, 'create'])  ->name('user.feedback.create');
             Route::get('/getById/{id}', [UserFeedbackController::class, 'getById']) ->name('user.feedback.getById');
+        });
+
+        // User Online Courses (Phase 6)
+        Route::prefix('online-courses')->group(function () {
+            // Course navigation
+            Route::get('/getAll',                         [UserOnlineCourseController::class, 'index'])   ->name('user.online-courses.getAll');
+            Route::get('/getById/{id}',                   [UserOnlineCourseController::class, 'show'])    ->name('user.online-courses.getById');
+            Route::get('/{courseId}/content/{contentId}', [UserOnlineCourseController::class, 'content'])->name('user.online-courses.content');
+            Route::get('/progress/{contentId}/resume',    [UserOnlineCourseController::class, 'resume'])  ->name('user.online-courses.resume');
+
+            // Session tracking
+            Route::post('/sessions/start',                [LearningSessionController::class, 'start'])   ->name('user.online-courses.sessions.start');
+            Route::post('/sessions/{sessionId}/progress', [LearningSessionController::class, 'progress'])->name('user.online-courses.sessions.progress');
+            Route::post('/sessions/{sessionId}/end',      [LearningSessionController::class, 'end'])     ->name('user.online-courses.sessions.end');
+
+            // PDF progress
+            Route::post('/progress/pdf',                  [ContentProgressController::class, 'updatePdf'])->name('user.online-courses.progress.pdf');
         });
     });
 });

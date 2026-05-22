@@ -70,6 +70,7 @@ class EvaluationController extends Controller
     {
         $userId     = (int) $request->query('user_id');
         $courseType = $request->query('course_type', 'regular');
+        // dd($courseType);
 
         $courses = $this->service->getUserCourses($userId, $courseType);
 

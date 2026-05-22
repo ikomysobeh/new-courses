@@ -36,6 +36,18 @@ class UserController extends Controller
     }
 
     /**
+     * Get a user by ID
+     *
+     * Returns the full details of a single user.
+     */
+    public function getById(int $id): JsonResponse
+    {
+        $user = User::with(['department', 'manager', 'userLevelTier.userLevel'])->findOrFail($id);
+
+        return (new UserResource($user))->response();
+    }
+
+    /**
      * Create a user
      *
      * Creates a new user. Default role is `user`. Pass `role: admin` to create an admin.

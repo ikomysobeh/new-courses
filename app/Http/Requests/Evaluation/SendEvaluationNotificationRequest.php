@@ -14,12 +14,12 @@ class SendEvaluationNotificationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'manager_ids'   => ['required', 'array', 'min:1'],
-            'manager_ids.*' => ['required', 'integer', 'exists:users,id'],
-            'subject'       => ['required', 'string', 'max:255'],
-            'message'       => ['required', 'string', 'max:2000'],
-            'start_date'    => ['sometimes', 'nullable', 'date', 'before_or_equal:end_date'],
-            'end_date'      => ['sometimes', 'nullable', 'date', 'after_or_equal:start_date'],
+            'user_ids'   => ['required', 'array', 'min:1'],
+            'user_ids.*' => ['required', 'integer', 'exists:users,id'],
+            'subject'    => ['required', 'string', 'max:255'],
+            'message'    => ['required', 'string', 'max:2000'],
+            'start_date' => ['sometimes', 'nullable', 'date', 'before_or_equal:end_date'],
+            'end_date'   => ['sometimes', 'nullable', 'date', 'after_or_equal:start_date'],
         ];
     }
 }

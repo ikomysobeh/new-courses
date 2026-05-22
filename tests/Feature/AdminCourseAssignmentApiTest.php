@@ -9,6 +9,7 @@ use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class AdminCourseAssignmentApiTest extends TestCase
@@ -147,5 +148,46 @@ class AdminCourseAssignmentApiTest extends TestCase
         Event::assertDispatched(CourseAssigned::class, function (CourseAssigned $event) use ($course, $user) {
             return $event->course->id === $course->id && $event->assignedUser->id === $user->id;
         });
+    }
+
+    public function test_admin_can_resend_login_link(): void
+    {
+        Event::fake();
+        Mail::fake();
+
+        $token  = $this->adminToken();
+        $course = $this->createCourse();
+        $admin  = User::query()->where('role', 'admin')->first();
+        $user   = User::factory()->create(['role' => 'user', 'email' => 'resend@example.com']);
+
+        $assignment = CourseAssignment::query()->create([
+            'course_id'   => $course->id,
+            'user_id'     => $user->id,
+            'assigned_by' => $admin->id,
+            'assigned_at' => now(),
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson('/api/admin/course-assignments/' . $assignment->id . '/resend-link');
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Login link resent successfully.');
+
+        Mail::assertQueued(\App\Mail\CourseAssignedUserMail::class, function ($mail) use ($user) {
+            return $mail->hasTo($user->email);
+        });
+
+        // Login token should be refreshed
+        $this->assertNotNull($user->fresh()->login_token);
+    }
+
+    public function test_resend_link_returns_404_for_invalid_assignment(): void
+    {
+        $token = $this->adminToken();
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson('/api/admin/course-assignments/9999/resend-link');
+
+        $response->assertNotFound();
     }
 }

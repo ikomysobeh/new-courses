@@ -52,4 +52,9 @@ class CourseOnline extends Model
     {
         return $this->hasOne(CourseAnalytics::class, 'course_online_id');
     }
+
+    public function learningProgress(): HasMany
+    {
+        return $this->hasMany(UserCourseProgress::class, 'course_online_id');
+    }
 }

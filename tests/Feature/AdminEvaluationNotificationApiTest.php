@@ -49,9 +49,9 @@ class AdminEvaluationNotificationApiTest extends TestCase
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/admin/evaluation-notifications/preview', [
-                'manager_ids' => [$data['manager']->id],
-                'subject'     => 'Evaluation Report Q1',
-                'message'     => 'Please review the evaluations.',
+                'user_ids' => [$data['employee']->id],
+                'subject'  => 'Evaluation Report Q1',
+                'message'  => 'Please review the evaluations.',
             ]);
 
         $response->assertOk()
@@ -66,11 +66,20 @@ class AdminEvaluationNotificationApiTest extends TestCase
         $token    = $this->adminToken();
         $data     = $this->createManagerWithSubordinates();
 
+        // Create an evaluation so the service finds records to send
+        Evaluation::create([
+            'user_id'           => $data['employee']->id,
+            'department_id'     => $data['dept']->id,
+            'course_type'       => 'regular',
+            'total_score'       => 80,
+            'performance_level' => 1,
+        ]);
+
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/admin/evaluation-notifications/send', [
-                'manager_ids' => [$data['manager']->id],
-                'subject'     => 'Evaluation Report Q1',
-                'message'     => 'Please review the evaluations.',
+                'user_ids' => [$data['employee']->id],
+                'subject'  => 'Evaluation Report Q1',
+                'message'  => 'Please review the evaluations.',
             ]);
 
         $response->assertOk()
@@ -84,7 +93,7 @@ class AdminEvaluationNotificationApiTest extends TestCase
         $this->assertDatabaseHas('user_notifications', ['user_id' => $data['manager']->id]);
     }
 
-    public function test_send_requires_manager_ids(): void
+    public function test_send_requires_user_ids(): void
     {
         $token = $this->adminToken();
 
@@ -92,7 +101,7 @@ class AdminEvaluationNotificationApiTest extends TestCase
             ->postJson('/api/admin/evaluation-notifications/send', [
                 'subject' => 'Report',
                 'message' => 'Body',
-                // manager_ids missing
+                // user_ids missing
             ]);
 
         $response->assertUnprocessable();
@@ -105,7 +114,7 @@ class AdminEvaluationNotificationApiTest extends TestCase
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/admin/evaluation-notifications/send', [
-                'manager_ids' => [$data['manager']->id],
+                'user_ids' => [$data['employee']->id],
                 // subject + message missing
             ]);
 
@@ -142,13 +151,33 @@ class AdminEvaluationNotificationApiTest extends TestCase
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/admin/evaluation-notifications/preview', [
-                'manager_ids' => [$data['manager']->id],
-                'subject'     => 'Report',
-                'message'     => 'Body',
-                'start_date'  => now()->subMonth()->toDateString(),
-                'end_date'    => now()->toDateString(),
+                'user_ids'   => [$data['employee']->id],
+                'subject'    => 'Report',
+                'message'    => 'Body',
+                'start_date' => now()->subMonth()->toDateString(),
+                'end_date'   => now()->toDateString(),
             ]);
 
         $response->assertOk();
+    }
+
+    public function test_send_skips_user_without_manager(): void
+    {
+        Mail::fake();
+        $token    = $this->adminToken();
+        $noMgr    = User::factory()->create(['report_to' => null]);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson('/api/admin/evaluation-notifications/send', [
+                'user_ids' => [$noMgr->id],
+                'subject'  => 'Report',
+                'message'  => 'Body',
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success_count', 0)
+            ->assertJsonPath('skipped_count', 1);
+
+        Mail::assertNothingSent();
     }
 }

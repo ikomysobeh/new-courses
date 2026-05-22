@@ -25,8 +25,10 @@ class SendCourseAssignmentNotifications implements ShouldQueue
         }
 
         try {
+            $loginLink = $event->assignedUser->generateCourseLoginLink((int) $event->course->id);
+
             Mail::to($event->assignedUser->email)->queue(
-                new CourseAssignedUserMail($event->course, $event->assignedUser, $event->assignedBy)
+                new CourseAssignedUserMail($event->course, $event->assignedUser, $event->assignedBy, $loginLink)
             );
         } catch (Throwable $exception) {
             report($exception);
