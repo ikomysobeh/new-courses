@@ -314,6 +314,18 @@ class CourseService
         $assignment->delete();
     }
 
+    public function getAssignmentsWithExpiredLinks(): LengthAwarePaginator
+    {
+        return CourseAssignment::query()
+            ->with(['course', 'user', 'assignedBy'])
+            ->whereHas('user', fn ($q) => $q->where(fn ($q) =>
+                $q->whereNull('login_token_expires_at')
+                  ->orWhere('login_token_expires_at', '<', now())
+            ))
+            ->orderByDesc('assigned_at')
+            ->paginate(20);
+    }
+
     // -------------------------------------------------------------------------
     // User: Courses
     // -------------------------------------------------------------------------

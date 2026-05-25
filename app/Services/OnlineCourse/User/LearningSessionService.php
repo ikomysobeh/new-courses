@@ -180,7 +180,7 @@ class LearningSessionService
 
         $content = ModuleContent::find($session->content_id);
 
-        $wallClock  = (int) now()->diffInSeconds($session->session_start);
+        $wallClock  = max(0, (int) now()->diffInSeconds($session->session_start));
         $attention  = $this->calculateAttentionScore($session, $content, $data);
         $suspicious = $this->isSuspicious($data, $content?->duration);
 

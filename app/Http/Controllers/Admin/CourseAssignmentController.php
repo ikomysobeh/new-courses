@@ -53,6 +53,14 @@ class CourseAssignmentController extends Controller
         return response()->json(['message' => 'Assignment removed successfully.']);
     }
 
+    /** List assignments where the user's login link has expired or was never sent. */
+    public function expiredLinks(): AnonymousResourceCollection
+    {
+        $assignments = $this->courseService->getAssignmentsWithExpiredLinks();
+
+        return CourseAssignmentResource::collection($assignments);
+    }
+
     /** Resend the magic login link for a course assignment. */
     public function resendLink(int $id): JsonResponse
     {

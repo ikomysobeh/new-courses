@@ -30,7 +30,7 @@ class EvaluationResource extends JsonResource
             'id'          => $this->id,
             'course_type' => $this->course_type,
             'total_score' => $this->total_score,
-            'user'        => $this->when($this->relationLoaded('user'), fn() => [
+            'user'        => $this->when($this->relationLoaded('user') && $this->user !== null, fn() => [
                 'id'         => $this->user->id,
                 'name'       => $this->user->name,
                 'department' => $this->when($this->user->relationLoaded('department'), fn() => [

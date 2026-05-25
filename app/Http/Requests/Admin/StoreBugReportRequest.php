@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreBugReportRequest extends FormRequest
 {
@@ -19,6 +20,7 @@ class StoreBugReportRequest extends FormRequest
             'priority'            => ['required', 'in:low,medium,high,critical'],
             'steps_to_reproduce'  => ['nullable', 'string'],
             'page_url'            => ['nullable', 'url', 'max:255'],
+            'assigned_to'         => ['nullable', 'integer', Rule::exists('users', 'id')->where('role', 'admin')],
         ];
     }
 }

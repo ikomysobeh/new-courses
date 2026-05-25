@@ -13,6 +13,7 @@ class BugReportService
     {
         $report = BugReport::create([
             'reported_by'        => $adminUserId,
+            'assigned_to'        => $data['assigned_to'] ?? null,
             'title'              => $data['title'],
             'description'        => $data['description'],
             'priority'           => $data['priority'],

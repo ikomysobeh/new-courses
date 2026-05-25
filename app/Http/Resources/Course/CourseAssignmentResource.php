@@ -18,9 +18,10 @@ class CourseAssignmentResource extends JsonResource
             'assigned_at'             => $this->assigned_at?->toIso8601String(),
             'course'                  => new CourseResource($this->whenLoaded('course')),
             'user'                    => $this->whenLoaded('user', fn () => [
-                'id'    => $this->user->id,
-                'name'  => $this->user->name,
-                'email' => $this->user->email,
+                'id'             => $this->user->id,
+                'name'           => $this->user->name,
+                'email'          => $this->user->email,
+                'link_expires_at' => $this->user->login_token_expires_at?->toIso8601String(),
             ]),
             'assigned_by_user'        => $this->whenLoaded('assignedBy', fn () => [
                 'id'   => $this->assignedBy->id,

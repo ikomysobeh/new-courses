@@ -154,6 +154,7 @@ Route::prefix('admin')->group(function () {
         // Course assignment routes
         Route::prefix('course-assignments')->group(function () {
             Route::get('/getAll', [CourseAssignmentController::class, 'getAll'])->name('admin.course-assignments.getAll');
+            Route::get('/expired-links', [CourseAssignmentController::class, 'expiredLinks'])->name('admin.course-assignments.expired-links');
             Route::post('/create', [CourseAssignmentController::class, 'create'])->name('admin.course-assignments.create');
             Route::post('/{id}/resend-link', [CourseAssignmentController::class, 'resendLink'])->name('admin.course-assignments.resend-link');
             Route::delete('/delete/{id}', [CourseAssignmentController::class, 'delete'])->name('admin.course-assignments.delete');

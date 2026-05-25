@@ -165,8 +165,51 @@ class EvaluationNotificationService
 
     public function getNotificationHistory(array $filters): LengthAwarePaginator
     {
-        return NotificationSend::where('type', 'evaluation_report')
+        $paginator = NotificationSend::where('type', 'evaluation_report')
             ->latest('sent_at')
             ->paginate(20);
+
+        // --- Resolve managers (recipient_ids) ---
+        $allManagerIds = collect($paginator->items())
+            ->flatMap(fn ($n) => $n->recipient_ids ?? [])
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $managers = User::whereIn('id', $allManagerIds)
+            ->get(['id', 'name', 'email'])
+            ->keyBy('id');
+
+        // --- Resolve employees (evaluation_ids → user_id) ---
+        $allEvaluationIds = collect($paginator->items())
+            ->flatMap(fn ($n) => $n->evaluation_ids ?? [])
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $evaluationUserMap = Evaluation::whereIn('id', $allEvaluationIds)
+            ->pluck('user_id', 'id');
+
+        $employees = User::whereIn('id', $evaluationUserMap->values()->unique()->toArray())
+            ->get(['id', 'name', 'email'])
+            ->keyBy('id');
+
+        // --- Attach transient attributes ---
+        foreach ($paginator->items() as $notifSend) {
+            $notifSend->resolved_managers = collect($notifSend->recipient_ids ?? [])
+                ->map(fn ($id) => $managers->get($id))
+                ->filter()
+                ->values()
+                ->toArray();
+
+            $notifSend->resolved_employees = collect($notifSend->evaluation_ids ?? [])
+                ->map(fn ($evalId) => $employees->get($evaluationUserMap->get($evalId)))
+                ->filter()
+                ->unique('id')
+                ->values()
+                ->toArray();
+        }
+
+        return $paginator;
     }
 }
