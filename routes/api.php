@@ -40,6 +40,10 @@ use App\Http\Controllers\MediaStreamController;
 use App\Http\Controllers\User\UserOnlineCourseController;
 use App\Http\Controllers\User\LearningSessionController;
 use App\Http\Controllers\User\ContentProgressController;
+use App\Http\Controllers\Admin\BlogPostController;
+use App\Http\Controllers\BlogFeedController;
+use App\Http\Controllers\BlogCommentController;
+use App\Http\Controllers\BlogLikeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -63,6 +67,10 @@ Route::get('/media/video/{content_id}', [MediaStreamController::class, 'streamVi
     ->name('media.video')->middleware('signed');
 Route::get('/media/pdf/{content_id}', [MediaStreamController::class, 'streamPdf'])
     ->name('media.pdf')->middleware('signed');
+Route::get('/media/blog-video/{video_id}', [MediaStreamController::class, 'streamBlogVideo'])
+    ->name('media.blog-video')->middleware('signed');
+Route::get('/media/blog-audio/{audio_id}', [MediaStreamController::class, 'streamBlogAudio'])
+    ->name('media.blog-audio')->middleware('signed');
 
 Route::prefix('admin')->group(function () {
     // Protected admin routes (require authentication)
@@ -286,6 +294,17 @@ Route::prefix('admin')->group(function () {
             Route::get('/getAll',        [ActivityLogController::class, 'getAll']) ->name('admin.activity-logs.getAll');
             Route::get('/user/{userId}', [ActivityLogController::class, 'user'])   ->name('admin.activity-logs.user');
         });
+
+        // Blog post routes
+        Route::prefix('blog-posts')->group(function () {
+            Route::get('/getAll',              [BlogPostController::class, 'getAll'])         ->name('admin.blog-posts.getAll');
+            Route::post('/create',             [BlogPostController::class, 'create'])         ->name('admin.blog-posts.create');
+            Route::get('/available-videos',    [BlogPostController::class, 'availableVideos'])->name('admin.blog-posts.available-videos');
+            Route::get('/available-audios',    [BlogPostController::class, 'availableAudios'])->name('admin.blog-posts.available-audios');
+            Route::get('/getById/{id}',        [BlogPostController::class, 'getById'])        ->name('admin.blog-posts.getById');
+            Route::put('/update/{id}',         [BlogPostController::class, 'update'])         ->name('admin.blog-posts.update');
+            Route::delete('/delete/{id}',      [BlogPostController::class, 'delete'])         ->name('admin.blog-posts.delete');
+        });
     });
 });
 
@@ -355,6 +374,19 @@ Route::prefix('user')->group(function () {
 
             // PDF progress
             Route::post('/progress/pdf',                  [ContentProgressController::class, 'updatePdf'])->name('user.online-courses.progress.pdf');
+        });
+
+        // Blog routes
+        Route::prefix('blog-posts')->group(function () {
+            Route::get('/getAll',                [BlogFeedController::class,    'index'])   ->name('user.blog-posts.getAll');
+            Route::get('/getBySlug/{slug}',      [BlogFeedController::class,    'show'])    ->name('user.blog-posts.getBySlug');
+            Route::post('/like/{postId}',        [BlogLikeController::class,    'like'])    ->name('user.blog-posts.like');
+            Route::delete('/unlike/{postId}',    [BlogLikeController::class,    'unlike'])  ->name('user.blog-posts.unlike');
+            Route::post('/comment/{postId}',     [BlogCommentController::class, 'store'])   ->name('user.blog-posts.comment.store');
+        });
+
+        Route::prefix('blog-comments')->group(function () {
+            Route::delete('/delete/{commentId}', [BlogCommentController::class, 'destroy'])->name('user.blog-comments.delete');
         });
     });
 });

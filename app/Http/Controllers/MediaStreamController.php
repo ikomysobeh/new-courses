@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Audio;
 use App\Models\ModuleContent;
+use App\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -55,6 +57,38 @@ class MediaStreamController extends Controller
         $size     = filesize($fullPath);
 
         return $this->streamWithRangeSupport($request, $fullPath, $mimeType, $size);
+    }
+
+    public function streamBlogVideo(Request $request, int $videoId): StreamedResponse
+    {
+        $video = Video::query()->findOrFail($videoId);
+
+        abort_unless(
+            $video->file_path && Storage::disk('local')->exists($video->file_path),
+            404,
+            'Video file not found.'
+        );
+
+        $fullPath = Storage::disk('local')->path($video->file_path);
+        $size     = filesize($fullPath);
+
+        return $this->streamWithRangeSupport($request, $fullPath, 'video/mp4', $size);
+    }
+
+    public function streamBlogAudio(Request $request, int $audioId): StreamedResponse
+    {
+        $audio = Audio::query()->findOrFail($audioId);
+
+        abort_unless(
+            $audio->local_path && Storage::disk('local')->exists($audio->local_path),
+            404,
+            'Audio file not found.'
+        );
+
+        $fullPath = Storage::disk('local')->path($audio->local_path);
+        $size     = filesize($fullPath);
+
+        return $this->streamWithRangeSupport($request, $fullPath, 'audio/mpeg', $size);
     }
 
     private function streamWithRangeSupport(
