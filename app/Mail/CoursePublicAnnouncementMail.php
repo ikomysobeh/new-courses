@@ -20,6 +20,7 @@ class CoursePublicAnnouncementMail extends Mailable implements ShouldQueue
     public function __construct(
         public readonly Course $course,
         public readonly User $recipient,
+        public readonly ?string $loginLink = null,
     ) {}
 
     public function envelope(): Envelope
@@ -42,7 +43,7 @@ class CoursePublicAnnouncementMail extends Mailable implements ShouldQueue
                 'description' => $course->description,
                 'userName' => $this->recipient->name,
                 'userEmail' => $this->recipient->email,
-                'loginLink' => rtrim((string) config('app.url'), '/') . '/courses/' . $course->id,
+                'loginLink' => $this->loginLink,
                 'availabilities' => $this->formatAvailabilities($course),
             ],
         );

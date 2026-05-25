@@ -20,7 +20,8 @@ class NotifyAllUsersOfPublicCourse implements ShouldQueue
 
         foreach ($users as $user) {
             try {
-                Mail::to($user->email)->queue(new CoursePublicAnnouncementMail($event->course, $user));
+                $loginLink = $user->generateCourseLoginLink((int) $event->course->id);
+                Mail::to($user->email)->queue(new CoursePublicAnnouncementMail($event->course, $user, $loginLink));
             } catch (Throwable $exception) {
                 report($exception);
             }
