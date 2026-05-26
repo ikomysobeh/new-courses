@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Online Courses Admin API Tester</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-a: #f7f4ef;
+      --bg-b: #e8f0ea;
+      --ink: #1b2a22;
+      --muted: #53635a;
+      --line: #d8e3dc;
+      --brand: #0f766e;
+      --brand-soft: #dff4f1;
+      --danger: #b42318;
+      --card: #ffffffee;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 15%, #f0d7b3 0%, #f0d7b300 30%),
+        radial-gradient(circle at 88% 12%, #b4dbc9 0%, #b4dbc900 32%),
+        linear-gradient(135deg, var(--bg-a), var(--bg-b));
+      min-height: 100vh;
+      padding: 24px 0 40px;
+    }
+
+    h1, h2, h3, h4, .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: 0.2px;
+    }
+
+    .page-title {
+      font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+      margin-bottom: 0.4rem;
+    }
+
+    .page-subtitle {
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+
+    .glass {
+      background: var(--card);
+      border: 1px solid #ffffff;
+      box-shadow: 0 14px 32px rgba(27, 42, 34, 0.08);
+      backdrop-filter: blur(5px);
+      border-radius: 16px;
+    }
+
+    .section-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      animation: rise 0.35s ease both;
+    }
+
+    .section-head {
+      padding: 12px 14px;
+      background: linear-gradient(90deg, #f6fbf8, #eef8f3);
+      border-bottom: 1px solid var(--line);
+      font-weight: 600;
+      font-size: 0.96rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-body {
+      padding: 14px;
+      background: #fff;
+    }
+
+    .tiny {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .module-box,
+    .content-box {
+      border: 1px dashed #b8c8be;
+      border-radius: 12px;
+      background: #fbfdfa;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .content-box {
+      background: #ffffff;
+      border-style: solid;
+      border-color: #dce6df;
+    }
+
+    .response-panel {
+      position: sticky;
+      top: 16px;
+      min-height: 60vh;
+    }
+
+    .response-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    }
+
+    #responseBody {
+      white-space: pre-wrap;
+      max-height: 65vh;
+      overflow: auto;
+      background: #0f1a15;
+      color: #d9f5e6;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 0;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .status-badge {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .status-ok {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-error {
+      background: #ffe3e0;
+      color: #8f1a1a;
+    }
+
+    .fade-in {
+      animation: rise 0.35s ease both;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 991px) {
+      .response-panel {
+        position: static;
+        min-height: 40vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid container-xl">
+    <div class="glass p-3 p-md-4 mb-3">
+      <h1 class="page-title">Online Courses Admin API Tester</h1>
+      <p class="page-subtitle">Single-page testing lab for admin course and assignment endpoints.</p>
+
+      <div class="row g-2 align-items-end">
+        <div class="col-md-7 col-lg-8">
+          <label class="form-label small">Base API URL</label>
+          <input id="baseUrl" type="text" class="form-control" value="http://localhost:8000/api">
+        </div>
+        <div class="col-md-5 col-lg-4 d-grid">
+          <button id="clearResponseBtn" class="btn btn-outline-secondary">Clear Response Panel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-7">
+
+        <div class="section-card">
+          <div class="section-head">
+            <span>Authentication</span>
+            <span class="tiny">POST /login and manual token</span>
+          </div>
+          <div class="section-body">
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label class="form-label small">Email</label>
+                <input id="loginEmail" class="form-control" value="admin@newproject.test">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small">Password</label>
+                <input id="loginPassword" class="form-control" type="password" value="Admin@12345">
+              </div>
+            </div>
+
+            <div class="row g-2 mt-1">
+              <div class="col-md-8">
+                <label class="form-label small">Bearer Token</label>
+                <input id="tokenInput" class="form-control" placeholder="Paste token here">
+              </div>
+              <div class="col-md-4 d-grid">
+                <label class="form-label small">Actions</label>
+                <button id="setTokenBtn" class="btn btn-outline-dark">Save Token</button>
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <button id="loginBtn" class="btn btn-success">Login</button>
+              <button id="removeTokenBtn" class="btn btn-outline-danger">Remove Token</button>
+            </div>
+            <div id="tokenState" class="tiny mt-2"></div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-head">List Courses - GET /admin/online-courses/getAll</div>
+          <div class="section-body">
+            <div class="row g-2">
+              <div class="col-md-4"><input id="listStatus" class="form-control" placeholder="status"></div>
+              <div class="col-md-4"><input id="listSearch" class="form-control" placeholder="search"></div>
+              <div class="col-md-4"><input id="listPerPage" class="form-control" type="number" placeholder="per_page"></div>
+            </div>
+            <button id="listCoursesBtn" class="btn btn-primary mt-2">Send Request</button>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-head">Get Course By ID - GET /admin/online-courses/getById/{id}</div>
+          <div class="section-body">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-8"><input id="getCourseId" class="form-control" type="number" placeholder="course id"></div>
+              <div class="col-md-4 d-grid"><button id="getCourseBtn" class="btn btn-primary">Send Request</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-head d-flex justify-content-between align-items-center">
+            <span>Create Course - POST /admin/online-courses/create</span>
+            <button id="createAddModuleBtn" class="btn btn-sm btn-outline-success">Add Module</button>
+          </div>
+          <div class="section-body">
+            <div class="row g-2 mb-2">
+              <div class="col-md-6"><input id="create_name" class="form-control" placeholder="name"></div>
+              <div class="col-md-6">
+                <select id="create_status" class="form-select">
+                  <option value="draft">draft</option>
+                  <option value="published">published</option>
+                  <option value="archived">archived</option>
+                </select>
+              </div>
+              <div class="col-12"><textarea id="create_description" class="form-control" rows="2" placeholder="description"></textarea></div>
+            </div>
+
+            <div id="createModules" class="mb-2"></div>
+            <button id="createCourseBtn" class="btn btn-success">Create Course</button>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-head d-flex justify-content-between align-items-center">
+            <span>Update Course - POST /admin/online-courses/update/{id} + _method=PUT</span>
+            <button id="updateAddModuleBtn" class="btn btn-sm btn-outline-success">Add Module</button>
+          </div>
+          <div class="section-body">
+            <div class="row g-2 mb-2">
+              <div class="col-md-4"><input id="update_course_id" type="number" class="form-control" placeholder="course id"></div>
+              <div class="col-md-4"><input id="update_name" class="form-control" placeholder="name (optional)"></div>
+              <div class="col-md-4">
+                <select id="update_status" class="form-select">
+                  <option value="">status (optional)</option>
+                  <option value="draft">draft</option>
+                  <option value="published">published</option>
+                  <option value="archived">archived</option>
+                </select>
+              </div>
+              <div class="col-12"><textarea id="update_description" class="form-control" rows="2" placeholder="description (optional)"></textarea></div>
+            </div>
+
+            <div class="form-check mb-2">
+              <input id="updateIncludeModules" class="form-check-input" type="checkbox" checked>
+              <label class="form-check-label" for="updateIncludeModules">Include modules in payload (unchecked means update only name/status/description)</label>
+            </div>
+
+            <div id="updateModules" class="mb-2"></div>
+            <button id="updateCourseBtn" class="btn btn-warning">Update Course</button>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-head">Delete Course - DELETE /admin/online-courses/delete/{id}</div>
+          <div class="section-body">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-8"><input id="deleteCourseId" class="form-control" type="number" placeholder="course id"></div>
+              <div class="col-md-4 d-grid"><button id="deleteCourseBtn" class="btn btn-outline-danger">Delete Course</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-head">Reorder Modules - PUT /admin/online-courses/modules/reorder</div>
+          <div class="section-body">
+            <textarea id="reorderPayload" class="form-control mono" rows="5">{
+  "order": [
+    { "module_id": 1, "order_number": 1 },
+    { "module_id": 2, "order_number": 2 }
+  ]
+}</textarea>
+            <button id="reorderBtn" class="btn btn-primary mt-2">Send Request</button>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-head">List Assignments - GET /admin/online-course-assignments/getAll</div>
+          <div class="section-body">
+            <div class="row g-2">
+              <div class="col-md-3"><input id="asgCourseId" class="form-control" type="number" placeholder="course_online_id"></div>
+              <div class="col-md-3"><input id="asgUserId" class="form-control" type="number" placeholder="user_id"></div>
+              <div class="col-md-3"><input id="asgOverdue" class="form-control" placeholder="is_overdue"></div>
+              <div class="col-md-3"><input id="asgPerPage" class="form-control" type="number" placeholder="per_page"></div>
+            </div>
+            <button id="listAssignmentsBtn" class="btn btn-primary mt-2">Send Request</button>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-head">Create Assignment - POST /admin/online-course-assignments/create</div>
+          <div class="section-body">
+            <div class="row g-2">
+              <div class="col-md-4"><input id="createAsgCourseId" class="form-control" type="number" placeholder="course_online_id"></div>
+              <div class="col-md-4"><input id="createAsgUserIds" class="form-control" placeholder="user_ids, ex: 2,3,4"></div>
+              <div class="col-md-4"><input id="createAsgDeadline" class="form-control" placeholder="deadline optional ISO"></div>
+              <div class="col-md-4">
+                <select id="createAsgNotify" class="form-select">
+                  <option value="true">send_notification = true</option>
+                  <option value="false">send_notification = false</option>
+                </select>
+              </div>
+            </div>
+            <button id="createAssignmentBtn" class="btn btn-success mt-2">Send Request</button>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-head">Delete Assignment - DELETE /admin/online-course-assignments/delete/{id}</div>
+          <div class="section-body">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-8"><input id="deleteAssignmentId" class="form-control" type="number" placeholder="assignment id"></div>
+              <div class="col-md-4 d-grid"><button id="deleteAssignmentBtn" class="btn btn-outline-danger">Delete Assignment</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="glass p-3 response-panel">
+          <h4 class="mb-2">Response</h4>
+          <div class="response-meta">
+            <span id="respMethod" class="badge text-bg-light mono">METHOD</span>
+            <span id="respUrl" class="badge text-bg-light mono">URL</span>
+            <span id="respStatus" class="status-badge status-ok">Status</span>
+          </div>
+          <pre id="responseBody" class="mono">No requests yet.</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'online_course_admin_token';
+
+    function byId(id) {
+      return document.getElementById(id);
+    }
+
+    function trimSlash(str) {
+      return String(str || '').replace(/\/+$/, '');
+    }
+
+    function safeJsonParse(text) {
+      try {
+        return JSON.parse(text);
+      } catch (_e) {
+        return text;
+      }
+    }
+
+    function renderResponse(method, url, status, payload) {
+      byId('respMethod').textContent = method;
+      byId('respUrl').textContent = url;
+      const statusEl = byId('respStatus');
+      statusEl.textContent = String(status);
+      statusEl.className = 'status-badge ' + (status >= 200 && status < 300 ? 'status-ok' : 'status-error');
+      if (typeof payload === 'string') {
+        byId('responseBody').textContent = payload;
+      } else {
+        byId('responseBody').textContent = JSON.stringify(payload, null, 2);
+      }
+    }
+
+    function debugFormData(formData) {
+      const out = [];
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          out.push({
+            key,
+            type: 'file',
+            name: value.name,
+            size: value.size,
+            mime: value.type || 'application/octet-stream'
+          });
+        } else {
+          out.push({ key, type: 'value', value: String(value) });
+        }
+      }
+      return out;
+    }
+
+    function getToken() {
+      return localStorage.getItem(STORAGE_KEY) || '';
+    }
+
+    function setToken(token) {
+      if (token) {
+        localStorage.setItem(STORAGE_KEY, token);
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+      byId('tokenInput').value = token;
+      updateTokenState();
+    }
+
+    function updateTokenState() {
+      const token = getToken();
+      byId('tokenState').textContent = token
+        ? 'Token saved. Authorization header will be attached automatically.'
+        : 'No token set yet.';
+    }
+
+    function buildUrl(path, paramsObj) {
+      const base = trimSlash(byId('baseUrl').value);
+      const cleanPath = path.startsWith('/') ? path : '/' + path;
+      const url = new URL(base + cleanPath);
+      if (paramsObj) {
+        Object.keys(paramsObj).forEach((key) => {
+          const val = paramsObj[key];
+          if (val !== undefined && val !== null && String(val).trim() !== '') {
+            url.searchParams.set(key, String(val));
+          }
+        });
+      }
+      return url;
+    }
+
+    async function apiRequest(method, path, options = {}) {
+      const url = buildUrl(path, options.query);
+      const headers = { Accept: 'application/json', ...(options.headers || {}) };
+      const token = getToken();
+      if (token) {
+        headers.Authorization = 'Bearer ' + token;
+      }
+
+      const fetchOptions = { method, headers };
+      if (options.json) {
+        headers['Content-Type'] = 'application/json';
+        fetchOptions.body = JSON.stringify(options.json);
+      }
+      if (options.formData) {
+        const debugEntries = debugFormData(options.formData);
+        console.group('FormData Debug');
+        console.log('Request', method, url.toString());
+        console.table(debugEntries);
+        console.groupEnd();
+        renderResponse(method, url.toString(), 0, {
+          debug: 'Outgoing multipart form-data (preview before response)',
+          entries: debugEntries
+        });
+        fetchOptions.body = options.formData;
+      }
+
+      try {
+        const res = await fetch(url, fetchOptions);
+        const raw = await res.text();
+        const data = raw ? safeJsonParse(raw) : { message: 'No Content' };
+        renderResponse(method, url.toString(), res.status, data);
+        return { ok: res.ok, status: res.status, data };
+      } catch (err) {
+        renderResponse(method, url.toString(), 0, { error: String(err) });
+        return { ok: false, status: 0, data: { error: String(err) } };
+      }
+    }
+
+    function boolFromSelect(value) {
+      return String(value) === 'true';
+    }
+
+    function nextIndex(container) {
+      const current = Number(container.dataset.nextIndex || '0');
+      container.dataset.nextIndex = String(current + 1);
+      return current;
+    }
+
+    function createContentElement(prefix, moduleIndex, contentIndex) {
+      const wrap = document.createElement('div');
+      wrap.className = 'content-box fade-in';
+      wrap.dataset.contentIndex = String(contentIndex);
+
+      const includeUpdateFields = prefix === 'update';
+
+      wrap.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <strong>Content #${contentIndex + 1}</strong>
+          <button type="button" class="btn btn-sm btn-outline-danger remove-content-btn">Remove</button>
+        </div>
+
+        <div class="row g-2">
+          ${includeUpdateFields ? `<div class="col-md-3"><input class="form-control content-id" type="number" placeholder="id (existing)"></div>` : ''}
+          <div class="${includeUpdateFields ? 'col-md-5' : 'col-md-6'}"><input class="form-control content-title" placeholder="title"></div>
+          <div class="col-md-2"><input class="form-control content-order" type="number" placeholder="order"></div>
+          <div class="col-md-2">
+            <select class="form-select content-type">
+              <option value="video">video</option>
+              <option value="pdf">pdf</option>
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <div class="form-check mt-2">
+              <input class="form-check-input content-required" type="checkbox" checked>
+              <label class="form-check-label tiny">required</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-check mt-2">
+              <input class="form-check-input content-active" type="checkbox" checked>
+              <label class="form-check-label tiny">active</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="video-fields mt-2">
+          <div class="row g-2">
+            <div class="col-md-4"><input class="form-control video-id" type="number" placeholder="video_id"></div>
+            <div class="col-md-4"><input class="form-control duration" type="number" placeholder="duration (seconds)"></div>
+            <div class="col-md-4">
+              <label class="form-label tiny">attachment_file (optional)</label>
+              <input class="form-control attachment-file" type="file">
+            </div>
+          </div>
+        </div>
+
+        <div class="pdf-fields mt-2 d-none">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label tiny">pdf_file</label>
+              <input class="form-control pdf-file" type="file" accept="application/pdf">
+            </div>
+            <div class="col-md-3"><input class="form-control pdf-pages" type="number" placeholder="pdf_page_count"></div>
+            ${includeUpdateFields ? '<div class="col-md-3"><input class="form-control pdf-path" placeholder="pdf.file_path (keep existing)"></div>' : ''}
+          </div>
+        </div>
+      `;
+
+      wrap.querySelector('.remove-content-btn').addEventListener('click', () => {
+        wrap.remove();
+      });
+
+      const typeSelect = wrap.querySelector('.content-type');
+      typeSelect.addEventListener('change', () => {
+        const isPdf = typeSelect.value === 'pdf';
+        wrap.querySelector('.video-fields').classList.toggle('d-none', isPdf);
+        wrap.querySelector('.pdf-fields').classList.toggle('d-none', !isPdf);
+      });
+
+      return wrap;
+    }
+
+    function addContent(prefix, moduleEl) {
+      const contentsContainer = moduleEl.querySelector('.contents-container');
+      const contentIndex = nextIndex(contentsContainer);
+      const contentEl = createContentElement(prefix, moduleEl.dataset.moduleIndex, contentIndex);
+      contentsContainer.appendChild(contentEl);
+    }
+
+    function createModuleElement(prefix, moduleIndex) {
+      const wrap = document.createElement('div');
+      wrap.className = 'module-box fade-in';
+      wrap.dataset.moduleIndex = String(moduleIndex);
+
+      const includeUpdateFields = prefix === 'update';
+
+      wrap.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <strong>Module #${moduleIndex + 1}</strong>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-success add-content-btn">Add Content</button>
+            <button type="button" class="btn btn-sm btn-outline-danger remove-module-btn">Remove</button>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-2">
+          ${includeUpdateFields ? '<div class="col-md-3"><input class="form-control module-id" type="number" placeholder="id (existing)"></div>' : ''}
+          <div class="${includeUpdateFields ? 'col-md-6' : 'col-md-8'}"><input class="form-control module-name" placeholder="module name"></div>
+          <div class="col-md-3"><input class="form-control module-order" type="number" placeholder="order_number"></div>
+        </div>
+
+        <div class="contents-container" data-next-index="0"></div>
+      `;
+
+      wrap.querySelector('.remove-module-btn').addEventListener('click', () => wrap.remove());
+      wrap.querySelector('.add-content-btn').addEventListener('click', () => addContent(prefix, wrap));
+
+      addContent(prefix, wrap);
+      return wrap;
+    }
+
+    function addModule(prefix) {
+      const container = byId(prefix + 'Modules');
+      const moduleIndex = nextIndex(container);
+      const moduleEl = createModuleElement(prefix, moduleIndex);
+      container.appendChild(moduleEl);
+    }
+
+    function appendIfValue(fd, key, val) {
+      if (val === undefined || val === null) return;
+      const txt = String(val).trim();
+      if (txt !== '') {
+        fd.append(key, txt);
+      }
+    }
+
+    function buildCourseFormData(prefix, includeModules, isUpdate) {
+      const fd = new FormData();
+
+      appendIfValue(fd, 'name', byId(prefix + '_name').value);
+      appendIfValue(fd, 'description', byId(prefix + '_description').value);
+      appendIfValue(fd, 'status', byId(prefix + '_status').value);
+
+      if (!includeModules) {
+        return fd;
+      }
+
+      const moduleEls = Array.from(byId(prefix + 'Modules').querySelectorAll('.module-box'));
+      moduleEls.forEach((moduleEl, mIndex) => {
+        const base = `modules[${mIndex}]`;
+
+        if (isUpdate) {
+          appendIfValue(fd, `${base}[id]`, moduleEl.querySelector('.module-id')?.value || '');
+        }
+
+        appendIfValue(fd, `${base}[name]`, moduleEl.querySelector('.module-name').value);
+        appendIfValue(fd, `${base}[order_number]`, moduleEl.querySelector('.module-order').value);
+
+        const contentEls = Array.from(moduleEl.querySelectorAll('.content-box'));
+        contentEls.forEach((contentEl, cIndex) => {
+          const cbase = `${base}[contents][${cIndex}]`;
+          const type = contentEl.querySelector('.content-type').value;
+
+          if (isUpdate) {
+            appendIfValue(fd, `${cbase}[id]`, contentEl.querySelector('.content-id')?.value || '');
+          }
+
+          appendIfValue(fd, `${cbase}[title]`, contentEl.querySelector('.content-title').value);
+          appendIfValue(fd, `${cbase}[content_type]`, type);
+          appendIfValue(fd, `${cbase}[order_number]`, contentEl.querySelector('.content-order').value);
+          fd.append(`${cbase}[is_required]`, contentEl.querySelector('.content-required').checked ? '1' : '0');
+          fd.append(`${cbase}[is_active]`, contentEl.querySelector('.content-active').checked ? '1' : '0');
+
+          if (type === 'video') {
+            appendIfValue(fd, `${cbase}[video_id]`, contentEl.querySelector('.video-id').value);
+            appendIfValue(fd, `${cbase}[duration]`, contentEl.querySelector('.duration').value);
+            const attachmentFile = contentEl.querySelector('.attachment-file').files[0];
+            if (attachmentFile) {
+              fd.append(`${cbase}[attachment_file]`, attachmentFile);
+            }
+          }
+
+          if (type === 'pdf') {
+            const pdfFile = contentEl.querySelector('.pdf-file').files[0];
+            if (pdfFile) {
+              fd.append(`${cbase}[pdf_file]`, pdfFile);
+            }
+            appendIfValue(fd, `${cbase}[pdf_page_count]`, contentEl.querySelector('.pdf-pages').value);
+            if (isUpdate) {
+              appendIfValue(fd, `${cbase}[pdf][file_path]`, contentEl.querySelector('.pdf-path')?.value || '');
+            }
+          }
+        });
+      });
+
+      return fd;
+    }
+
+    function validateCoursePayload(prefix, includeModules, isUpdate) {
+      if (!includeModules) {
+        return null;
+      }
+
+      const moduleEls = Array.from(byId(prefix + 'Modules').querySelectorAll('.module-box'));
+      for (let mIndex = 0; mIndex < moduleEls.length; mIndex += 1) {
+        const moduleEl = moduleEls[mIndex];
+        const contentEls = Array.from(moduleEl.querySelectorAll('.content-box'));
+
+        for (let cIndex = 0; cIndex < contentEls.length; cIndex += 1) {
+          const contentEl = contentEls[cIndex];
+          const type = contentEl.querySelector('.content-type').value;
+
+          if (type === 'video') {
+            const videoId = String(contentEl.querySelector('.video-id').value || '').trim();
+            if (!videoId) {
+              return {
+                error: `modules.${mIndex}.contents.${cIndex}.video_id is required when content_type is video.`
+              };
+            }
+          }
+
+          if (type === 'pdf') {
+            const pdfFile = contentEl.querySelector('.pdf-file').files[0];
+            const pdfPath = isUpdate ? String(contentEl.querySelector('.pdf-path')?.value || '').trim() : '';
+            const hasPdfFile = Boolean(pdfFile);
+            const hasPdfPath = Boolean(pdfPath);
+
+            if (!isUpdate && !hasPdfFile) {
+              return {
+                error: `modules.${mIndex}.contents.${cIndex}.pdf_file is required when content_type is pdf.`
+              };
+            }
+
+            if (isUpdate && !hasPdfFile && !hasPdfPath) {
+              return {
+                error: `modules.${mIndex}.contents.${cIndex}: provide either pdf_file or pdf.file_path when content_type is pdf.`
+              };
+            }
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function parseIdsCsv(csv) {
+      return String(csv || '')
+        .split(',')
+        .map((x) => Number(x.trim()))
+        .filter((n) => Number.isInteger(n) && n > 0);
+    }
+
+    function wireActions() {
+      byId('clearResponseBtn').addEventListener('click', () => {
+        renderResponse('METHOD', 'URL', 200, 'No requests yet.');
+      });
+
+      byId('setTokenBtn').addEventListener('click', () => {
+        setToken(byId('tokenInput').value.trim());
+      });
+
+      byId('removeTokenBtn').addEventListener('click', () => {
+        setToken('');
+      });
+
+      byId('loginBtn').addEventListener('click', async () => {
+        const payload = {
+          email: byId('loginEmail').value,
+          password: byId('loginPassword').value
+        };
+        const result = await apiRequest('POST', '/login', { json: payload });
+        if (result.ok && result.data && result.data.token) {
+          setToken(result.data.token);
+        }
+      });
+
+      byId('listCoursesBtn').addEventListener('click', () => {
+        apiRequest('GET', '/admin/online-courses/getAll', {
+          query: {
+            status: byId('listStatus').value,
+            search: byId('listSearch').value,
+            per_page: byId('listPerPage').value
+          }
+        });
+      });
+
+      byId('getCourseBtn').addEventListener('click', () => {
+        const id = byId('getCourseId').value;
+        apiRequest('GET', '/admin/online-courses/getById/' + id);
+      });
+
+      byId('createAddModuleBtn').addEventListener('click', () => addModule('create'));
+      byId('updateAddModuleBtn').addEventListener('click', () => addModule('update'));
+
+      byId('createCourseBtn').addEventListener('click', () => {
+        const validationError = validateCoursePayload('create', true, false);
+        if (validationError) {
+          renderResponse('POST', '/admin/online-courses/create', 0, validationError);
+          return;
+        }
+
+        const fd = buildCourseFormData('create', true, false);
+        apiRequest('POST', '/admin/online-courses/create', { formData: fd });
+      });
+
+      byId('updateCourseBtn').addEventListener('click', () => {
+        const id = byId('update_course_id').value;
+        if (!id) {
+          renderResponse('POST', '/admin/online-courses/update/{id}', 0, { error: 'update course id is required' });
+          return;
+        }
+
+        const includeModules = byId('updateIncludeModules').checked;
+        const validationError = validateCoursePayload('update', includeModules, true);
+        if (validationError) {
+          renderResponse('POST', '/admin/online-courses/update/' + id, 0, validationError);
+          return;
+        }
+
+        const fd = buildCourseFormData('update', includeModules, true);
+        fd.append('_method', 'PUT');
+
+        apiRequest('POST', '/admin/online-courses/update/' + id, { formData: fd });
+      });
+
+      byId('deleteCourseBtn').addEventListener('click', () => {
+        const id = byId('deleteCourseId').value;
+        apiRequest('DELETE', '/admin/online-courses/delete/' + id);
+      });
+
+      byId('reorderBtn').addEventListener('click', () => {
+        const raw = byId('reorderPayload').value;
+        let parsed;
+        try {
+          parsed = JSON.parse(raw);
+        } catch (_e) {
+          renderResponse('PUT', '/admin/online-courses/modules/reorder', 0, { error: 'Invalid JSON in reorder payload' });
+          return;
+        }
+        apiRequest('PUT', '/admin/online-courses/modules/reorder', { json: parsed });
+      });
+
+      byId('listAssignmentsBtn').addEventListener('click', () => {
+        apiRequest('GET', '/admin/online-course-assignments/getAll', {
+          query: {
+            course_online_id: byId('asgCourseId').value,
+            user_id: byId('asgUserId').value,
+            is_overdue: byId('asgOverdue').value,
+            per_page: byId('asgPerPage').value
+          }
+        });
+      });
+
+      byId('createAssignmentBtn').addEventListener('click', () => {
+        const payload = {
+          course_online_id: Number(byId('createAsgCourseId').value),
+          user_ids: parseIdsCsv(byId('createAsgUserIds').value),
+          send_notification: boolFromSelect(byId('createAsgNotify').value)
+        };
+
+        const deadline = byId('createAsgDeadline').value.trim();
+        if (deadline) {
+          payload.deadline = deadline;
+        }
+
+        apiRequest('POST', '/admin/online-course-assignments/create', { json: payload });
+      });
+
+      byId('deleteAssignmentBtn').addEventListener('click', () => {
+        const id = byId('deleteAssignmentId').value;
+        apiRequest('DELETE', '/admin/online-course-assignments/delete/' + id);
+      });
+    }
+
+    function boot() {
+      const token = getToken();
+      byId('tokenInput').value = token;
+      updateTokenState();
+      addModule('create');
+      addModule('update');
+      wireActions();
+    }
+
+    boot();
+  </script>
+</body>
+</html>

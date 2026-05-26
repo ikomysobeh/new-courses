@@ -116,7 +116,7 @@ class OnlineCourseService
         });
     }
 
-    public function uploadPdf(UploadedFile $file): array
+    private function uploadPdf(UploadedFile $file): array
     {
         $uuid      = (string) Str::uuid();
         $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
@@ -127,6 +127,21 @@ class OnlineCourseService
         return [
             'file_path'  => $path,
             'file_size'  => $file->getSize(),
+        ];
+    }
+
+    private function storeAttachment(UploadedFile $file): array
+    {
+        $uuid      = (string) Str::uuid();
+        $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+        $path      = "course-attachments/{$uuid}_{$sanitized}";
+
+        Storage::disk('local')->put($path, $file->getContent());
+
+        return [
+            'attachment_path'      => $path,
+            'attachment_name'      => $file->getClientOriginalName(),
+            'attachment_extension' => $file->getClientOriginalExtension(),
         ];
     }
 
@@ -204,9 +219,27 @@ class OnlineCourseService
     private function createContent(int $moduleId, array $contentData): ModuleContent
     {
         $pdfMeta = null;
-        if (isset($contentData['pdf'])) {
+
+        // Handle direct PDF file upload
+        if (isset($contentData['pdf_file']) && $contentData['pdf_file'] instanceof UploadedFile) {
+            $stored  = $this->uploadPdf($contentData['pdf_file']);
+            $pdfMeta = [
+                'file_path'      => $stored['file_path'],
+                'pdf_page_count' => $contentData['pdf_page_count'] ?? null,
+            ];
+            unset($contentData['pdf_file'], $contentData['pdf_page_count']);
+        } elseif (isset($contentData['pdf'])) {
             $pdfMeta = $contentData['pdf'];
-            unset($contentData['pdf']);
+        }
+        unset($contentData['pdf']);
+
+        // Handle direct attachment file upload (for video content)
+        if (isset($contentData['attachment_file']) && $contentData['attachment_file'] instanceof UploadedFile) {
+            $stored = $this->storeAttachment($contentData['attachment_file']);
+            $contentData['attachment_path']      = $stored['attachment_path'];
+            $contentData['attachment_name']      = $stored['attachment_name'];
+            $contentData['attachment_extension'] = $stored['attachment_extension'];
+            unset($contentData['attachment_file']);
         }
 
         $contentData['module_id'] = $moduleId;
@@ -273,24 +306,53 @@ class OnlineCourseService
         foreach ($contents as $contentData) {
             if (!empty($contentData['id'])) {
                 $content = ModuleContent::query()->findOrFail($contentData['id']);
-                $pdfMeta = $contentData['pdf'] ?? null;
+
+                // --- Handle PDF file replacement ---
+                $pdfMeta = null;
+                if (isset($contentData['pdf_file']) && $contentData['pdf_file'] instanceof UploadedFile) {
+                    $existingPdf = $content->pdf()->first();
+                    if ($existingPdf && Storage::disk('local')->exists($existingPdf->file_path)) {
+                        Storage::disk('local')->delete($existingPdf->file_path);
+                    }
+                    $stored  = $this->uploadPdf($contentData['pdf_file']);
+                    $pdfMeta = [
+                        'file_path'      => $stored['file_path'],
+                        'pdf_page_count' => $contentData['pdf_page_count'] ?? null,
+                    ];
+                } elseif (isset($contentData['pdf'])) {
+                    $pdfMeta = $contentData['pdf'];
+
+                    // Delete old file from storage if path changed
+                    if ($pdfMeta) {
+                        $existingPdf = $content->pdf;
+                        if ($existingPdf
+                            && isset($pdfMeta['file_path'])
+                            && $existingPdf->file_path !== $pdfMeta['file_path']) {
+                            if (Storage::disk('local')->exists($existingPdf->file_path)) {
+                                Storage::disk('local')->delete($existingPdf->file_path);
+                            }
+                        }
+                    }
+                }
+                unset($contentData['pdf_file'], $contentData['pdf_page_count'], $contentData['pdf']);
+
+                // --- Handle attachment file replacement ---
+                if (isset($contentData['attachment_file']) && $contentData['attachment_file'] instanceof UploadedFile) {
+                    if ($content->attachment_path && Storage::disk('local')->exists($content->attachment_path)) {
+                        Storage::disk('local')->delete($content->attachment_path);
+                    }
+                    $stored = $this->storeAttachment($contentData['attachment_file']);
+                    $contentData['attachment_path']      = $stored['attachment_path'];
+                    $contentData['attachment_name']      = $stored['attachment_name'];
+                    $contentData['attachment_extension'] = $stored['attachment_extension'];
+                }
+                unset($contentData['attachment_file']);
 
                 // content_type is immutable — never overwrite
-                unset($contentData['id'], $contentData['content_type'], $contentData['pdf']);
+                unset($contentData['id'], $contentData['content_type']);
                 $content->update($contentData);
 
                 if ($content->content_type === 'pdf' && $pdfMeta) {
-                    $existingPdf = $content->pdf;
-
-                    // Delete old file from storage if path changed
-                    if ($existingPdf
-                        && isset($pdfMeta['file_path'])
-                        && $existingPdf->file_path !== $pdfMeta['file_path']) {
-                        if (Storage::disk('local')->exists($existingPdf->file_path)) {
-                            Storage::disk('local')->delete($existingPdf->file_path);
-                        }
-                    }
-
                     $content->pdf()->updateOrCreate(
                         ['module_content_id' => $content->id],
                         [
@@ -328,6 +390,10 @@ class OnlineCourseService
                 }
                 $pdf->delete();
             }
+        }
+
+        if ($content->attachment_path && Storage::disk('local')->exists($content->attachment_path)) {
+            Storage::disk('local')->delete($content->attachment_path);
         }
 
         $content->delete();

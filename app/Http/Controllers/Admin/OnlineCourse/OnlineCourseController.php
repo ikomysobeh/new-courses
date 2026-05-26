@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\OnlineCourse\ReorderModulesRequest;
 use App\Http\Requests\Admin\OnlineCourse\StoreOnlineCourseRequest;
 use App\Http\Requests\Admin\OnlineCourse\UpdateOnlineCourseRequest;
-use App\Http\Requests\Admin\OnlineCourse\UploadCoursePdfRequest;
 use App\Http\Resources\OnlineCourse\OnlineCourseDetailResource;
 use App\Http\Resources\OnlineCourse\OnlineCourseResource;
 use App\Services\OnlineCourse\OnlineCourseService;
@@ -58,13 +57,6 @@ class OnlineCourseController extends Controller
         $this->service->deleteCourse($id);
 
         return response()->noContent();
-    }
-
-    public function uploadPdf(UploadCoursePdfRequest $request): JsonResponse
-    {
-        $result = $this->service->uploadPdf($request->file('pdf_file'));
-
-        return response()->json($result);
     }
 
     public function reorderModules(ReorderModulesRequest $request): JsonResponse

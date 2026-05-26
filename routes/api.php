@@ -216,7 +216,6 @@ Route::prefix('admin')->group(function () {
             Route::get('/getById/{id}',    [OnlineCourseController::class, 'getById'])        ->name('admin.online-courses.getById');
             Route::put('/update/{id}',     [OnlineCourseController::class, 'update'])         ->name('admin.online-courses.update');
             Route::delete('/delete/{id}',  [OnlineCourseController::class, 'delete'])         ->name('admin.online-courses.delete');
-            Route::post('/upload-pdf',     [OnlineCourseController::class, 'uploadPdf'])      ->name('admin.online-courses.upload-pdf');
             Route::put('/modules/reorder', [OnlineCourseController::class, 'reorderModules']) ->name('admin.online-courses.modules.reorder');
         });
 
