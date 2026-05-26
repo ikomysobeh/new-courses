@@ -78,7 +78,7 @@ class StoreOnlineCourseRequest extends FormRequest
                         $v->errors()->add("modules.{$mIdx}.contents.{$cIdx}.video_id", 'video_id is required when content_type is video.');
                     }
 
-                    if ($type === 'pdf' && empty($content['pdf_file'])) {
+                    if ($type === 'pdf' && !$this->hasFile("modules.{$mIdx}.contents.{$cIdx}.pdf_file")) {
                         $v->errors()->add("modules.{$mIdx}.contents.{$cIdx}.pdf_file", 'pdf_file is required when content_type is pdf.');
                     }
 
