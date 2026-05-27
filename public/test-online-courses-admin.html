@@ -265,6 +265,10 @@
                 </select>
               </div>
               <div class="col-12"><textarea id="create_description" class="form-control" rows="2" placeholder="description"></textarea></div>
+              <div class="col-md-6">
+                <label class="form-label tiny">image_file (optional)</label>
+                <input id="create_image_file" class="form-control" type="file" accept="image/*">
+              </div>
             </div>
 
             <div id="createModules" class="mb-2"></div>
@@ -290,6 +294,10 @@
                 </select>
               </div>
               <div class="col-12"><textarea id="update_description" class="form-control" rows="2" placeholder="description (optional)"></textarea></div>
+              <div class="col-md-6">
+                <label class="form-label tiny">image_file (optional, replaces existing)</label>
+                <input id="update_image_file" class="form-control" type="file" accept="image/*">
+              </div>
             </div>
 
             <div class="form-check mb-2">
@@ -562,6 +570,12 @@
               <input class="form-control attachment-file" type="file">
             </div>
           </div>
+          <div class="row g-2 mt-1">
+            <div class="col-md-6">
+              <label class="form-label tiny">thumbnail_file (optional)</label>
+              <input class="form-control thumbnail-file" type="file" accept="image/*">
+            </div>
+          </div>
         </div>
 
         <div class="pdf-fields mt-2 d-none">
@@ -572,6 +586,12 @@
             </div>
             <div class="col-md-3"><input class="form-control pdf-pages" type="number" placeholder="pdf_page_count"></div>
             ${includeUpdateFields ? '<div class="col-md-3"><input class="form-control pdf-path" placeholder="pdf.file_path (keep existing)"></div>' : ''}
+          </div>
+          <div class="row g-2 mt-1">
+            <div class="col-md-6">
+              <label class="form-label tiny">thumbnail_file (optional)</label>
+              <input class="form-control thumbnail-file" type="file" accept="image/*">
+            </div>
           </div>
         </div>
       `;
@@ -651,6 +671,11 @@
       appendIfValue(fd, 'description', byId(prefix + '_description').value);
       appendIfValue(fd, 'status', byId(prefix + '_status').value);
 
+      const imageFileEl = byId(prefix + '_image_file');
+      if (imageFileEl && imageFileEl.files[0]) {
+        fd.append('image_file', imageFileEl.files[0]);
+      }
+
       if (!includeModules) {
         return fd;
       }
@@ -688,6 +713,11 @@
             if (attachmentFile) {
               fd.append(`${cbase}[attachment_file]`, attachmentFile);
             }
+          }
+
+          const thumbnailFile = contentEl.querySelector('.thumbnail-file')?.files[0];
+          if (thumbnailFile) {
+            fd.append(`${cbase}[thumbnail_file]`, thumbnailFile);
           }
 
           if (type === 'pdf') {

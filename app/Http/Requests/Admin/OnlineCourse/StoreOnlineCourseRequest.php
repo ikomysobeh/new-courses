@@ -18,7 +18,7 @@ class StoreOnlineCourseRequest extends FormRequest
         return [
             'name'               => ['required', 'string', 'max:255'],
             'description'        => ['nullable', 'string'],
-            'image_path'         => ['nullable', 'string', 'max:500'],
+            'image_file'         => ['nullable', 'file', 'image', 'max:5120'],
             'level'              => ['nullable', 'in:beginner,intermediate,advanced'],
             'estimated_duration' => ['nullable', 'integer', 'min:1'],
             'status'             => ['nullable', 'in:draft,published,archived'],
@@ -42,15 +42,15 @@ class StoreOnlineCourseRequest extends FormRequest
             'modules.*.contents.*.order_number'           => ['required_with:modules.*.contents', 'integer', 'min:1'],
             'modules.*.contents.*.video_id'               => ['nullable', 'integer', 'exists:videos,id'],
             'modules.*.contents.*.duration'               => ['nullable', 'integer', 'min:0'],
-            'modules.*.contents.*.thumbnail_path'         => ['nullable', 'string', 'max:500'],
+            'modules.*.contents.*.thumbnail_file'         => ['nullable', 'file', 'image', 'max:5120'],
             'modules.*.contents.*.is_required'            => ['nullable', 'boolean'],
             'modules.*.contents.*.is_active'              => ['nullable', 'boolean'],
-            'modules.*.contents.*.attachment_path'        => ['nullable', 'string', 'max:500'],
-            'modules.*.contents.*.attachment_name'        => ['nullable', 'string', 'max:255'],
-            'modules.*.contents.*.attachment_extension'   => ['nullable', 'string', 'max:20'],
             'modules.*.contents.*.pdf_file'               => ['nullable', 'file', 'mimes:pdf', 'max:51200'],
             'modules.*.contents.*.pdf_page_count'         => ['nullable', 'integer', 'min:1'],
             'modules.*.contents.*.attachment_file'        => ['nullable', 'file', 'max:20480'],
+            'modules.*.contents.*.pdf'                    => ['nullable', 'array'],
+            'modules.*.contents.*.pdf.file_path'          => ['nullable', 'string', 'starts_with:course-pdfs/', 'max:500'],
+            'modules.*.contents.*.pdf.pdf_page_count'     => ['nullable', 'integer', 'min:1'],
         ];
     }
 
@@ -78,8 +78,16 @@ class StoreOnlineCourseRequest extends FormRequest
                         $v->errors()->add("modules.{$mIdx}.contents.{$cIdx}.video_id", 'video_id is required when content_type is video.');
                     }
 
-                    if ($type === 'pdf' && !$this->hasFile("modules.{$mIdx}.contents.{$cIdx}.pdf_file")) {
-                        $v->errors()->add("modules.{$mIdx}.contents.{$cIdx}.pdf_file", 'pdf_file is required when content_type is pdf.');
+                    if ($type === 'pdf') {
+                        $hasPdfFile = $this->hasFile("modules.{$mIdx}.contents.{$cIdx}.pdf_file");
+                        $hasPdfPath = !empty($content['pdf']['file_path']);
+
+                        if (!$hasPdfFile && !$hasPdfPath) {
+                            $v->errors()->add(
+                                "modules.{$mIdx}.contents.{$cIdx}.pdf_file",
+                                'Either pdf_file or pdf.file_path is required when content_type is pdf.'
+                            );
+                        }
                     }
 
                     $cOrder = $content['order_number'] ?? null;

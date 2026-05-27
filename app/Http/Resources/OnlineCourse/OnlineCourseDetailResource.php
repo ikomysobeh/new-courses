@@ -4,6 +4,7 @@ namespace App\Http\Resources\OnlineCourse;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class OnlineCourseDetailResource extends JsonResource
 {
@@ -13,7 +14,9 @@ class OnlineCourseDetailResource extends JsonResource
             'id'                 => $this->id,
             'name'               => $this->name,
             'description'        => $this->description,
-            'image_path'         => $this->image_path,
+            'image_path'         => $this->image_path
+                ? Storage::disk('public')->url($this->image_path)
+                : null,
             'level'              => $this->level,
             'estimated_duration' => $this->estimated_duration,
             'status'             => $this->status,

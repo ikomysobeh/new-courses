@@ -53,6 +53,11 @@ class OnlineCourseService
             $modules = $data['modules'] ?? [];
             unset($data['modules']);
 
+            if (isset($data['image_file']) && $data['image_file'] instanceof UploadedFile) {
+                $data['image_path'] = $this->storeImage($data['image_file']);
+            }
+            unset($data['image_file']);
+
             $data['created_by'] = $admin->id;
             $data['status']     = $data['status'] ?? 'draft';
 
@@ -84,6 +89,14 @@ class OnlineCourseService
                 unset($data['modules']);
             }
 
+            if (isset($data['image_file']) && $data['image_file'] instanceof UploadedFile) {
+                if ($course->image_path && Storage::disk('public')->exists($course->image_path)) {
+                    Storage::disk('public')->delete($course->image_path);
+                }
+                $data['image_path'] = $this->storeImage($data['image_file']);
+            }
+            unset($data['image_file']);
+
             unset($data['created_by']);
             $course->update($data);
 
@@ -114,6 +127,28 @@ class OnlineCourseService
 
             $course->delete();
         });
+    }
+
+    private function storeImage(UploadedFile $file): string
+    {
+        $uuid      = (string) Str::uuid();
+        $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+        $path      = "course-images/{$uuid}_{$sanitized}";
+
+        Storage::disk('public')->put($path, $file->getContent());
+
+        return $path;
+    }
+
+    private function storeThumbnail(UploadedFile $file): string
+    {
+        $uuid      = (string) Str::uuid();
+        $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+        $path      = "course-thumbnails/{$uuid}_{$sanitized}";
+
+        Storage::disk('public')->put($path, $file->getContent());
+
+        return $path;
     }
 
     private function uploadPdf(UploadedFile $file): array
@@ -219,6 +254,15 @@ class OnlineCourseService
     private function createContent(int $moduleId, array $contentData): ModuleContent
     {
         $pdfMeta = null;
+
+        // Handle thumbnail upload
+        if (isset($contentData['thumbnail_file']) && $contentData['thumbnail_file'] instanceof UploadedFile) {
+            $contentData['thumbnail_path'] = $this->storeThumbnail($contentData['thumbnail_file']);
+        }
+        unset($contentData['thumbnail_file']);
+
+        // Discard any client-supplied path strings — these are server-managed
+        unset($contentData['attachment_path'], $contentData['attachment_name'], $contentData['attachment_extension']);
 
         // Handle direct PDF file upload
         if (isset($contentData['pdf_file']) && $contentData['pdf_file'] instanceof UploadedFile) {
@@ -347,6 +391,18 @@ class OnlineCourseService
                     $contentData['attachment_extension'] = $stored['attachment_extension'];
                 }
                 unset($contentData['attachment_file']);
+
+                // Handle thumbnail replacement
+                if (isset($contentData['thumbnail_file']) && $contentData['thumbnail_file'] instanceof UploadedFile) {
+                    if ($content->thumbnail_path && Storage::disk('public')->exists($content->thumbnail_path)) {
+                        Storage::disk('public')->delete($content->thumbnail_path);
+                    }
+                    $contentData['thumbnail_path'] = $this->storeThumbnail($contentData['thumbnail_file']);
+                }
+                unset($contentData['thumbnail_file']);
+
+                // Discard any client-supplied path strings — server-managed only
+                unset($contentData['attachment_path'], $contentData['attachment_name'], $contentData['attachment_extension']);
 
                 // content_type is immutable — never overwrite
                 unset($contentData['id'], $contentData['content_type']);

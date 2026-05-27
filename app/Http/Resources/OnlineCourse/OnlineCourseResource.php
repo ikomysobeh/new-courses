@@ -4,6 +4,7 @@ namespace App\Http\Resources\OnlineCourse;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class OnlineCourseResource extends JsonResource
 {
@@ -17,7 +18,9 @@ class OnlineCourseResource extends JsonResource
             'is_active'          => $this->is_active,
             'estimated_duration' => $this->estimated_duration,
             'deadline'           => $this->deadline,
-            'image_path'         => $this->image_path,
+            'image_path'         => $this->image_path
+                ? Storage::disk('public')->url($this->image_path)
+                : null,
             'modules_count'      => $this->whenCounted('modules'),
             'enrollments_count'  => $this->whenCounted('assignments'),
             'creator'            => $this->whenLoaded('creator', fn () => [

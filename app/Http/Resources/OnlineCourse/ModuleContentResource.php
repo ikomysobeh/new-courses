@@ -4,6 +4,7 @@ namespace App\Http\Resources\OnlineCourse;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class ModuleContentResource extends JsonResource
 {
@@ -17,7 +18,9 @@ class ModuleContentResource extends JsonResource
             'description'          => $this->description,
             'order_number'         => $this->order_number,
             'duration'             => $this->duration,
-            'thumbnail_path'       => $this->thumbnail_path,
+            'thumbnail_path'       => $this->thumbnail_path
+                ? Storage::disk('public')->url($this->thumbnail_path)
+                : null,
             'is_required'          => $this->is_required,
             'is_active'            => $this->is_active,
             'attachment_path'      => $this->attachment_path,
