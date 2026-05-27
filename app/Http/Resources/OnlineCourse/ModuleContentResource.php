@@ -18,12 +18,18 @@ class ModuleContentResource extends JsonResource
             'description'          => $this->description,
             'order_number'         => $this->order_number,
             'duration'             => $this->duration,
-            'thumbnail_path'       => $this->thumbnail_path
-                ? Storage::disk('public')->url($this->thumbnail_path)
-                : null,
+            'thumbnail_path'       => (function () {
+                $path = $this->thumbnail_path
+                    ?? ($this->content_type === 'video' && $this->relationLoaded('video') && $this->video
+                        ? $this->video->thumbnail_path
+                        : null);
+                return $path ? Storage::disk('public')->url($path) : null;
+            })(),
             'is_required'          => $this->is_required,
             'is_active'            => $this->is_active,
-            'attachment_path'      => $this->attachment_path,
+            'attachment_path'      => $this->attachment_path
+                ? Storage::disk('public')->url($this->attachment_path)
+                : null,
             'attachment_name'      => $this->attachment_name,
             'attachment_extension' => $this->attachment_extension,
             'video'                => $this->whenLoaded('video', fn () =>

@@ -157,7 +157,7 @@ class OnlineCourseService
         $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
         $path      = "course-pdfs/{$uuid}_{$sanitized}";
 
-        Storage::disk('local')->put($path, $file->getContent());
+        Storage::disk('public')->put($path, $file->getContent());
 
         return [
             'file_path'  => $path,
@@ -171,7 +171,7 @@ class OnlineCourseService
         $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
         $path      = "course-attachments/{$uuid}_{$sanitized}";
 
-        Storage::disk('local')->put($path, $file->getContent());
+        Storage::disk('public')->put($path, $file->getContent());
 
         return [
             'attachment_path'      => $path,
@@ -355,8 +355,8 @@ class OnlineCourseService
                 $pdfMeta = null;
                 if (isset($contentData['pdf_file']) && $contentData['pdf_file'] instanceof UploadedFile) {
                     $existingPdf = $content->pdf()->first();
-                    if ($existingPdf && Storage::disk('local')->exists($existingPdf->file_path)) {
-                        Storage::disk('local')->delete($existingPdf->file_path);
+                    if ($existingPdf && Storage::disk('public')->exists($existingPdf->file_path)) {
+                        Storage::disk('public')->delete($existingPdf->file_path);
                     }
                     $stored  = $this->uploadPdf($contentData['pdf_file']);
                     $pdfMeta = [
@@ -372,8 +372,8 @@ class OnlineCourseService
                         if ($existingPdf
                             && isset($pdfMeta['file_path'])
                             && $existingPdf->file_path !== $pdfMeta['file_path']) {
-                            if (Storage::disk('local')->exists($existingPdf->file_path)) {
-                                Storage::disk('local')->delete($existingPdf->file_path);
+                            if (Storage::disk('public')->exists($existingPdf->file_path)) {
+                                Storage::disk('public')->delete($existingPdf->file_path);
                             }
                         }
                     }
@@ -382,8 +382,8 @@ class OnlineCourseService
 
                 // --- Handle attachment file replacement ---
                 if (isset($contentData['attachment_file']) && $contentData['attachment_file'] instanceof UploadedFile) {
-                    if ($content->attachment_path && Storage::disk('local')->exists($content->attachment_path)) {
-                        Storage::disk('local')->delete($content->attachment_path);
+                    if ($content->attachment_path && Storage::disk('public')->exists($content->attachment_path)) {
+                        Storage::disk('public')->delete($content->attachment_path);
                     }
                     $stored = $this->storeAttachment($contentData['attachment_file']);
                     $contentData['attachment_path']      = $stored['attachment_path'];
@@ -441,15 +441,15 @@ class OnlineCourseService
         if ($content->content_type === 'pdf') {
             $pdf = $content->relationLoaded('pdf') ? $content->pdf : $content->pdf()->first();
             if ($pdf) {
-                if (Storage::disk('local')->exists($pdf->file_path)) {
-                    Storage::disk('local')->delete($pdf->file_path);
+                if (Storage::disk('public')->exists($pdf->file_path)) {
+                    Storage::disk('public')->delete($pdf->file_path);
                 }
                 $pdf->delete();
             }
         }
 
-        if ($content->attachment_path && Storage::disk('local')->exists($content->attachment_path)) {
-            Storage::disk('local')->delete($content->attachment_path);
+        if ($content->attachment_path && Storage::disk('public')->exists($content->attachment_path)) {
+            Storage::disk('public')->delete($content->attachment_path);
         }
 
         $content->delete();
