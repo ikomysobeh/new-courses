@@ -48,11 +48,11 @@ class MediaStreamController extends Controller
 
         $path = $pdf->file_path;
 
-        if (!$path || !Storage::disk('local')->exists($path)) {
+        if (!$path || !Storage::disk('public')->exists($path)) {
             abort(404, 'PDF file not found.');
         }
 
-        $fullPath = Storage::disk('local')->path($path);
+        $fullPath = Storage::disk('public')->path($path);
         $mimeType = 'application/pdf';
         $size     = filesize($fullPath);
 

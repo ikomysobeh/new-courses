@@ -8,6 +8,7 @@ use App\Models\VideoQuality;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class VideoService
 {
@@ -41,6 +42,14 @@ class VideoService
 
     public function createVideo(array $data, User $admin): Video
     {
+        $thumbnail = $data['thumbnail'] ?? null;
+
+        if ($thumbnail instanceof UploadedFile) {
+            $data['thumbnail_path'] = $this->storeThumbnail($thumbnail);
+        }
+
+        unset($data['thumbnail']);
+
         $data['created_by']       = $admin->id;
         $data['transcode_status'] = 'pending';
 
@@ -51,7 +60,15 @@ class VideoService
     {
         $video = Video::query()->findOrFail($id);
 
+        $thumbnail = $data['thumbnail'] ?? null;
+
+        if ($thumbnail instanceof UploadedFile) {
+            $this->deleteThumbnailIfExists($video->thumbnail_path);
+            $data['thumbnail_path'] = $this->storeThumbnail($thumbnail);
+        }
+
         unset($data['transcode_status'], $data['created_by']);
+        unset($data['thumbnail']);
 
         $video->update($data);
 
@@ -128,5 +145,29 @@ class VideoService
                 'value' => Video::query()->where('transcode_status', 'failed')->count(),
             ],
         ];
+    }
+
+    private function storeThumbnail(UploadedFile $file): string
+    {
+        $filename = Str::uuid() . '_' . $this->sanitizeFilename($file->getClientOriginalName());
+        $path     = Storage::disk('public')->putFileAs('video-thumbnails', $file, $filename);
+
+        if ($path === false) {
+            throw new \RuntimeException('Failed to store video thumbnail.');
+        }
+
+        return $path;
+    }
+
+    private function deleteThumbnailIfExists(?string $path): void
+    {
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+    }
+
+    private function sanitizeFilename(string $filename): string
+    {
+        return preg_replace('/[\/\\\\]/', '', basename($filename));
     }
 }

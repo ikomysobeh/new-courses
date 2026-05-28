@@ -21,7 +21,6 @@ class StoreVideoRequest extends FormRequest
             'file_size'         => ['nullable', 'integer', 'min:0'],
             'duration_seconds'  => ['nullable', 'integer', 'min:0'],
             'thumbnail'         => ['nullable', 'image', 'max:4096'],
-            'thumbnail_path'    => ['nullable', 'string', 'max:500'],
             'subtitle_vtt_path' => ['nullable', 'string'],
         ];
     }

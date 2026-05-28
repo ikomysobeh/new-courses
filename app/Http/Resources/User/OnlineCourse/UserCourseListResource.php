@@ -24,7 +24,9 @@ class UserCourseListResource extends JsonResource
             'id'                      => $this->id,
             'title'                   => $this->name,
             'description'             => $this->description,
-            'thumbnail_url'           => $this->image_path,
+            'thumbnail_url'           => $this->image_path
+                ? asset('storage/' . ltrim(str_replace('\\', '/', $this->image_path), '/'))
+                : null,
             'total_modules'           => $this->modules_count ?? $this->modules->count(),
             'total_content_items'     => $this->total_content_items ?? 0,
             'progress_percentage'     => $progress?->progress_percentage ?? 0,

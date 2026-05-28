@@ -18,7 +18,9 @@ class UserCourseDetailResource extends JsonResource
             'id'              => $course->id,
             'title'           => $course->name,
             'description'     => $course->description,
-            'thumbnail_url'   => $course->image_path,
+            'thumbnail_url'   => $course->image_path
+                ? asset('storage/' . ltrim(str_replace('\\', '/', $course->image_path), '/'))
+                : null,
             'has_certificate' => false,
             'progress'        => $progress ? [
                 'progress_percentage'     => $progress->progress_percentage,
