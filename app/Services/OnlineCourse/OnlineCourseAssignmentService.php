@@ -2,6 +2,7 @@
 
 namespace App\Services\OnlineCourse;
 
+use App\Events\OnlineCourseAssigned;
 use App\Models\CourseOnline;
 use App\Models\CourseOnlineAssignment;
 use App\Models\User;
@@ -23,15 +24,11 @@ class OnlineCourseAssignmentService
             $query->where('user_id', $filters['user_id']);
         }
 
-        if (isset($filters['is_overdue']) && $filters['is_overdue'] !== '') {
-            $query->where('is_overdue', (bool) $filters['is_overdue']);
-        }
-
         return $query->paginate($perPage);
     }
 
     /**
-     * Bulk-assign users to a course. Duplicate assignments (including soft-deleted) are silently skipped.
+     * Bulk-assign users to a course. Duplicate assignments are silently skipped.
      *
      * @return array{assignments: CourseOnlineAssignment[], meta: array{created: int, skipped: int}}
      */
@@ -39,14 +36,13 @@ class OnlineCourseAssignmentService
     {
         $courseId = $data['course_online_id'];
         $userIds  = $data['user_ids'];
-        $deadline = $data['deadline'] ?? null;
 
         $created = [];
         $skipped = 0;
 
         foreach ($userIds as $userId) {
-            // Skip if assignment already exists (active or soft-deleted)
-            $exists = CourseOnlineAssignment::withTrashed()
+            // Skip if assignment already exists
+            $exists = CourseOnlineAssignment::query()
                 ->where('course_online_id', $courseId)
                 ->where('user_id', $userId)
                 ->exists();
@@ -61,10 +57,19 @@ class OnlineCourseAssignmentService
                 'user_id'          => $userId,
                 'assigned_by'      => $admin->id,
                 'assigned_at'      => now(),
-                'deadline'         => $deadline,
             ]);
 
-            $created[] = $assignment->load(['course', 'user', 'assignedBy']);
+            $assignment->load(['course', 'user', 'assignedBy']);
+
+            if ($data['send_notification'] ?? false) {
+                OnlineCourseAssigned::dispatch(
+                    $assignment->course,
+                    $assignment->user,
+                    $admin,
+                );
+            }
+
+            $created[] = $assignment;
         }
 
         return [
@@ -76,23 +81,15 @@ class OnlineCourseAssignmentService
         ];
     }
 
-    public function deleteAssignment(int $id, User $admin): void
+    public function deleteAssignment(int $id): void
     {
-        $assignment = CourseOnlineAssignment::query()->findOrFail($id);
-
-        $assignment->update([
-            'unassigned_at' => now(),
-            'unassigned_by' => $admin->id,
-        ]);
-
-        $assignment->delete();
+        CourseOnlineAssignment::query()->findOrFail($id)->delete();
     }
 
     public function getAssignmentCards(): array
     {
-        $total        = CourseOnlineAssignment::query()->whereNull('deleted_at')->count();
+        $total        = CourseOnlineAssignment::query()->count();
         $activeCourses = CourseOnlineAssignment::query()
-            ->whereNull('deleted_at')
             ->distinct('course_online_id')
             ->count('course_online_id');
 

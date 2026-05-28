@@ -49,7 +49,7 @@ class UpdateOnlineCourseRequest extends FormRequest
             'modules.*.contents.*.pdf_page_count'         => ['nullable', 'integer', 'min:1'],
             'modules.*.contents.*.attachment_file'        => ['nullable', 'file', 'max:20480'],
             'modules.*.contents.*.pdf'                    => ['nullable', 'array'],
-            'modules.*.contents.*.pdf.file_path'          => ['nullable', 'string', 'starts_with:course-pdfs/', 'max:500'],
+            'modules.*.contents.*.pdf.file_path'          => ['nullable', 'file', 'mimes:pdf', 'max:51200'],
             'modules.*.contents.*.pdf.pdf_page_count'     => ['nullable', 'integer', 'min:1'],
         ];
     }
@@ -79,10 +79,12 @@ class UpdateOnlineCourseRequest extends FormRequest
                     }
 
                     if ($type === 'pdf') {
-                        $hasPdfFile = $this->hasFile("modules.{$mIdx}.contents.{$cIdx}.pdf_file");
-                        $hasPdfPath = !empty(data_get($content, 'pdf.file_path'));
-                        if (!$hasPdfFile && !$hasPdfPath) {
-                            $v->errors()->add("modules.{$mIdx}.contents.{$cIdx}.pdf_file", 'Either pdf_file or pdf.file_path is required when content_type is pdf.');
+                        $hasPdfUpload = $this->hasFile("modules.{$mIdx}.contents.{$cIdx}.pdf_file")
+                            || $this->hasFile("modules.{$mIdx}.contents.{$cIdx}.pdf.file_path");
+                        $isExistingContent = !empty($content['id']);
+
+                        if (!$hasPdfUpload && !$isExistingContent) {
+                            $v->errors()->add("modules.{$mIdx}.contents.{$cIdx}.pdf_file", 'A PDF file upload is required for new PDF content.');
                         }
                     }
 

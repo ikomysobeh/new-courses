@@ -113,8 +113,8 @@ class OnlineCourseService
         /** @var CourseOnline $course */
         $course = CourseOnline::query()->findOrFail($id);
 
-        // Block deletion if course has active assignments
-        if ($course->assignments()->whereNull('deleted_at')->exists()) {
+        // Block deletion if course has assignments
+        if ($course->assignments()->exists()) {
             abort(422, 'Cannot delete a course with active assignments.');
         }
 
@@ -220,8 +220,7 @@ class OnlineCourseService
         $total       = CourseOnline::query()->count();
         $published   = CourseOnline::query()->where('status', 'published')->count();
         $draft       = CourseOnline::query()->where('status', 'draft')->count();
-        $enrollments = CourseOnlineAssignment::query()->whereNull('deleted_at')->count();
-
+        $enrollments = CourseOnlineAssignment::query()->count();
         return [
             ['key' => 'total_courses',    'title' => 'Total Courses',     'value' => $total],
             ['key' => 'published_courses', 'title' => 'Published Courses', 'value' => $published],
@@ -264,18 +263,26 @@ class OnlineCourseService
         // Discard any client-supplied path strings — these are server-managed
         unset($contentData['attachment_path'], $contentData['attachment_name'], $contentData['attachment_extension']);
 
-        // Handle direct PDF file upload
-        if (isset($contentData['pdf_file']) && $contentData['pdf_file'] instanceof UploadedFile) {
-            $stored  = $this->uploadPdf($contentData['pdf_file']);
+        // Handle direct PDF file upload (legacy pdf_file or nested pdf.file_path)
+        $pdfUpload = $contentData['pdf_file'] ?? data_get($contentData, 'pdf.file_path');
+        $pdfPageCount = data_get($contentData, 'pdf.pdf_page_count');
+        if ($pdfPageCount === null) {
+            $pdfPageCount = $contentData['pdf_page_count'] ?? null;
+        }
+
+        if ($pdfUpload instanceof UploadedFile) {
+            $stored  = $this->uploadPdf($pdfUpload);
             $pdfMeta = [
                 'file_path'      => $stored['file_path'],
-                'pdf_page_count' => $contentData['pdf_page_count'] ?? null,
+                'pdf_page_count' => $pdfPageCount,
             ];
-            unset($contentData['pdf_file'], $contentData['pdf_page_count']);
-        } elseif (isset($contentData['pdf'])) {
-            $pdfMeta = $contentData['pdf'];
+        } elseif (is_array($contentData['pdf'] ?? null)
+            && array_key_exists('pdf_page_count', $contentData['pdf'])) {
+            $pdfMeta = [
+                'pdf_page_count' => $pdfPageCount,
+            ];
         }
-        unset($contentData['pdf']);
+        unset($contentData['pdf_file'], $contentData['pdf_page_count'], $contentData['pdf']);
 
         // Handle direct attachment file upload (for video content)
         if (isset($contentData['attachment_file']) && $contentData['attachment_file'] instanceof UploadedFile) {
@@ -291,7 +298,7 @@ class OnlineCourseService
         /** @var ModuleContent $content */
         $content = ModuleContent::query()->create($contentData);
 
-        if ($pdfMeta && $content->content_type === 'pdf') {
+        if ($pdfMeta && isset($pdfMeta['file_path']) && $content->content_type === 'pdf') {
             ModuleContentPdf::query()->create([
                 'module_content_id' => $content->id,
                 'file_path'         => $pdfMeta['file_path'],
@@ -353,30 +360,27 @@ class OnlineCourseService
 
                 // --- Handle PDF file replacement ---
                 $pdfMeta = null;
-                if (isset($contentData['pdf_file']) && $contentData['pdf_file'] instanceof UploadedFile) {
+                $pdfUpload = $contentData['pdf_file'] ?? data_get($contentData, 'pdf.file_path');
+                $pdfPageCount = data_get($contentData, 'pdf.pdf_page_count');
+                if ($pdfPageCount === null) {
+                    $pdfPageCount = $contentData['pdf_page_count'] ?? null;
+                }
+
+                if ($pdfUpload instanceof UploadedFile) {
                     $existingPdf = $content->pdf()->first();
-                    if ($existingPdf && Storage::disk('public')->exists($existingPdf->file_path)) {
-                        Storage::disk('public')->delete($existingPdf->file_path);
+                    if ($existingPdf && Storage::disk('local')->exists($existingPdf->file_path)) {
+                        Storage::disk('local')->delete($existingPdf->file_path);
                     }
-                    $stored  = $this->uploadPdf($contentData['pdf_file']);
+                    $stored  = $this->uploadPdf($pdfUpload);
                     $pdfMeta = [
                         'file_path'      => $stored['file_path'],
-                        'pdf_page_count' => $contentData['pdf_page_count'] ?? null,
+                        'pdf_page_count' => $pdfPageCount,
                     ];
-                } elseif (isset($contentData['pdf'])) {
-                    $pdfMeta = $contentData['pdf'];
-
-                    // Delete old file from storage if path changed
-                    if ($pdfMeta) {
-                        $existingPdf = $content->pdf;
-                        if ($existingPdf
-                            && isset($pdfMeta['file_path'])
-                            && $existingPdf->file_path !== $pdfMeta['file_path']) {
-                            if (Storage::disk('public')->exists($existingPdf->file_path)) {
-                                Storage::disk('public')->delete($existingPdf->file_path);
-                            }
-                        }
-                    }
+                } elseif (is_array($contentData['pdf'] ?? null)
+                    && array_key_exists('pdf_page_count', $contentData['pdf'])) {
+                    $pdfMeta = [
+                        'pdf_page_count' => $pdfPageCount,
+                    ];
                 }
                 unset($contentData['pdf_file'], $contentData['pdf_page_count'], $contentData['pdf']);
 
@@ -409,13 +413,27 @@ class OnlineCourseService
                 $content->update($contentData);
 
                 if ($content->content_type === 'pdf' && $pdfMeta) {
-                    $content->pdf()->updateOrCreate(
-                        ['module_content_id' => $content->id],
-                        [
-                            'file_path'      => $pdfMeta['file_path'],
-                            'pdf_page_count' => $pdfMeta['pdf_page_count'] ?? null,
-                        ]
-                    );
+                    $existingPdf = $content->pdf()->first();
+
+                    if ($existingPdf) {
+                        $updates = [];
+                        if (array_key_exists('pdf_page_count', $pdfMeta)) {
+                            $updates['pdf_page_count'] = $pdfMeta['pdf_page_count'];
+                        }
+                        if (isset($pdfMeta['file_path'])) {
+                            $updates['file_path'] = $pdfMeta['file_path'];
+                        }
+
+                        if ($updates !== []) {
+                            $existingPdf->update($updates);
+                        }
+                    } elseif (isset($pdfMeta['file_path'])) {
+                        ModuleContentPdf::query()->create([
+                            'module_content_id' => $content->id,
+                            'file_path'         => $pdfMeta['file_path'],
+                            'pdf_page_count'    => $pdfMeta['pdf_page_count'] ?? null,
+                        ]);
+                    }
                 }
             } else {
                 $this->createContent($module->id, $contentData);
@@ -448,11 +466,10 @@ class OnlineCourseService
             }
         }
 
-        if ($content->attachment_path && Storage::disk('public')->exists($content->attachment_path)) {
-            Storage::disk('public')->delete($content->attachment_path);
+        if ($content->attachment_path && Storage::disk('local')->exists($content->attachment_path)) {
+            Storage::disk('local')->delete($content->attachment_path);
         }
 
         $content->delete();
     }
 }
-

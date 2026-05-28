@@ -9,7 +9,6 @@ use App\Services\OnlineCourse\OnlineCourseAssignmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
 
 class OnlineCourseAssignmentController extends Controller
 {
@@ -17,7 +16,7 @@ class OnlineCourseAssignmentController extends Controller
 
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $filters = $request->only(['course_online_id', 'user_id', 'is_overdue']);
+        $filters = $request->only(['course_online_id', 'user_id']);
         $perPage = (int) $request->query('per_page', 15);
 
         $assignments = $this->service->getAllAssignments($filters, $perPage);
@@ -36,10 +35,14 @@ class OnlineCourseAssignmentController extends Controller
         ], 201);
     }
 
-    public function delete(int $id): Response
+    public function delete(int $id): JsonResponse
     {
-        $this->service->deleteAssignment($id, request()->user());
+        $this->service->deleteAssignment($id);
 
-        return response()->noContent();
+        return response()->json([
+            'message' => 'Online course assignment deleted successfully.',
+            'deleted' => true,
+            'id'      => $id,
+        ]);
     }
 }

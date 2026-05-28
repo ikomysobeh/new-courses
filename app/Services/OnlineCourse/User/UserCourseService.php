@@ -19,7 +19,6 @@ class UserCourseService
         $perPage = (int) ($filters['per_page'] ?? 15);
 
         $query = CourseOnlineAssignment::where('user_id', $userId)
-            ->whereNull('deleted_at')
             ->with([
                 'course' => function ($q) {
                     $q->with(['modules']);
@@ -83,7 +82,6 @@ class UserCourseService
         // Verify assignment
         $assigned = CourseOnlineAssignment::where('user_id', $userId)
             ->where('course_online_id', $courseOnlineId)
-            ->whereNull('deleted_at')
             ->exists();
 
         if (!$assigned) {
@@ -182,7 +180,6 @@ class UserCourseService
         // Verify assignment
         $assigned = CourseOnlineAssignment::where('user_id', $userId)
             ->where('course_online_id', $courseOnlineId)
-            ->whereNull('deleted_at')
             ->exists();
 
         if (!$assigned) {
@@ -192,7 +189,7 @@ class UserCourseService
         // Verify content belongs to this course
         $content = ModuleContent::whereHas('module', function ($q) use ($courseOnlineId) {
             $q->where('course_online_id', $courseOnlineId);
-        })->with(['module', 'pdf'])->find($contentId);
+        })->with(['module', 'pdf', 'video'])->find($contentId);
 
         if (!$content) {
             abort(404, 'Content not found in this course.');

@@ -4,6 +4,7 @@ namespace App\Http\Resources\User\OnlineCourse;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class ContentViewResource extends JsonResource
 {
@@ -16,6 +17,18 @@ class ContentViewResource extends JsonResource
             'content_type'    => $data['content']->content_type,
             'title'           => $data['content']->title,
             'duration_seconds' => $data['content']->duration,
+            'thumbnail_path'  => (function () use ($data) {
+                $content = $data['content'];
+                $path = $content->thumbnail_path
+                    ?? ($content->content_type === 'video' && $content->relationLoaded('video') && $content->video
+                        ? $content->video->thumbnail_path
+                        : null);
+                return $path ? Storage::disk('public')->url($path) : null;
+            })(),
+            'attachment_path' => $data['content']->attachment_path
+                ? Storage::disk('public')->url($data['content']->attachment_path)
+                : null,
+            'attachment_name' => $data['content']->attachment_name,
             'media_url'       => $data['media_url'],
             'pdf_total_pages' => $data['pdf_total_pages'] ?? null,
             'progress'        => $data['progress'] ? [

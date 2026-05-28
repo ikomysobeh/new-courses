@@ -17,7 +17,6 @@ class StoreOnlineCourseAssignmentRequest extends FormRequest
             'course_online_id'  => ['required', 'integer', 'exists:course_onlines,id'],
             'user_ids'          => ['required', 'array', 'min:1'],
             'user_ids.*'        => ['required', 'integer', 'exists:users,id'],
-            'deadline'          => ['nullable', 'date'],
             'send_notification' => ['nullable', 'boolean'],
         ];
     }

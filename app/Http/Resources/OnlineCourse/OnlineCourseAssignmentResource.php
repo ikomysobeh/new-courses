@@ -10,12 +10,9 @@ class OnlineCourseAssignmentResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'            => $this->id,
-            'assigned_at'   => $this->assigned_at,
-            'deadline'      => $this->deadline,
-            'is_overdue'    => $this->is_overdue,
-            'unassigned_at' => $this->unassigned_at,
-            'user'          => $this->whenLoaded('user', fn () => [
+            'id'          => $this->id,
+            'assigned_at' => $this->assigned_at,
+            'user'        => $this->whenLoaded('user', fn () => [
                 'id'    => $this->user->id,
                 'name'  => $this->user->name,
                 'email' => $this->user->email,

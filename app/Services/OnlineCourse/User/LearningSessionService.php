@@ -17,7 +17,6 @@ class LearningSessionService
         // Verify user is assigned to course
         $assigned = CourseOnlineAssignment::where('user_id', $userId)
             ->where('course_online_id', $courseId)
-            ->whereNull('deleted_at')
             ->exists();
 
         if (!$assigned) {
