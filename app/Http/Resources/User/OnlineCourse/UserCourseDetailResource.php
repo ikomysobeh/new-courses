@@ -3,9 +3,9 @@
 namespace App\Http\Resources\User\OnlineCourse;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class UserCourseDetailResource extends JsonResource
+class UserCourseDetailResource extends BaseResource
 {
     public function toArray(Request $request): array
     {
@@ -38,6 +38,7 @@ class UserCourseDetailResource extends JsonResource
                     'description'  => $mod['module']->description,
                     'order_number' => $mod['module']->order_number,
                     'has_quiz'     => $mod['module']->has_quiz,
+                    'quiz_id'      => $mod['module']->quiz?->id,
                     'is_required'  => true,
                     'is_unlocked'  => $mod['is_unlocked'],
                     'is_completed' => $mod['is_completed'],

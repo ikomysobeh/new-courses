@@ -28,8 +28,19 @@ class QuizAttemptService
             throw new QuizNotAvailableException();
         }
 
+        // Check if user is assigned directly to the quiz
         $isAssigned = $quiz->assignments()->where('user_id', $userId)->exists();
-        if (!$isAssigned) {
+
+        // OR check if user is assigned to the course that contains this quiz's module
+        $isCourseAssigned = false;
+        if ($quiz->module_id) {
+            $isCourseAssigned = \App\Models\CourseOnlineAssignment::query()
+                ->where('user_id', $userId)
+                ->where('course_online_id', $quiz->course_online_id)
+                ->exists();
+        }
+
+        if (!$isAssigned && !$isCourseAssigned) {
             throw new QuizNotAssignedException();
         }
 

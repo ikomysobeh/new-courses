@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('reporting_learning_sessions_fact', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('session_id')->constrained('learning_sessions')->cascadeOnDelete();
+            $table->foreignId('session_id')->unique()->constrained('learning_sessions')->cascadeOnDelete();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('course_online_id');
             $table->unsignedBigInteger('content_id')->nullable();

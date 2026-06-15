@@ -92,7 +92,7 @@ class UserCourseService
             'modules' => function ($q) {
                 $q->orderBy('order_number')->with([
                     'contents' => function ($q2) {
-                        $q2->orderBy('order_number');
+                        $q2->orderBy('order_number')->with(['video', 'pdf']);
                     },
                     'quiz',
                 ]);

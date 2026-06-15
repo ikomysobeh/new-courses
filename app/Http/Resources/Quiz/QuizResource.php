@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Quiz;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class QuizResource extends JsonResource
+class QuizResource extends BaseResource
 {
     public function toArray(Request $request): array
     {
@@ -15,7 +15,7 @@ class QuizResource extends JsonResource
             'description'          => $this->description,
             'course_id'            => $this->course_id,
             'course_name'          => $this->whenLoaded('course', fn () => $this->course?->name),
-            'course_online_id'     => $this->course_online_id,
+            'course_online_id'     => $this->course_online_id ?? $this->whenLoaded('module', fn () => $this->module?->course_online_id),
             'module_id'            => $this->module_id,
             'status'               => $this->status,
             'required_to_proceed'  => (bool) $this->required_to_proceed,

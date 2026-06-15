@@ -44,6 +44,15 @@ use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\BlogFeedController;
 use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\BlogLikeController;
+use App\Http\Controllers\Api\Admin\Reporting\ReportingKpiController;
+use App\Http\Controllers\Api\Admin\Reporting\ReportingDatasetController;
+use App\Http\Controllers\Api\Admin\Reporting\ReportingExportController;
+use App\Http\Controllers\Api\Admin\Reporting\ReportingRefreshController;
+use App\Http\Controllers\Api\Admin\Reporting\LiveCourseReportController;
+use App\Http\Controllers\Api\Admin\Reporting\QuizReportController;
+use App\Http\Controllers\Api\Admin\Reporting\UserPerformanceReportController;
+use App\Http\Controllers\Api\Admin\Reporting\EvaluationReportController;
+use App\Http\Controllers\Api\Admin\Reporting\ReportingExtraExportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -303,6 +312,57 @@ Route::prefix('admin')->group(function () {
             Route::get('/getById/{id}',        [BlogPostController::class, 'getById'])        ->name('admin.blog-posts.getById');
             Route::put('/update/{id}',         [BlogPostController::class, 'update'])         ->name('admin.blog-posts.update');
             Route::delete('/delete/{id}',      [BlogPostController::class, 'delete'])         ->name('admin.blog-posts.delete');
+        });
+
+        // Reporting routes (Phase 7)
+        Route::prefix('reporting')->group(function () {
+            // KPI
+            Route::get('/kpi/overview',  [ReportingKpiController::class, 'overview']) ->name('admin.reporting.kpi.overview');
+            Route::get('/kpi/trends',    [ReportingKpiController::class, 'trends'])   ->name('admin.reporting.kpi.trends');
+
+            // Datasets
+            Route::get('/datasets/user-course-daily',    [ReportingDatasetController::class, 'userCourseDaily'])    ->name('admin.reporting.datasets.user-course-daily');
+            Route::get('/datasets/department-course-daily', [ReportingDatasetController::class, 'departmentCourseDaily'])->name('admin.reporting.datasets.department-course-daily');
+            Route::get('/datasets/session-fact',         [ReportingDatasetController::class, 'sessionFact'])        ->name('admin.reporting.datasets.session-fact');
+
+            // Exports
+            Route::get('/export/user-course-daily',       [ReportingExportController::class, 'userCourseDaily'])       ->name('admin.reporting.export.user-course-daily');
+            Route::get('/export/department-course-daily', [ReportingExportController::class, 'departmentCourseDaily']) ->name('admin.reporting.export.department-course-daily');
+            Route::get('/export/session-fact',            [ReportingExportController::class, 'sessionFact'])           ->name('admin.reporting.export.session-fact');
+            Route::get('/export/kpi-overview',            [ReportingExportController::class, 'kpiOverview'])           ->name('admin.reporting.export.kpi-overview');
+
+            // Refresh (ETL triggers)
+            Route::post('/refresh/daily',  [ReportingRefreshController::class, 'daily']) ->name('admin.reporting.refresh.daily');
+            Route::post('/refresh/range',  [ReportingRefreshController::class, 'range']) ->name('admin.reporting.refresh.range');
+            Route::post('/refresh/full',   [ReportingRefreshController::class, 'full'])  ->name('admin.reporting.refresh.full');
+            Route::get('/refresh/log',     [ReportingRefreshController::class, 'log'])   ->name('admin.reporting.refresh.log');
+
+            // ----------------------------------------------------------------
+            // Live / traditional course reports (registrations, attendance, completion)
+            // ----------------------------------------------------------------
+            Route::get('/live/course-registrations', [LiveCourseReportController::class, 'courseRegistrations'])->name('admin.reporting.live.course-registrations');
+            Route::get('/live/attendance',           [LiveCourseReportController::class, 'attendance'])         ->name('admin.reporting.live.attendance');
+            Route::get('/live/course-completion',    [LiveCourseReportController::class, 'courseCompletion'])   ->name('admin.reporting.live.course-completion');
+
+            // Quiz reports
+            Route::get('/quiz/attempts', [QuizReportController::class, 'attempts'])->name('admin.reporting.quiz.attempts');
+
+            // User performance & compliance
+            Route::get('/user-performance',     [UserPerformanceReportController::class, 'performance'])  ->name('admin.reporting.user-performance');
+            Route::get('/user-course-progress', [UserPerformanceReportController::class, 'courseProgress'])->name('admin.reporting.user-course-progress');
+
+            // Evaluation-based department performance
+            Route::get('/evaluation/department-performance', [EvaluationReportController::class, 'departmentPerformance'])->name('admin.reporting.evaluation.department-performance');
+
+            // CSV exports for the reports above
+            Route::get('/export/live/course-registrations', [ReportingExtraExportController::class, 'courseRegistrations'])->name('admin.reporting.export.live.course-registrations');
+            Route::get('/export/live/attendance',           [ReportingExtraExportController::class, 'attendance'])         ->name('admin.reporting.export.live.attendance');
+            Route::get('/export/live/course-completion',    [ReportingExtraExportController::class, 'courseCompletion'])   ->name('admin.reporting.export.live.course-completion');
+            Route::get('/export/quiz/attempts',             [ReportingExtraExportController::class, 'quizAttempts'])       ->name('admin.reporting.export.quiz.attempts');
+            Route::get('/export/quiz/detailed',             [ReportingExtraExportController::class, 'quizDetailed'])       ->name('admin.reporting.export.quiz.detailed');
+            Route::get('/export/user-performance',          [ReportingExtraExportController::class, 'userPerformance'])    ->name('admin.reporting.export.user-performance');
+            Route::get('/export/user-course-progress',      [ReportingExtraExportController::class, 'userCourseProgress']) ->name('admin.reporting.export.user-course-progress');
+            Route::get('/export/evaluation/department-performance', [ReportingExtraExportController::class, 'evaluationDepartment'])->name('admin.reporting.export.evaluation.department-performance');
         });
     });
 });

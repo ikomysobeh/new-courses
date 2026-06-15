@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Video;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class VideoQualityResource extends JsonResource
+class VideoQualityResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

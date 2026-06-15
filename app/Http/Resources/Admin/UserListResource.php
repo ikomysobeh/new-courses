@@ -3,10 +3,10 @@
 namespace App\Http\Resources\Admin;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
 /** @mixin \App\Models\User */
-class UserListResource extends JsonResource
+class UserListResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

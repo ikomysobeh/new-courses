@@ -2,12 +2,11 @@
 
 namespace App\Http\Resources\Course;
 
-use App\Models\CourseAssignment;
-use App\Models\CourseRegistration;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class CourseAvailabilityResource extends JsonResource
+class CourseAvailabilityResource extends BaseResource
 {
     public function toArray(Request $request): array
     {
@@ -17,13 +16,7 @@ class CourseAvailabilityResource extends JsonResource
         }
 
         $capacity = (int) ($this->capacity ?? 0);
-        $assignedCount = CourseAssignment::query()
-            ->where('course_availability_id', $this->id)
-            ->count();
-        $registeredCount = CourseRegistration::query()
-            ->where('course_availability_id', $this->id)
-            ->count();
-        $usedSeats = $assignedCount + $registeredCount;
+        $usedSeats = $this->countUniqueOccupantsForAvailability();
         $availableSpots = $capacity > 0 ? max(0, $capacity - $usedSeats) : 0;
 
         return [
@@ -46,5 +39,21 @@ class CourseAvailabilityResource extends JsonResource
             'created_at'               => $this->created_at?->toIso8601String(),
             'updated_at'               => $this->updated_at?->toIso8601String(),
         ];
+    }
+
+    private function countUniqueOccupantsForAvailability(): int
+    {
+        $assignedUserIds = DB::table('course_assignments')
+            ->where('course_availability_id', $this->id)
+            ->pluck('user_id');
+
+        $registeredUserIds = DB::table('course_registrations')
+            ->where('course_availability_id', $this->id)
+            ->pluck('user_id');
+
+        return $assignedUserIds
+            ->concat($registeredUserIds)
+            ->unique()
+            ->count();
     }
 }

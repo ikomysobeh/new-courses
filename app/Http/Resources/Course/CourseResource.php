@@ -3,10 +3,10 @@
 namespace App\Http\Resources\Course;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 use Illuminate\Support\Facades\Storage;
 
-class CourseResource extends JsonResource
+class CourseResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

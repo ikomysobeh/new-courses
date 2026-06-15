@@ -4,9 +4,9 @@ namespace App\Http\Resources\Evaluation;
 
 use App\Enums\PerformanceLevel;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class EvaluationResource extends JsonResource
+class EvaluationResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

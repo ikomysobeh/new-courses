@@ -3,10 +3,10 @@
 namespace App\Http\Resources\Audio;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 use Illuminate\Support\Facades\Storage;
 
-class AudioResource extends JsonResource
+class AudioResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

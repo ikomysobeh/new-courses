@@ -231,6 +231,23 @@ class CourseService
         $course = Course::query()->findOrFail($courseId);
         $user   = User::query()->findOrFail($userId);
 
+        $resolvedAvailabilityId = $availabilityId;
+
+        if ($resolvedAvailabilityId === null) {
+            $candidateAvailabilityIds = CourseAvailability::query()
+                ->where('course_id', $courseId)
+                ->where('status', 'active')
+                ->where(function ($query) {
+                    $query->whereNull('end_date')
+                        ->orWhere('end_date', '>=', now()->startOfDay());
+                })
+                ->pluck('id');
+
+            if ($candidateAvailabilityIds->count() === 1) {
+                $resolvedAvailabilityId = (int) $candidateAvailabilityIds->first();
+            }
+        }
+
         $exists = CourseAssignment::query()
             ->where('course_id', $courseId)
             ->where('user_id', $userId)
@@ -253,12 +270,12 @@ class CourseService
             ]);
         }
 
-        $assignment = DB::transaction(function () use ($courseId, $userId, $availabilityId, $admin) {
-            if ($availabilityId !== null) {
+        $assignment = DB::transaction(function () use ($courseId, $userId, $resolvedAvailabilityId, $admin) {
+            if ($resolvedAvailabilityId !== null) {
                 /** @var CourseAvailability $availability */
                 $availability = CourseAvailability::query()
                     ->lockForUpdate()
-                    ->findOrFail($availabilityId);
+                    ->findOrFail($resolvedAvailabilityId);
 
                 if ((int) $availability->course_id !== $courseId) {
                     throw ValidationException::withMessages([
@@ -278,13 +295,7 @@ class CourseService
                     ]);
                 }
 
-                $assignedCount = CourseAssignment::query()
-                    ->where('course_availability_id', $availabilityId)
-                    ->count();
-                $registeredCount = CourseRegistration::query()
-                    ->where('course_availability_id', $availabilityId)
-                    ->count();
-                $usedSeats = $assignedCount + $registeredCount;
+                $usedSeats = $this->countUniqueOccupantsForAvailability($resolvedAvailabilityId);
                 $capacity = (int) ($availability->capacity ?? 0);
 
                 if ($capacity > 0 && $usedSeats >= $capacity) {
@@ -294,13 +305,25 @@ class CourseService
                 }
             }
 
-            return CourseAssignment::query()->create([
+            $assignment = CourseAssignment::query()->create([
                 'course_id'               => $courseId,
                 'user_id'                 => $userId,
                 'assigned_by'             => $admin->id,
-                'course_availability_id'  => $availabilityId,
+                'course_availability_id'  => $resolvedAvailabilityId,
                 'assigned_at'             => now(),
             ]);
+
+            if ($resolvedAvailabilityId !== null) {
+                CourseRegistration::query()->create([
+                    'user_id'                => $userId,
+                    'course_id'              => $courseId,
+                    'course_availability_id' => $resolvedAvailabilityId,
+                    'status'                 => 'in_progress',
+                    'registered_at'          => now(),
+                ]);
+            }
+
+            return $assignment;
         });
 
         CourseAssigned::dispatch($course, $user, $admin);
@@ -419,15 +442,7 @@ class CourseService
                 ]);
             }
 
-            $assignedCount = CourseAssignment::query()
-                ->where('course_availability_id', $availabilityId)
-                ->where('user_id', '!=', $user->id)
-                ->count();
-            $registeredCount = CourseRegistration::query()
-                ->where('course_availability_id', $availabilityId)
-                ->where('user_id', '!=', $user->id)
-                ->count();
-            $usedSeats = $assignedCount + $registeredCount;
+            $usedSeats = $this->countUniqueOccupantsForAvailability($availabilityId, $user->id);
             $capacity = (int) ($availability->capacity ?? 0);
 
             if ($capacity > 0 && $usedSeats >= $capacity) {
@@ -560,6 +575,30 @@ class CourseService
             'session_time_shift_3'     => $data['session_time_shift_3'] ?? null,
             'session_duration_minutes' => $data['session_duration_minutes'] ?? null,
         ], fn ($v) => ! is_null($v));
+    }
+
+    private function countUniqueOccupantsForAvailability(int $availabilityId, ?int $excludeUserId = null): int
+    {
+        $assignedUserIds = CourseAssignment::query()
+            ->where('course_availability_id', $availabilityId)
+            ->when(
+                $excludeUserId !== null,
+                fn ($query) => $query->where('user_id', '!=', $excludeUserId)
+            )
+            ->pluck('user_id');
+
+        $registeredUserIds = CourseRegistration::query()
+            ->where('course_availability_id', $availabilityId)
+            ->when(
+                $excludeUserId !== null,
+                fn ($query) => $query->where('user_id', '!=', $excludeUserId)
+            )
+            ->pluck('user_id');
+
+        return $assignedUserIds
+            ->concat($registeredUserIds)
+            ->unique()
+            ->count();
     }
 
     private function storeImageIfPresent(?UploadedFile $image): ?string

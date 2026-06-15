@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Support;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class FeedbackResource extends JsonResource
+class FeedbackResource extends BaseResource
 {
     public function toArray(Request $request): array
     {
