@@ -34,6 +34,7 @@ class DepartmentService
 
     public function getAll(): Collection
     {
+        
         return Department::query()
             ->whereNull('parent_id')
             ->with($this->treeRelations())

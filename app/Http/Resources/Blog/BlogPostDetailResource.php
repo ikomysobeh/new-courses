@@ -4,10 +4,10 @@ namespace App\Http\Resources\Blog;
 
 use App\Services\Blog\Media\BlogMediaService;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 use Illuminate\Support\Facades\Storage;
 
-class BlogPostDetailResource extends JsonResource
+class BlogPostDetailResource extends BaseResource
 {
     public function __construct($resource, private readonly ?string $streamUrl = null, private readonly ?bool $isLiked = null)
     {

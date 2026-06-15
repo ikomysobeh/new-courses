@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Audio;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class AudioProgressResource extends JsonResource
+class AudioProgressResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Admin;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class AuthResource extends JsonResource
+class AuthResource extends BaseResource
 {
     /**
      * Transform the resource into an array.

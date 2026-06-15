@@ -25,6 +25,7 @@ class DepartmentController extends Controller
      */
     public function getAll(): AnonymousResourceCollection
     {
+        
         $departments = $this->departmentService->getAll();
 
         return DepartmentTreeResource::collection($departments)

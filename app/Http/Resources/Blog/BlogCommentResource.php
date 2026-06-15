@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Blog;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class BlogCommentResource extends JsonResource
+class BlogCommentResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

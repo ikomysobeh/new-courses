@@ -3,9 +3,9 @@
 namespace App\Http\Resources\OnlineCourse;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class CourseModuleResource extends JsonResource
+class CourseModuleResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

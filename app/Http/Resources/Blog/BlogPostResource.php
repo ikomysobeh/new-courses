@@ -3,10 +3,10 @@
 namespace App\Http\Resources\Blog;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 use Illuminate\Support\Facades\Storage;
 
-class BlogPostResource extends JsonResource
+class BlogPostResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

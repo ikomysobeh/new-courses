@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Quiz;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class QuizAnswerAdminResource extends JsonResource
+class QuizAnswerAdminResource extends BaseResource
 {
     public function toArray(Request $request): array
     {

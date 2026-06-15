@@ -3,10 +3,10 @@
 namespace App\Http\Resources\Admin;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
 /** @mixin \App\Models\Department */
-class DepartmentTreeResource extends JsonResource
+class DepartmentTreeResource extends BaseResource
 {
     /**
      * Transform the resource into an array.

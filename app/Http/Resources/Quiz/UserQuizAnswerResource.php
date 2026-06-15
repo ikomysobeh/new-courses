@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Quiz;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\BaseResource;
 
-class UserQuizAnswerResource extends JsonResource
+class UserQuizAnswerResource extends BaseResource
 {
     public bool $includeIsCorrect = false;
 
