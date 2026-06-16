@@ -7,8 +7,10 @@ use App\Http\Controllers\Admin\AudioCategoryController;
 use App\Http\Controllers\Admin\AudioController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\User\AuthController as UserAuthController;
 use App\Http\Controllers\User\AudioLearningController;
+use App\Http\Controllers\User\UserDashboardController;
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\CourseAssignmentController;
 use App\Http\Controllers\Admin\AttendanceController;
@@ -85,6 +87,9 @@ Route::prefix('admin')->group(function () {
     // Protected admin routes (require authentication)
     Route::middleware(['auth:sanctum', 'admin'])->group(function () {
         Route::get('/me', [AuthController::class, 'me'])->name('admin.me');
+
+        // Admin dashboard overview
+        Route::get('/dashboard', AdminDashboardController::class)->name('admin.dashboard');
 
         // Department routes
         Route::prefix('departments')->group(function () {
@@ -371,6 +376,9 @@ Route::prefix('user')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [UserAuthController::class, 'me'])->name('user.me');
 
+        // User dashboard overview
+        Route::get('/dashboard', UserDashboardController::class)->name('user.dashboard');
+
         Route::prefix('audio')->group(function () {
             Route::get('/getAll', [AudioLearningController::class, 'getAll'])->name('user.audio.getAll');
             Route::get('/getById/{id}', [AudioLearningController::class, 'getById'])->name('user.audio.getById');
@@ -423,7 +431,8 @@ Route::prefix('user')->group(function () {
             // Course navigation
             Route::get('/getAll',                         [UserOnlineCourseController::class, 'index'])   ->name('user.online-courses.getAll');
             Route::get('/getById/{id}',                   [UserOnlineCourseController::class, 'show'])    ->name('user.online-courses.getById');
-            Route::get('/{courseId}/content/{contentId}', [UserOnlineCourseController::class, 'content'])->name('user.online-courses.content');
+            Route::get('/{courseId}/content/{contentId}',            [UserOnlineCourseController::class, 'content'])            ->name('user.online-courses.content');
+            Route::get('/{courseId}/content/{contentId}/attachment', [UserOnlineCourseController::class, 'downloadAttachment'])->name('user.online-courses.content.attachment');
             Route::get('/progress/{contentId}/resume',    [UserOnlineCourseController::class, 'resume'])  ->name('user.online-courses.resume');
 
             // Session tracking

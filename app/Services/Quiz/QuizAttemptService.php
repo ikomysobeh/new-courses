@@ -31,12 +31,17 @@ class QuizAttemptService
         // Check if user is assigned directly to the quiz
         $isAssigned = $quiz->assignments()->where('user_id', $userId)->exists();
 
-        // OR check if user is assigned to the course that contains this quiz's module
+        // Course-quiz access: enrollment in the course this quiz belongs to is enough.
+        // Resolve the course id from the MODULE relationship first (reliable, since
+        // the quiz's own course_online_id column is frequently NULL), then fall back
+        // to the quiz column. Covers both module quizzes AND course-level quizzes.
+        $courseOnlineId = $quiz->module?->course_online_id ?? $quiz->course_online_id;
+
         $isCourseAssigned = false;
-        if ($quiz->module_id) {
+        if ($courseOnlineId) {
             $isCourseAssigned = \App\Models\CourseOnlineAssignment::query()
                 ->where('user_id', $userId)
-                ->where('course_online_id', $quiz->course_online_id)
+                ->where('course_online_id', $courseOnlineId)
                 ->exists();
         }
 

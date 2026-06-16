@@ -112,7 +112,8 @@ class QuizService
 
                 'course_id'            => $data['course_id'] ?? null,
 
-                'course_online_id'     => $data['course_online_id'] ?? null,
+                'course_online_id'     => $data['course_online_id']
+                    ?? optional(\App\Models\CourseModule::find($data['module_id'] ?? null))->course_online_id,
 
                 'module_id'            => $data['module_id'] ?? null,
 
