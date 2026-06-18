@@ -16,7 +16,7 @@ class OnlineCourseAssignmentController extends Controller
 
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $filters = $request->only(['course_online_id', 'user_id']);
+        $filters = $request->only(['course_online_id', 'user_id', 'search', 'is_overdue']);
         $perPage = (int) $request->query('per_page', 15);
 
         $assignments = $this->service->getAllAssignments($filters, $perPage);

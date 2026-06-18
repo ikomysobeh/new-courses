@@ -28,7 +28,7 @@ class BlogPostService
         return PodcastPost::query()
             ->published()
             ->where('slug', $slug)
-            ->with(['creator:id,name', 'comments.user:id,name', 'likes'])
+            ->with(['creator:id,name', 'comments.user:id,name', 'likes', 'mediable'])
             ->firstOrFail();
     }
 
@@ -59,7 +59,7 @@ class BlogPostService
     public function getByIdForAdmin(int $id): PodcastPost
     {
         return PodcastPost::query()
-            ->with(['creator:id,name', 'comments.user:id,name', 'likes'])
+            ->with(['creator:id,name', 'comments.user:id,name', 'likes', 'mediable'])
             ->findOrFail($id);
     }
 

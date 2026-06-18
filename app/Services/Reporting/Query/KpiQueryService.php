@@ -30,8 +30,7 @@ class KpiQueryService
             ->count();
 
         $enrolledUsers = DB::table('course_online_assignments')
-            ->whereNull('deleted_at')
-            ->whereNull('unassigned_at')
+            
             ->when(! empty($filters['course_online_id']), fn ($q) => $q->where('course_online_id', $filters['course_online_id']))
             ->count();
 
