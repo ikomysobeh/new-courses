@@ -223,7 +223,21 @@ class CourseService
             $query->where('user_id', $filters['user_id']);
         }
 
-        return $query->paginate(4);
+        if (! empty($filters['search'])) {
+            $term = $filters['search'];
+            $query->where(function ($q) use ($term) {
+                $q->whereHas('user', function ($uq) use ($term) {
+                    $uq->where('name', 'like', "%{$term}%")
+                       ->orWhere('email', 'like', "%{$term}%");
+                })->orWhereHas('course', function ($cq) use ($term) {
+                    $cq->where('name', 'like', "%{$term}%");
+                });
+            });
+        }
+
+        $perPage = isset($filters['per_page']) ? (int) $filters['per_page'] : 15;
+
+        return $query->paginate($perPage);
     }
 
     public function assignCourseToUser(int $courseId, int $userId, ?int $availabilityId, User $admin): CourseAssignment

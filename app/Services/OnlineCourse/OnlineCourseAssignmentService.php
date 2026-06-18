@@ -24,6 +24,18 @@ class OnlineCourseAssignmentService
             $query->where('user_id', $filters['user_id']);
         }
 
+        if (!empty($filters['search'])) {
+            $term = $filters['search'];
+            $query->where(function ($q) use ($term) {
+                $q->whereHas('user', function ($uq) use ($term) {
+                    $uq->where('name', 'like', "%{$term}%")
+                       ->orWhere('email', 'like', "%{$term}%");
+                })->orWhereHas('course', function ($cq) use ($term) {
+                    $cq->where('name', 'like', "%{$term}%");
+                });
+            });
+        }
+
         return $query->paginate($perPage);
     }
 
@@ -88,16 +100,18 @@ class OnlineCourseAssignmentService
 
     public function getAssignmentCards(): array
     {
-        $total        = CourseOnlineAssignment::query()->count();
+        $total         = CourseOnlineAssignment::query()->count();
+        $assignedUsers = CourseOnlineAssignment::query()
+            ->distinct('user_id')
+            ->count('user_id');
         $activeCourses = CourseOnlineAssignment::query()
             ->distinct('course_online_id')
             ->count('course_online_id');
 
         return [
             ['key' => 'total_assignments', 'title' => 'Total Assignments', 'value' => $total],
+            ['key' => 'assigned_users',    'title' => 'Assigned Users',    'value' => $assignedUsers],
             ['key' => 'active_courses',    'title' => 'Active Courses',    'value' => $activeCourses],
         ];
     }
 }
-
-

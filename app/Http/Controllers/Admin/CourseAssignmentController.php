@@ -20,7 +20,7 @@ class CourseAssignmentController extends Controller
     /** Get all course assignments (paginated). */
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $assignments = $this->courseService->getAllAssignmentsForAdmin($request->only('course_id', 'user_id'));
+        $assignments = $this->courseService->getAllAssignmentsForAdmin($request->only('course_id', 'user_id', 'search', 'per_page'));
 
         return CourseAssignmentResource::collection($assignments)
             ->additional([
