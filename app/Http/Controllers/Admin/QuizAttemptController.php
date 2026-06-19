@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Quiz\QuizAttemptAdminResource;
 use App\Models\QuizAttempt;
 use App\Services\Quiz\QuizAttemptService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class QuizAttemptController extends Controller
@@ -53,5 +54,26 @@ class QuizAttemptController extends Controller
             ->firstOrFail();
 
         return new QuizAttemptAdminResource($attempt);
+    }
+
+    /**
+     * Delete the user's last attempt so they can retry the quiz.
+     * Body: { "user_id": int }
+     */
+    public function grantRetry(int $quizId): JsonResponse
+    {
+        $userId = (int) request('user_id');
+
+        if (!$userId) {
+            abort(422, 'user_id is required.');
+        }
+
+        $deleted = $this->attemptService->grantRetry($quizId, $userId);
+
+        if (!$deleted) {
+            abort(404, 'No attempt found for this user on this quiz.');
+        }
+
+        return response()->json(['message' => 'Last attempt deleted. User can now retry the quiz.']);
     }
 }

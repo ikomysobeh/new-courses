@@ -59,6 +59,20 @@ class MediaStreamController extends Controller
         return $this->streamWithRangeSupport($request, $fullPath, $mimeType, $size);
     }
 
+    public function streamVideoQuality(Request $request, int $qualityId): StreamedResponse
+    {
+        $quality = \App\Models\VideoQuality::findOrFail($qualityId);
+
+        if (!$quality->file_path || !Storage::disk('local')->exists($quality->file_path)) {
+            abort(404, 'Quality file not found.');
+        }
+
+        $fullPath = Storage::disk('local')->path($quality->file_path);
+        $size     = filesize($fullPath);
+
+        return $this->streamWithRangeSupport($request, $fullPath, 'video/mp4', $size);
+    }
+
     public function streamBlogVideo(Request $request, int $videoId): StreamedResponse
     {
         $video = Video::query()->findOrFail($videoId);

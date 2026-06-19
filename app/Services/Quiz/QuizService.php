@@ -6,6 +6,8 @@ namespace App\Services\Quiz;
 
 
 
+use App\Models\CourseModule;
+
 use App\Models\Quiz;
 
 use App\Models\QuizQuestion;
@@ -69,6 +71,8 @@ class QuizService
             ->where('status', 'published')
 
             ->whereHas('assignments', fn ($q) => $q->where('user_id', $userId))
+
+            ->withExists(['attempts as user_has_attempted' => fn ($q) => $q->where('user_id', $userId)->whereNotNull('completed_at')])
 
             ->withExists(['attempts as user_passed' => fn ($q) => $q->where('user_id', $userId)->where('passed', true)])
 
@@ -155,7 +159,9 @@ class QuizService
 
             }
 
-
+            if ($quiz->module_id) {
+                CourseModule::where('id', $quiz->module_id)->update(['has_quiz' => true]);
+            }
 
             return $quiz->fresh(['questions']);
 
@@ -261,7 +267,13 @@ class QuizService
 
 
 
+        $moduleId = $quiz->module_id;
+
         $quiz->delete();
+
+        if ($moduleId) {
+            CourseModule::where('id', $moduleId)->update(['has_quiz' => false]);
+        }
 
     }
 

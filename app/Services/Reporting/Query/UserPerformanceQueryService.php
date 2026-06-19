@@ -67,7 +67,7 @@ class UserPerformanceQueryService
             ->leftJoinSub($progressSub, 'prog', 'prog.user_id', '=', 'u.id')
             ->leftJoinSub($sessionSub, 'sess', 'sess.user_id', '=', 'u.id')
             ->leftJoinSub($quizSub, 'qz', 'qz.user_id', '=', 'u.id')
-            ->where('u.role', 'user')
+            ->whereIn('u.role', ['user', 'admin'])
             ->whereNull('u.deleted_at')
             ->select(
                 'u.id as user_id',
@@ -93,6 +93,9 @@ class UserPerformanceQueryService
         }
         if (! empty($filters['user_id'])) {
             $q->where('u.id', $filters['user_id']);
+        }
+        if (! empty($filters['role'])) {
+            $q->where('u.role', $filters['role']);
         }
 
         return $q;

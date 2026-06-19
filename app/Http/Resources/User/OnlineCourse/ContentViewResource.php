@@ -30,6 +30,8 @@ class ContentViewResource extends BaseResource
                 : null,
             'attachment_name' => $data['content']->attachment_name,
             'media_url'       => $data['media_url'],
+            'qualities'       => $data['qualities'] ?? [],
+            'subtitle_url'    => $data['subtitle_url'] ?? null,
             'pdf_total_pages' => $data['pdf_total_pages'] ?? null,
             'progress'        => $data['progress'] ? [
                 'playback_position'     => $data['progress']->playback_position,

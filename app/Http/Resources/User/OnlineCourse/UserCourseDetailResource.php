@@ -39,10 +39,12 @@ class UserCourseDetailResource extends BaseResource
                     'order_number' => $mod['module']->order_number,
                     'has_quiz'     => $mod['module']->has_quiz,
                     'quiz_id'      => $mod['module']->quiz?->id,
-                    'is_required'  => true,
-                    'is_unlocked'  => $mod['is_unlocked'],
-                    'is_completed' => $mod['is_completed'],
-                    'quiz_status'  => $mod['quiz_status'],
+                    'is_required'     => true,
+                    'is_unlocked'     => $mod['is_unlocked'],
+                    'is_completed'    => $mod['is_completed'],
+                    'completed_count' => $mod['completed_count'],
+                    'total_count'     => $mod['total_count'],
+                    'quiz_status'     => $mod['quiz_status'],
                     'content'      => collect($mod['content'])->map(function ($c) {
                         return [
                             'id'               => $c['item']->id,

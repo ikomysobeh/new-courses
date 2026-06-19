@@ -19,13 +19,25 @@ class UserQuizResource extends BaseResource
             'time_limit_minutes'   => $this->time_limit_minutes,
             'deadline'             => $this->deadline,
             'show_correct_answers' => $this->show_correct_answers,
-            'user_passed'          => isset($this->user_passed)
-                ? (bool) $this->user_passed
-                : (bool) QuizAttempt::query()
+            'user_passed'          => (function () use ($request) {
+                // Pre-loaded via getAllForUser (withExists)
+                if (isset($this->user_has_attempted)) {
+                    if (!(bool) $this->user_has_attempted) return null;
+                    return (bool) $this->user_passed;
+                }
+                // Fallback: live query
+                $hasAttempt = QuizAttempt::query()
+                    ->where('quiz_id', $this->id)
+                    ->where('user_id', $request->user()->id)
+                    ->whereNotNull('completed_at')
+                    ->exists();
+                if (!$hasAttempt) return null;
+                return (bool) QuizAttempt::query()
                     ->where('quiz_id', $this->id)
                     ->where('user_id', $request->user()->id)
                     ->where('passed', true)
-                    ->exists(),
+                    ->exists();
+            })(),
             'user_total_score'     => isset($this->user_total_score)
                 ? (int) $this->user_total_score
                 : (int) QuizAttempt::query()

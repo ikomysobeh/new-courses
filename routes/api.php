@@ -76,6 +76,8 @@ Route::post('/transcode/callback', [TranscodeCallbackController::class, 'handle'
 // Media streaming routes — signed, no auth middleware required
 Route::get('/media/video/{content_id}', [MediaStreamController::class, 'streamVideo'])
     ->name('media.video')->middleware('signed');
+Route::get('/media/video-quality/{quality_id}', [MediaStreamController::class, 'streamVideoQuality'])
+    ->name('media.video-quality')->middleware('signed');
 Route::get('/media/pdf/{content_id}', [MediaStreamController::class, 'streamPdf'])
     ->name('media.pdf')->middleware('signed');
 Route::get('/media/blog-video/{video_id}', [MediaStreamController::class, 'streamBlogVideo'])
@@ -208,6 +210,7 @@ Route::prefix('admin')->group(function () {
             Route::prefix('{quizId}/attempts')->group(function () {
                 Route::get('/getAll', [QuizAttemptController::class, 'getAll'])->name('admin.quiz-attempts.getAll');
                 Route::get('/getById/{attemptId}', [QuizAttemptController::class, 'getById'])->name('admin.quiz-attempts.getById');
+                Route::delete('/grant-retry', [QuizAttemptController::class, 'grantRetry'])->name('admin.quiz-attempts.grant-retry');
             });
         });
 
