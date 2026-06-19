@@ -144,10 +144,12 @@ class UserCourseService
                 }
             }
 
-            // Build content array
-            $contentItems = [];
-            foreach ($module->contents as $ci => $contentItem) {
-                $contentIsUnlocked = $isUnlocked;
+            // Build content array — sequential locking within the module
+            $contentItems         = [];
+            $prevContentCompleted = true;
+
+            foreach ($module->contents->sortBy('order_number') as $contentItem) {
+                $contentIsUnlocked = $isUnlocked && $prevContentCompleted;
                 $contentProgress   = $progressMap->get($contentItem->id);
 
                 $contentItems[] = [
@@ -155,14 +157,26 @@ class UserCourseService
                     'is_unlocked' => $contentIsUnlocked,
                     'progress'    => $contentProgress,
                 ];
+
+                if ($contentItem->is_required) {
+                    $prevContentCompleted = $contentProgress?->is_completed === true;
+                }
             }
 
+            // Count completed required items for module progress display
+            $requiredItems  = $module->contents->where('is_required', true);
+            $completedCount = $requiredItems->filter(
+                fn ($c) => $progressMap->get($c->id)?->is_completed === true
+            )->count();
+
             $modules[] = [
-                'module'       => $module,
-                'is_unlocked'  => $isUnlocked,
-                'is_completed' => $moduleCompleted,
-                'quiz_status'  => $quizStatus,
-                'content'      => $contentItems,
+                'module'          => $module,
+                'is_unlocked'     => $isUnlocked,
+                'is_completed'    => $moduleCompleted,
+                'quiz_status'     => $quizStatus,
+                'content'         => $contentItems,
+                'completed_count' => $completedCount,
+                'total_count'     => $requiredItems->count(),
             ];
 
             $prevModuleCompleted = $moduleCompleted;
@@ -189,7 +203,7 @@ class UserCourseService
         // Verify content belongs to this course
         $content = ModuleContent::whereHas('module', function ($q) use ($courseOnlineId) {
             $q->where('course_online_id', $courseOnlineId);
-        })->with(['module', 'pdf', 'video'])->find($contentId);
+        })->with(['module', 'pdf', 'video.qualities'])->find($contentId);
 
         if (!$content) {
             abort(404, 'Content not found in this course.');
@@ -229,7 +243,17 @@ class UserCourseService
             $isUnlocked = $index === 0 || $prevModuleCompleted;
 
             if ($isUnlocked && $module->contents->contains('id', $contentId)) {
-                $contentUnlocked = true;
+                $prevContentCompleted = true;
+                foreach ($module->contents->sortBy('order_number') as $contentItem) {
+                    if ($contentItem->id === $contentId) {
+                        $contentUnlocked = $prevContentCompleted;
+                        break;
+                    }
+                    if ($contentItem->is_required) {
+                        $prevContentCompleted =
+                            $progressMap->get($contentItem->id)?->is_completed === true;
+                    }
+                }
             }
 
             $prevModuleCompleted = $this->isModuleCompletedFromMap(
@@ -266,6 +290,8 @@ class UserCourseService
         return [
             'content'         => $content,
             'media_url'       => $mediaUrl,
+            'qualities'       => $this->buildQualityUrls($content),
+            'subtitle_url'    => $this->buildSubtitleUrl($content),
             'pdf_total_pages' => $content->content_type === 'pdf' ? $content->pdf?->pdf_page_count : null,
             'progress'        => $userProgress,
             'next_content'    => $nextContent,
@@ -326,5 +352,45 @@ class UserCourseService
         }
 
         return true;
+    }
+
+    private function buildQualityUrls(ModuleContent $content): array
+    {
+        if ($content->content_type !== 'video'
+            || !$content->relationLoaded('video')
+            || !$content->video
+        ) {
+            return [];
+        }
+
+        return $content->video->qualities
+            ->sortBy(fn ($q) => (int) $q->quality)
+            ->map(fn ($q) => [
+                'id'         => $q->id,
+                'quality'    => $q->quality,
+                'file_size'  => $q->file_size,
+                'stream_url' => URL::temporarySignedRoute(
+                    'media.video-quality',
+                    now()->addHours(4),
+                    ['quality_id' => $q->id]
+                ),
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function buildSubtitleUrl(ModuleContent $content): ?string
+    {
+        if ($content->content_type !== 'video'
+            || !$content->relationLoaded('video')
+            || !$content->video
+            || !$content->video->subtitle_vtt_path
+        ) {
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->url(
+            $content->video->subtitle_vtt_path
+        );
     }
 }

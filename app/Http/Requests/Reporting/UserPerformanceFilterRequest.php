@@ -19,6 +19,7 @@ class UserPerformanceFilterRequest extends FormRequest
             'user_id'          => ['nullable', 'integer', 'exists:users,id'],
             'department_id'    => ['nullable', 'integer', 'exists:departments,id'],
             'course_online_id' => ['nullable', 'integer', 'exists:course_onlines,id'],
+            'role'             => ['nullable', 'string', 'in:user,admin'],
             'per_page'         => ['nullable', 'integer', 'min:5', 'max:100'],
         ];
     }

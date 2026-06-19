@@ -2,8 +2,10 @@
 
 namespace App\Services\OnlineCourse\User;
 
+use App\Models\CourseModule;
 use App\Models\CourseOnlineAssignment;
 use App\Models\ModuleContent;
+use App\Models\QuizAttempt;
 use App\Models\UserContentProgress;
 use App\Models\UserCourseProgress;
 use Carbon\Carbon;
@@ -44,7 +46,8 @@ class ContentProgressService
         if ($percentage > 0 && $percentage < 100) {
             $status = 'in_progress';
         } elseif ($percentage >= 100) {
-            $status = 'completed';
+            $allQuizzesPassed = $this->allRequiredQuizzesPassed($userId, $courseOnlineId);
+            $status = $allQuizzesPassed ? 'completed' : 'in_progress';
         }
 
         $updateData = [
@@ -66,6 +69,36 @@ class ContentProgressService
             ['user_id' => $userId, 'course_online_id' => $courseOnlineId],
             $updateData
         );
+    }
+
+    private function allRequiredQuizzesPassed(int $userId, int $courseOnlineId): bool
+    {
+        $modules = CourseModule::where('course_online_id', $courseOnlineId)
+            ->where('has_quiz', true)
+            ->where('quiz_required', true)
+            ->with('quiz')
+            ->get();
+
+        if ($modules->isEmpty()) {
+            return true;
+        }
+
+        foreach ($modules as $module) {
+            if (!$module->quiz) {
+                return false;
+            }
+
+            $passed = QuizAttempt::where('user_id', $userId)
+                ->where('quiz_id', $module->quiz->id)
+                ->where('passed', true)
+                ->exists();
+
+            if (!$passed) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function updatePdfProgress(int $userId, array $data): array

@@ -137,6 +137,26 @@ class QuizAttemptService
             ->firstOrFail();
     }
 
+    public function grantRetry(int $quizId, int $userId): bool
+    {
+        $lastAttempt = QuizAttempt::query()
+            ->where('quiz_id', $quizId)
+            ->where('user_id', $userId)
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$lastAttempt) {
+            return false;
+        }
+
+        DB::transaction(function () use ($lastAttempt) {
+            $lastAttempt->answers()->delete();
+            $lastAttempt->delete();
+        });
+
+        return true;
+    }
+
     public function getAdminAttemptCards(int $quizId): array
     {
         $total  = QuizAttempt::query()->where('quiz_id', $quizId)->count();
