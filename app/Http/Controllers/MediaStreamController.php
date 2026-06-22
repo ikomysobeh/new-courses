@@ -73,6 +73,27 @@ class MediaStreamController extends Controller
         return $this->streamWithRangeSupport($request, $fullPath, 'video/mp4', $size);
     }
 
+    public function streamSubtitle(int $contentId): \Illuminate\Http\Response
+    {
+        $content = ModuleContent::where('id', $contentId)
+            ->where('content_type', 'video')
+            ->with('video')
+            ->firstOrFail();
+
+        $video = $content->video;
+
+        abort_unless(
+            $video && $video->subtitle_vtt_path && Storage::disk('local')->exists($video->subtitle_vtt_path),
+            404,
+            'Subtitle file not found.'
+        );
+
+        return response(Storage::disk('local')->get($video->subtitle_vtt_path), 200, [
+            'Content-Type'        => 'text/vtt; charset=UTF-8',
+            'Content-Disposition' => 'inline',
+        ]);
+    }
+
     public function streamBlogVideo(Request $request, int $videoId): StreamedResponse
     {
         $video = Video::query()->findOrFail($videoId);

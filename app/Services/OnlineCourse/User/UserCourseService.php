@@ -389,8 +389,10 @@ class UserCourseService
             return null;
         }
 
-        return \Illuminate\Support\Facades\Storage::disk('public')->url(
-            $content->video->subtitle_vtt_path
+        return URL::temporarySignedRoute(
+            'media.subtitle',
+            now()->addHours(4),
+            ['content_id' => $content->id]
         );
     }
 }

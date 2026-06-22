@@ -84,6 +84,8 @@ Route::get('/media/blog-video/{video_id}', [MediaStreamController::class, 'strea
     ->name('media.blog-video')->middleware('signed');
 Route::get('/media/blog-audio/{audio_id}', [MediaStreamController::class, 'streamBlogAudio'])
     ->name('media.blog-audio')->middleware('signed');
+Route::get('/media/subtitle/{content_id}', [MediaStreamController::class, 'streamSubtitle'])
+    ->name('media.subtitle')->middleware('signed');
 
 Route::prefix('admin')->group(function () {
     // Protected admin routes (require authentication)
