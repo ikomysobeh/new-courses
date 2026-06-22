@@ -68,7 +68,6 @@ class UserPerformanceQueryService
             ->leftJoinSub($sessionSub, 'sess', 'sess.user_id', '=', 'u.id')
             ->leftJoinSub($quizSub, 'qz', 'qz.user_id', '=', 'u.id')
             ->whereIn('u.role', ['user', 'admin'])
-            ->whereNull('u.deleted_at')
             ->select(
                 'u.id as user_id',
                 'u.name as user_name',

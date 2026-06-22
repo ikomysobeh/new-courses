@@ -10,7 +10,7 @@ class CourseAssignmentSeeder extends Seeder
     public function run(): void
     {
         $admin   = DB::table('users')->where('role', 'admin')->first();
-        $users   = DB::table('users')->where('role', 'user')->whereNull('deleted_at')->get();
+        $users   = DB::table('users')->where('role', 'user')->get();
         $courses = DB::table('courses')->whereNull('deleted_at')->where('status', 'published')->get();
         $quizzes = DB::table('quizzes')->whereNull('deleted_at')->where('status', 'published')->get();
 

@@ -234,6 +234,7 @@ Route::prefix('admin')->group(function () {
             Route::put('/update/{id}',     [OnlineCourseController::class, 'update'])         ->name('admin.online-courses.update');
             Route::delete('/delete/{id}',  [OnlineCourseController::class, 'delete'])         ->name('admin.online-courses.delete');
             Route::put('/modules/reorder', [OnlineCourseController::class, 'reorderModules']) ->name('admin.online-courses.modules.reorder');
+            Route::get('/{id}/enrollments', [OnlineCourseController::class, 'enrollments'])   ->name('admin.online-courses.enrollments');
         });
 
         // Online course assignment routes

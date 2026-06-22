@@ -10,7 +10,7 @@ class NotificationSeeder extends Seeder
     public function run(): void
     {
         $admin   = DB::table('users')->where('role', 'admin')->first();
-        $users   = DB::table('users')->where('role', 'user')->whereNull('deleted_at')->get();
+        $users   = DB::table('users')->where('role', 'user')->get();
 
         if (! $admin || $users->isEmpty()) {
             $this->command?->warn('NotificationSeeder: missing admin or users — skipping.');

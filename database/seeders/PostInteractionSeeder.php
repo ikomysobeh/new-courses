@@ -10,7 +10,7 @@ class PostInteractionSeeder extends Seeder
     public function run(): void
     {
         $posts = DB::table('podcast_posts')->where('status', 'published')->get();
-        $users = DB::table('users')->whereNull('deleted_at')->get();
+        $users = DB::table('users')->get();
 
         if ($posts->isEmpty() || $users->isEmpty()) {
             $this->command?->warn('PostInteractionSeeder: no published posts or users — skipping.');

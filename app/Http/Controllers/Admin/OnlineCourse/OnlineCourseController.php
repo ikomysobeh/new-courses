@@ -65,4 +65,24 @@ class OnlineCourseController extends Controller
 
         return response()->json(['message' => 'Modules reordered successfully.']);
     }
+
+    public function enrollments(Request $request, int $id): JsonResponse
+    {
+        $filters = $request->only(['search', 'status', 'department_id']);
+        $perPage = (int) $request->query('per_page', 20);
+
+        $enrollments = $this->service->getCourseEnrollments($id, $filters, $perPage);
+        $cards       = $this->service->getCourseEnrollmentCards($id);
+
+        return response()->json([
+            'data'  => $enrollments->items(),
+            'meta'  => [
+                'current_page' => $enrollments->currentPage(),
+                'last_page'    => $enrollments->lastPage(),
+                'total'        => $enrollments->total(),
+                'per_page'     => $enrollments->perPage(),
+            ],
+            'cards' => $cards,
+        ]);
+    }
 }
