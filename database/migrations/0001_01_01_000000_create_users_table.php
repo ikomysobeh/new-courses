@@ -24,7 +24,6 @@ return new class extends Migration
             $table->timestamp('login_token_expires_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
-            $table->softDeletes();
 
             $table->index('department_id');
             $table->index('report_to');

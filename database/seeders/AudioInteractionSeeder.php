@@ -10,7 +10,7 @@ class AudioInteractionSeeder extends Seeder
     public function run(): void
     {
         $admin  = DB::table('users')->where('role', 'admin')->first();
-        $users  = DB::table('users')->where('role', 'user')->whereNull('deleted_at')->get();
+        $users  = DB::table('users')->where('role', 'user')->get();
         $audios = DB::table('audios')->whereNull('deleted_at')->get();
 
         if (! $admin || $users->isEmpty() || $audios->isEmpty()) {

@@ -229,6 +229,71 @@ class OnlineCourseService
         ];
     }
 
+    public function getCourseEnrollments(int $courseId, array $filters = [], int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = DB::table('course_online_assignments as a')
+            ->join('users as u', 'u.id', '=', 'a.user_id')
+            ->leftJoin('departments as d', 'd.id', '=', 'u.department_id')
+            ->leftJoin('users as ab', 'ab.id', '=', 'a.assigned_by')
+            ->leftJoin('user_course_progress as p', function ($join) use ($courseId) {
+                $join->on('p.user_id', '=', 'a.user_id')
+                     ->where('p.course_online_id', '=', $courseId);
+            })
+            ->where('a.course_online_id', $courseId)
+            ->select(
+                'u.id as user_id',
+                'u.name as user_name',
+                'u.email as user_email',
+                'd.name as department',
+                'a.assigned_at',
+                'ab.name as assigned_by',
+                DB::raw("COALESCE(p.status, 'not_started') as status"),
+                DB::raw('COALESCE(p.progress_percentage, 0) as progress_percentage'),
+                DB::raw('COALESCE(p.completed_content_items, 0) as completed_content_items'),
+                DB::raw('COALESCE(p.total_content_items, 0) as total_content_items'),
+                'p.started_at',
+                'p.completed_at',
+                'p.last_accessed_at'
+            );
+
+        if (!empty($filters['search'])) {
+            $term = '%' . $filters['search'] . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('u.name', 'like', $term)
+                  ->orWhere('u.email', 'like', $term);
+            });
+        }
+
+        if (!empty($filters['status'])) {
+            if ($filters['status'] === 'not_started') {
+                $query->whereNull('p.status');
+            } else {
+                $query->where('p.status', $filters['status']);
+            }
+        }
+
+        if (!empty($filters['department_id'])) {
+            $query->where('u.department_id', $filters['department_id']);
+        }
+
+        return $query->orderByDesc('a.assigned_at')->paginate($perPage);
+    }
+
+    public function getCourseEnrollmentCards(int $courseId): array
+    {
+        $total      = DB::table('course_online_assignments')->where('course_online_id', $courseId)->count();
+        $completed  = DB::table('user_course_progress')->where('course_online_id', $courseId)->where('status', 'completed')->count();
+        $inProgress = DB::table('user_course_progress')->where('course_online_id', $courseId)->where('status', 'in_progress')->count();
+        $notStarted = max(0, $total - $completed - $inProgress);
+
+        return [
+            ['key' => 'total_enrolled',  'title' => 'Total Enrolled',  'value' => $total],
+            ['key' => 'not_started',     'title' => 'Not Started',     'value' => $notStarted],
+            ['key' => 'in_progress',     'title' => 'In Progress',     'value' => $inProgress],
+            ['key' => 'completed',       'title' => 'Completed',       'value' => $completed],
+        ];
+    }
+
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------

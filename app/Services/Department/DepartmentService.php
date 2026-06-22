@@ -34,13 +34,38 @@ class DepartmentService
 
     public function getAll(): Collection
     {
-        
         return Department::query()
             ->whereNull('parent_id')
             ->with($this->treeRelations())
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
+    }
+
+    public function getFiltered(array $filters = [], int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = Department::query()
+            ->withCount('users')
+            ->with(['parent'])
+            ->orderBy('name');
+
+        if (!empty($filters['search'])) {
+            $query->where('name', 'like', '%' . $filters['search'] . '%');
+        }
+
+        if (array_key_exists('parent_id', $filters) && $filters['parent_id'] !== null && $filters['parent_id'] !== '') {
+            if ($filters['parent_id'] === 'root') {
+                $query->whereNull('parent_id');
+            } else {
+                $query->where('parent_id', (int) $filters['parent_id']);
+            }
+        }
+
+        if (!empty($filters['has_users'])) {
+            $query->has('users');
+        }
+
+        return $query->paginate($perPage);
     }
 
     public function create(array $data): Department

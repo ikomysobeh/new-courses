@@ -9,7 +9,7 @@ class ActivityLogSeeder extends Seeder
 {
     public function run(): void
     {
-        $users   = DB::table('users')->whereNull('deleted_at')->get();
+        $users   = DB::table('users')->get();
         $courses = DB::table('course_onlines')->whereNull('deleted_at')->pluck('id')->toArray();
         $quizzes = DB::table('quizzes')->whereNull('deleted_at')->pluck('id')->toArray();
         $audios  = DB::table('audios')->whereNull('deleted_at')->pluck('id')->toArray();
