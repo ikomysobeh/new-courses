@@ -29,11 +29,12 @@ class BlogFeedController extends Controller
     public function show(Request $request, string $slug): BlogPostDetailResource
     {
         $post      = $this->postService->getPostBySlug($slug);
-        $streamUrl = $this->mediaService->resolveStreamUrl($post->mediable_type, $post->mediable_id);
-        $isLiked   = $request->user()
+        $streamUrl   = $this->mediaService->resolveStreamUrl($post->mediable_type, $post->mediable_id);
+        $subtitleUrl = $this->mediaService->resolveSubtitleUrl($post->mediable_type, $post->mediable_id);
+        $isLiked     = $request->user()
             ? $this->likeService->getLikeStateForUser($post, $request->user())
             : null;
 
-        return new BlogPostDetailResource($post, $streamUrl, $isLiked);
+        return new BlogPostDetailResource($post, $streamUrl, $isLiked, $subtitleUrl);
     }
 }

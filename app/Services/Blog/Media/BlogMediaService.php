@@ -53,6 +53,24 @@ class BlogMediaService
         abort(422, 'Invalid mediable type.');
     }
 
+    public function resolveSubtitleUrl(?string $type, ?int $id): ?string
+    {
+        if ($type !== 'App\\Models\\Video' || !$id) {
+            return null;
+        }
+
+        $video = Video::query()->find($id);
+        if (!$video || !$video->subtitle_vtt_path) {
+            return null;
+        }
+
+        return URL::temporarySignedRoute(
+            'media.blog-video-subtitle',
+            now()->addHours(4),
+            ['video_id' => $id]
+        );
+    }
+
     public function resolveStreamUrl(?string $type, ?int $id): ?string
     {
         if (!$type || !$id) {

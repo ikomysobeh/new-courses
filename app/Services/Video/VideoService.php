@@ -12,6 +12,8 @@ use Illuminate\Support\Str;
 
 class VideoService
 {
+    public function __construct(private readonly VpsTranscodingService $transcodingService) {}
+
     public function getAllForAdmin(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = Video::query()
@@ -53,7 +55,11 @@ class VideoService
         $data['created_by']       = $admin->id;
         $data['transcode_status'] = 'pending';
 
-        return Video::query()->create($data);
+        $video = Video::query()->create($data);
+
+        $this->transcodingService->requestTranscoding($video);
+
+        return $video;
     }
 
     public function updateVideo(int $id, array $data): Video
@@ -88,6 +94,8 @@ class VideoService
         VideoQuality::query()->where('video_id', $id)->delete();
 
         $video->update(['transcode_status' => 'pending']);
+
+        $this->transcodingService->requestTranscoding($video);
 
         return $video->fresh(['videoCategory', 'creator', 'qualities']);
     }

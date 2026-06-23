@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'transcoding' => [
+        'url'         => env('TRANSCODING_URL', ''),
+        'api_key'     => env('TRANSCODING_API_KEY', ''),
+        'project_key' => env('TRANSCODING_PROJECT_KEY', ''),
+    ],
+
 ];
