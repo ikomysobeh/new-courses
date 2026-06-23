@@ -46,7 +46,11 @@ class DepartmentService
     {
         $query = Department::query()
             ->withCount('users')
-            ->with(['parent'])
+            ->with([
+                'parent',
+                'users.manager',
+                'users.userLevelTier.userLevel',
+            ])
             ->orderBy('name');
 
         if (!empty($filters['search'])) {

@@ -94,6 +94,39 @@ class MediaStreamController extends Controller
         ]);
     }
 
+    public function streamVideoForTranscode(Request $request, int $videoId): StreamedResponse
+    {
+        $video = \App\Models\Video::query()->findOrFail($videoId);
+
+        abort_unless(
+            $video->file_path && Storage::disk('local')->exists($video->file_path),
+            404,
+            'Video file not found.'
+        );
+
+        $fullPath = Storage::disk('local')->path($video->file_path);
+        $size     = filesize($fullPath);
+
+        return $this->streamWithRangeSupport($request, $fullPath, 'video/mp4', $size);
+    }
+
+    public function streamBlogVideoSubtitle(int $videoId): \Illuminate\Http\Response
+    {
+        $video = Video::query()->findOrFail($videoId);
+
+        abort_unless(
+            $video->subtitle_vtt_path && Storage::disk('local')->exists($video->subtitle_vtt_path),
+            404,
+            'Subtitle file not found.'
+        );
+
+        return response(Storage::disk('local')->get($video->subtitle_vtt_path), 200, [
+            'Content-Type'                => 'text/vtt; charset=UTF-8',
+            'Content-Disposition'         => 'inline',
+            'Access-Control-Allow-Origin' => '*',
+        ]);
+    }
+
     public function streamBlogVideo(Request $request, int $videoId): StreamedResponse
     {
         $video = Video::query()->findOrFail($videoId);

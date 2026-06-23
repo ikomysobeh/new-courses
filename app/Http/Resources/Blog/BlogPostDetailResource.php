@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class BlogPostDetailResource extends BaseResource
 {
-    public function __construct($resource, private readonly ?string $streamUrl = null, private readonly ?bool $isLiked = null)
+    public function __construct($resource, private readonly ?string $streamUrl = null, private readonly ?bool $isLiked = null, private readonly ?string $subtitleUrl = null)
     {
         parent::__construct($resource);
     }
@@ -62,6 +62,7 @@ class BlogPostDetailResource extends BaseResource
                     ? Storage::disk('public')->url($media->thumbnail_path)
                     : null,
                 'stream_url'       => $this->streamUrl,
+                'subtitle_url'     => $this->subtitleUrl,
             ];
         }
 
