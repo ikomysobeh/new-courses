@@ -23,6 +23,8 @@ class AuthService
 
         $token = $user->createToken('api-token')->plainTextToken;
 
+        $user->forceFill(['last_login_at' => now()])->save();
+
         return [
             'user' => $user,
             'token' => $token,

@@ -28,6 +28,7 @@ class User extends Authenticatable
         'user_level_tier_id',
         'login_token',
         'login_token_expires_at',
+        'last_login_at',
     ];
 
     protected $hidden = [
@@ -47,6 +48,7 @@ class User extends Authenticatable
             'role' => 'string',
             'password' => 'hashed',
             'login_token_expires_at' => 'datetime',
+            'last_login_at'          => 'datetime',
         ];
     }
 

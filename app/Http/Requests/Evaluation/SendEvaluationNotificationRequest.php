@@ -18,8 +18,20 @@ class SendEvaluationNotificationRequest extends FormRequest
             'user_ids.*' => ['required', 'integer', 'exists:users,id'],
             'subject'    => ['required', 'string', 'max:255'],
             'message'    => ['required', 'string', 'max:2000'],
-            'start_date' => ['sometimes', 'nullable', 'date', 'before_or_equal:end_date'],
-            'end_date'   => ['sometimes', 'nullable', 'date', 'after_or_equal:start_date'],
+            'start_date' => ['sometimes', 'nullable', 'date'],
+            'end_date'   => ['sometimes', 'nullable', 'date'],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $start = $this->input('start_date');
+            $end   = $this->input('end_date');
+
+            if ($start && $end && strtotime($start) > strtotime($end)) {
+                $validator->errors()->add('end_date', 'End date must be on or after start date.');
+            }
+        });
     }
 }

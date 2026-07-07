@@ -2,7 +2,6 @@
 
 namespace App\Services\Evaluation\Notification;
 
-use App\Enums\PerformanceLevel;
 use App\Mail\EvaluationReportMail;
 use App\Models\Evaluation;
 use App\Models\NotificationSend;
@@ -82,7 +81,7 @@ class EvaluationNotificationService
             }
 
             try {
-                $evalQuery = Evaluation::with(['user', 'course', 'courseOnline'])
+                $evalQuery = Evaluation::with(['user.department', 'user.userLevelTier', 'course', 'courseOnline', 'histories'])
                     ->whereIn('user_id', $employeeIds);
 
                 if (!empty($filters['start_date'])) {
@@ -105,14 +104,19 @@ class EvaluationNotificationService
                     $allEvaluationIds[] = $id;
                 }
 
+                $detailedEvaluations = $this->buildDetailedEvaluations($evaluations);
+
+                $reportMonth = !empty($filters['start_date'])
+                    ? \Carbon\Carbon::parse($filters['start_date'])->format('F Y')
+                    : null;
+
                 Mail::to($manager->email)->queue(
                     new EvaluationReportMail(
-                        manager:     $manager,
-                        evaluations: $evaluations,
-                        mailSubject: $subject,
-                        mailMessage: $message,
-                        startDate:   $filters['start_date'] ?? null,
-                        endDate:     $filters['end_date'] ?? null,
+                        manager:             ['name' => $manager->name],
+                        detailedEvaluations: $detailedEvaluations,
+                        emailSubject:        $subject,
+                        customMessage:       $message ?: null,
+                        reportMonth:         $reportMonth,
                     )
                 );
 
@@ -122,19 +126,18 @@ class EvaluationNotificationService
             }
         }
 
-        // Determine overall status
         $status = match (true) {
-            count($failedTo) === 0 => 'sent',
             count($sentTo) === 0   => 'failed',
+            count($failedTo) === 0 => 'sent',
             default                => 'partial',
         };
 
-        // Write one notification_sends row
         $notifSend = NotificationSend::create([
             'type'           => 'evaluation_report',
             'subject'        => $subject,
             'message'        => $message,
             'recipient_ids'  => array_column($sentTo, 'id'),
+            'employee_ids'   => $users->pluck('id')->values()->toArray(),
             'evaluation_ids' => array_unique($allEvaluationIds),
             'status'         => $status,
             'sent_by'        => $sentBy,
@@ -163,24 +166,74 @@ class EvaluationNotificationService
         ];
     }
 
+    private function buildDetailedEvaluations(\Illuminate\Database\Eloquent\Collection $evaluations): array
+    {
+        $result = [];
+
+        foreach ($evaluations->groupBy('user_id') as $userEvaluations) {
+            $user = $userEvaluations->first()->user;
+
+            $evaluationsList = [];
+            $courseAverages  = [];
+            $scoreSum        = 0;
+
+            foreach ($userEvaluations as $eval) {
+                $courseName = $eval->course_type === 'online'
+                    ? optional($eval->courseOnline)->name
+                    : optional($eval->course)->name;
+
+                $detailedScores = $eval->histories->map(fn ($h) => [
+                    'category_name' => $h->config_name,
+                    'type_name'     => $h->type_name,
+                    'score'         => $h->score_given,
+                    'comments'      => '',
+                ])->toArray();
+
+                $maxScore      = $eval->performance_points_max;
+                $courseAverage = ($maxScore > 0)
+                    ? round(($eval->total_score / $maxScore) * 100, 1)
+                    : 'N/A';
+
+                $courseAverages[] = $courseAverage;
+                $scoreSum        += $eval->total_score;
+
+                $evaluationsList[] = [
+                    'course'          => $courseName ?? 'N/A',
+                    'total_score'     => $eval->total_score,
+                    'created_at'      => $eval->created_at?->format('Y-m-d') ?? 'N/A',
+                    'detailed_scores' => $detailedScores,
+                ];
+            }
+
+            $totalEvaluations = $userEvaluations->count();
+            $overallAverage   = $totalEvaluations > 0
+                ? round($scoreSum / $totalEvaluations, 1)
+                : 0;
+
+            $result[] = [
+                'employee' => [
+                    'name'       => $user->name,
+                    'department' => optional($user->department)->name ?? 'N/A',
+                    'level'      => optional($user->userLevelTier)->tier_name ?? 'N/A',
+                    'email'      => $user->email,
+                ],
+                'overall_average'   => $overallAverage,
+                'total_evaluations' => $totalEvaluations,
+                'course_averages'   => $courseAverages,
+                'evaluations'       => $evaluationsList,
+            ];
+        }
+
+        return $result;
+    }
+
     public function getNotificationHistory(array $filters): LengthAwarePaginator
     {
         $paginator = NotificationSend::where('type', 'evaluation_report')
             ->latest('sent_at')
             ->paginate(20);
 
-        // --- Resolve managers (recipient_ids) ---
-        $allManagerIds = collect($paginator->items())
-            ->flatMap(fn ($n) => $n->recipient_ids ?? [])
-            ->unique()
-            ->values()
-            ->toArray();
-
-        $managers = User::whereIn('id', $allManagerIds)
-            ->get(['id', 'name', 'email'])
-            ->keyBy('id');
-
-        // --- Resolve employees (evaluation_ids → user_id) ---
+        // Legacy fallback: older rows have no employee_ids, derive from evaluations.
         $allEvaluationIds = collect($paginator->items())
             ->flatMap(fn ($n) => $n->evaluation_ids ?? [])
             ->unique()
@@ -190,22 +243,48 @@ class EvaluationNotificationService
         $evaluationUserMap = Evaluation::whereIn('id', $allEvaluationIds)
             ->pluck('user_id', 'id');
 
-        $employees = User::whereIn('id', $evaluationUserMap->values()->unique()->toArray())
+        // Build per-row employee id list (explicit employee_ids or legacy fallback).
+        $rowEmployeeIds = [];
+        foreach ($paginator->items() as $notifSend) {
+            $ids = ! empty($notifSend->employee_ids)
+                ? collect($notifSend->employee_ids)
+                : collect($notifSend->evaluation_ids ?? [])
+                    ->map(fn ($evalId) => $evaluationUserMap->get($evalId));
+
+            $rowEmployeeIds[$notifSend->id] = $ids->filter()->unique()->values()->toArray();
+        }
+
+        // Load all involved employees (with report_to for manager resolution).
+        $employeeIdsToLoad = collect($rowEmployeeIds)->flatten()->unique()->values()->toArray();
+        $employees = User::whereIn('id', $employeeIdsToLoad)
+            ->get(['id', 'name', 'email', 'report_to'])
+            ->keyBy('id');
+
+        // Resolve managers from employees' report_to so they appear even for
+        // skipped-delivery rows (no evaluations matched, no manager email, etc.).
+        $managerIds = $employees->pluck('report_to')->filter()->unique()->values()->toArray();
+        $managers = User::whereIn('id', $managerIds)
             ->get(['id', 'name', 'email'])
             ->keyBy('id');
 
-        // --- Attach transient attributes ---
-        foreach ($paginator->items() as $notifSend) {
-            $notifSend->resolved_managers = collect($notifSend->recipient_ids ?? [])
-                ->map(fn ($id) => $managers->get($id))
-                ->filter()
-                ->values()
-                ->toArray();
+        $toPayload = fn ($u) => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email];
 
-            $notifSend->resolved_employees = collect($notifSend->evaluation_ids ?? [])
-                ->map(fn ($evalId) => $employees->get($evaluationUserMap->get($evalId)))
+        foreach ($paginator->items() as $notifSend) {
+            $rowEmployees = collect($rowEmployeeIds[$notifSend->id] ?? [])
+                ->map(fn ($id) => $employees->get($id))
                 ->filter()
                 ->unique('id')
+                ->values();
+
+            $notifSend->resolved_employees = $rowEmployees->map($toPayload)->toArray();
+
+            $notifSend->resolved_managers = $rowEmployees
+                ->pluck('report_to')
+                ->filter()
+                ->unique()
+                ->map(fn ($mid) => $managers->get($mid))
+                ->filter()
+                ->map($toPayload)
                 ->values()
                 ->toArray();
         }
