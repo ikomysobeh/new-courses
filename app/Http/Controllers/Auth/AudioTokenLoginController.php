@@ -33,13 +33,13 @@ class AudioTokenLoginController extends Controller
 
         $plainToken = $user->createToken('audio-email-login')->plainTextToken;
 
-        // Invalidate one-time login token after successful use.
         $user->update([
-            'login_token' => null,
+            'login_token'            => null,
             'login_token_expires_at' => null,
+            'last_login_at'          => now(),
         ]);
 
-        $frontendBase = rtrim((string) (env('FRONTEND_URL', config('app.url'))), '/');
+        $frontendBase = rtrim((string) config('app.frontend_url'), '/');
         $redirectUrl = $frontendBase . '/audio/' . $audioId
             . '?token=' . urlencode($plainToken)
             . '&audio=' . $audioId;

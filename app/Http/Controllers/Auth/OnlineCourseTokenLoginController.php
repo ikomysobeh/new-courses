@@ -36,9 +36,10 @@ class OnlineCourseTokenLoginController extends Controller
         $user->update([
             'login_token'            => null,
             'login_token_expires_at' => null,
+            'last_login_at'          => now(),
         ]);
 
-        $frontendBase = rtrim((string) (env('FRONTEND_URL', config('app.url'))), '/');
+        $frontendBase = rtrim((string) config('app.frontend_url'), '/');
         $redirectUrl  = $frontendBase . '/online-courses/' . $courseOnlineId
             . '?token=' . urlencode($plainToken)
             . '&course_online=' . $courseOnlineId;

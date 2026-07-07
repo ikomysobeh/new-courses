@@ -13,6 +13,7 @@ class NotificationSend extends Model
         'subject',
         'message',
         'recipient_ids',
+        'employee_ids',
         'evaluation_ids',
         'status',
         'sent_by',
@@ -23,6 +24,7 @@ class NotificationSend extends Model
     {
         return [
             'recipient_ids'  => 'array',
+            'employee_ids'   => 'array',
             'evaluation_ids' => 'array',
             'sent_at'        => 'datetime',
         ];

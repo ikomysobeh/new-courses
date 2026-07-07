@@ -355,10 +355,13 @@ class CourseService
     {
         return CourseAssignment::query()
             ->with(['course', 'user', 'assignedBy'])
-            ->whereHas('user', fn ($q) => $q->where(fn ($q) =>
-                $q->whereNull('login_token_expires_at')
-                  ->orWhere('login_token_expires_at', '<', now())
-            ))
+            ->whereHas('user', fn ($q) => $q
+                ->whereNull('last_login_at')
+                ->where(fn ($q) =>
+                    $q->whereNull('login_token_expires_at')
+                      ->orWhere('login_token_expires_at', '<', now())
+                )
+            )
             ->orderByDesc('assigned_at')
             ->paginate(20);
     }

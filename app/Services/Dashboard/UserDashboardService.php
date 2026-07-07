@@ -54,7 +54,7 @@ class UserDashboardService
                 'instructor'   => $r->instructor,
                 'progress'     => $this->statusToPercent($r->status),
                 'status'       => $r->status,
-                'duration'     => $this->formatHours((float) ($r->duration ?? 0)),
+                'duration'     => $this->formatMinutes((int) ($r->duration ?? 0)),
                 'image'        => $this->imageUrl($r->image_path),
                 'continue_url' => '/user/courses/' . $r->id,
             ])
@@ -162,15 +162,6 @@ class UserDashboardService
         $m = $minutes % 60;
 
         return $h > 0 ? sprintf('%dh %02dm', $h, $m) : sprintf('%dm', $m);
-    }
-
-    private function formatHours(float $hours): string
-    {
-        if ($hours <= 0) {
-            return '—';
-        }
-
-        return $this->formatMinutes((int) round($hours * 60));
     }
 
     private function imageUrl(?string $path): ?string
