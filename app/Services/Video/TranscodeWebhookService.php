@@ -2,7 +2,6 @@
 
 namespace App\Services\Video;
 
-use App\Jobs\StoreTranscodedQualitiesJob;
 use App\Models\Video;
 use App\Models\VideoQuality;
 use Illuminate\Support\Facades\Log;
@@ -28,41 +27,24 @@ class TranscodeWebhookService
 
         $video->update(['transcode_status' => $status]);
 
-        if ($status === 'completed') {
-            $downloadUrls = $payload['download_urls'] ?? [];
-
-            if (!empty($downloadUrls) && is_array($downloadUrls)) {
-                // Real VPS contract: files live on the VPS behind download URLs.
-                // Pull each quality into local storage via a job. Keep the
-                // callback fast — we mark 'completed' only once files land.
-                $video->update(['transcode_status' => 'processing']);
-                StoreTranscodedQualitiesJob::dispatch($video->id, $downloadUrls);
-            } elseif (!empty($payload['qualities']) && is_array($payload['qualities'])) {
-                // Legacy contract: qualities delivered inline as objects with
-                // an already-local file_path.
-                $rows = [];
-                foreach ($payload['qualities'] as $quality) {
-                    if (!is_array($quality) || empty($quality['quality']) || empty($quality['file_path'])) {
-                        continue;
-                    }
-                    $rows[] = [
-                        'video_id'   => $video->id,
-                        'quality'    => $quality['quality'],
-                        'file_path'  => $quality['file_path'],
-                        'file_size'  => $quality['file_size'] ?? null,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-                }
-
-                if (!empty($rows)) {
-                    VideoQuality::upsert(
-                        $rows,
-                        ['video_id', 'quality'],
-                        ['file_path', 'file_size', 'updated_at']
-                    );
-                }
+        if ($status === 'completed' && !empty($payload['qualities'])) {
+            $rows = [];
+            foreach ($payload['qualities'] as $quality) {
+                $rows[] = [
+                    'video_id'   => $video->id,
+                    'quality'    => $quality['quality'],
+                    'file_path'  => $quality['file_path'],
+                    'file_size'  => $quality['file_size'] ?? null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
             }
+
+            VideoQuality::upsert(
+                $rows,
+                ['video_id', 'quality'],
+                ['file_path', 'file_size', 'updated_at']
+            );
         }
 
         if ($status === 'failed') {
