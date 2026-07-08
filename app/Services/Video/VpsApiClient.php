@@ -67,6 +67,28 @@ class VpsApiClient
         }
     }
 
+    /**
+     * Download a transcoded file from the VPS, streaming it straight to disk.
+     */
+    public function downloadFile(string $url, string $savePath): bool
+    {
+        $directory = dirname($savePath);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $resource = fopen($savePath, 'wb');
+
+        $response = Http::timeout(3600)
+            ->withHeaders(['X-API-Key' => $this->apiKey])
+            ->withOptions(['sink' => $resource])
+            ->get($url);
+
+        fclose($resource);
+
+        return $response->successful();
+    }
+
     public function getProjectKey(): string
     {
         return $this->projectKey;
