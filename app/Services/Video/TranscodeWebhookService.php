@@ -5,9 +5,14 @@ namespace App\Services\Video;
 use App\Models\Video;
 use App\Models\VideoQuality;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class TranscodeWebhookService
 {
+    public function __construct(
+        private readonly VpsApiClient $vpsClient
+    ) {}
+
     public function handle(array $payload): void
     {
         $secret = config('app.transcode_secret');
@@ -25,33 +30,64 @@ class TranscodeWebhookService
 
         $status = $payload['status'] ?? 'failed';
 
-        $video->update(['transcode_status' => $status]);
-
-        if ($status === 'completed' && !empty($payload['qualities'])) {
-            $rows = [];
-            foreach ($payload['qualities'] as $quality) {
-                $rows[] = [
-                    'video_id'   => $video->id,
-                    'quality'    => $quality['quality'],
-                    'file_path'  => $quality['file_path'],
-                    'file_size'  => $quality['file_size'] ?? null,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-
-            VideoQuality::upsert(
-                $rows,
-                ['video_id', 'quality'],
-                ['file_path', 'file_size', 'updated_at']
-            );
-        }
-
         if ($status === 'failed') {
+            $video->update(['transcode_status' => 'failed']);
             Log::error('Transcode failed for video', [
                 'video_id' => $video->id,
                 'message'  => $payload['error'] ?? 'No error message provided.',
             ]);
+            return;
+        }
+
+        // The VPS keeps the finished files and exposes them as download URLs.
+        // Pull each quality into our own storage.
+        $downloadUrls   = $payload['download_urls'] ?? [];
+        $totalQualities = count($downloadUrls);
+        $successCount   = 0;
+
+        foreach ($downloadUrls as $quality => $url) {
+            try {
+                $this->downloadAndStoreQuality($video, (string) $quality, (string) $url);
+                $successCount++;
+            } catch (\Throwable $e) {
+                Log::error("Failed to download {$quality} for video {$video->id}: {$e->getMessage()}");
+            }
+        }
+
+        if ($successCount > 0) {
+            $video->update(['transcode_status' => 'completed']);
+            Log::info("Transcoding completed for video {$video->id} ({$successCount}/{$totalQualities} qualities)");
+        } else {
+            $video->update(['transcode_status' => 'failed']);
+            Log::error("No qualities downloaded for video {$video->id}");
+        }
+    }
+
+    /**
+     * Download and store a single quality variant on the local (private) disk,
+     * which is where the streaming route serves quality files from.
+     */
+    protected function downloadAndStoreQuality(Video $video, string $quality, string $url): void
+    {
+        $directory    = "videos/transcoded/{$video->id}";
+        $relativePath = "{$directory}/{$quality}.mp4";
+        $savePath     = Storage::disk('local')->path($relativePath);
+
+        Storage::disk('local')->makeDirectory($directory);
+
+        $success = $this->vpsClient->downloadFile($url, $savePath);
+
+        if ($success && file_exists($savePath)) {
+            VideoQuality::updateOrCreate(
+                ['video_id' => $video->id, 'quality' => $quality],
+                [
+                    'file_path' => $relativePath,
+                    'file_size' => filesize($savePath),
+                ]
+            );
+            Log::info("Downloaded {$quality} for video {$video->id}");
+        } else {
+            Log::error("Failed to download {$quality} for video {$video->id}");
         }
     }
 }
