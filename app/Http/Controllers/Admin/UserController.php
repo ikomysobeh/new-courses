@@ -24,10 +24,7 @@ class UserController extends Controller
      */
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $filters = $request->only(['department_id', 'user_level_tier_id', 'search']);
-        $perPage = (int) $request->query('per_page', 15);
-
-        $users = $this->userService->getAll($filters, $perPage);
+        $users = $this->userService->getAll($request->query());
 
         return UserListResource::collection($users)
             ->additional([
@@ -42,7 +39,7 @@ class UserController extends Controller
      */
     public function getById(int $id): JsonResponse
     {
-        $user = User::with(['department', 'manager', 'userLevelTier.userLevel'])->findOrFail($id);
+        $user = User::with(['department', 'manager', 'managers', 'userLevelTier.userLevel'])->findOrFail($id);
 
         return (new UserResource($user))->response();
     }

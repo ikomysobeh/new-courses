@@ -69,8 +69,11 @@ class BlogPostResource extends BaseResource
                 'id'   => $this->creator->id,
                 'name' => $this->creator->name,
             ]),
-            'like_count'    => $this->likes_count ?? 0,
-            'comment_count' => $this->comments_count ?? 0,
+            'like_count'    => $this->likes_count
+                ?? ($this->relationLoaded('likes') ? $this->likes->count() : 0),
+            'comment_count' => $this->comments_count
+                ?? ($this->relationLoaded('comments') ? $this->comments->count() : 0),
+            'comments'      => BlogCommentResource::collection($this->whenLoaded('comments')),
             'created_at'    => $this->created_at?->toIso8601String(),
             'updated_at'    => $this->updated_at?->toIso8601String(),
         ];

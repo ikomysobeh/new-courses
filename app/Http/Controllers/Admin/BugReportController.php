@@ -18,9 +18,7 @@ class BugReportController extends Controller
 
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $filters = $request->only(['status', 'priority', 'assigned_to', 'search']);
-
-        return BugReportResource::collection($this->service->getAllForAdmin($filters));
+        return BugReportResource::collection($this->service->getAllForAdmin($request->query()));
     }
 
     public function getById(int $id): BugReportResource

@@ -18,9 +18,7 @@ class EvaluationController extends Controller
 
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $filters = $request->only(['course_type', 'department_id', 'user_id', 'performance_level', 'start_date', 'end_date']);
-
-        return EvaluationResource::collection($this->service->getAllForAdmin($filters));
+        return EvaluationResource::collection($this->service->getAllForAdmin($request->query()));
     }
 
     public function getById(int $id): EvaluationResource

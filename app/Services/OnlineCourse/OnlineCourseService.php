@@ -9,6 +9,7 @@ use App\Models\CourseOnlineAssignment;
 use App\Models\ModuleContent;
 use App\Models\ModuleContentPdf;
 use App\Models\User;
+use App\Support\Filtering\FilterableQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -17,22 +18,22 @@ use Illuminate\Support\Str;
 
 class OnlineCourseService
 {
-    public function getAllForAdmin(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    use FilterableQuery;
+
+    public function getAllForAdmin(array $params = []): LengthAwarePaginator
     {
         $query = CourseOnline::query()
             ->withCount(['modules', 'assignments'])
-            ->with(['creator'])
-            ->latest();
+            ->with(['creator']);
 
-        if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-
-        if (!empty($filters['search'])) {
-            $query->where('name', 'like', '%' . $filters['search'] . '%');
-        }
-
-        return $query->paginate($perPage);
+        return $this->applyFilters($query, $params, [
+            'searchable'  => ['name'],
+            'filters'     => ['status' => 'exact'],
+            'dateColumn'  => 'created_at',
+            'sortable'    => ['name', 'created_at'],
+            'defaultSort' => ['created_at', 'desc'],
+            'perPage'     => 15,
+        ]);
     }
 
     public function getCourseById(int $id): CourseOnline

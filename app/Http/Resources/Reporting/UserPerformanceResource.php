@@ -33,6 +33,10 @@ class UserPerformanceResource extends BaseResource
             'in_progress_courses'  => (int) $this->in_progress_courses,
             'completion_rate'      => $completionRate,
             'avg_progress'         => $avgProgress,
+            // Explicit client-facing columns
+            'progress'             => $avgProgress,
+            'learning_time'        => $this->formatLearningTime((int) $this->total_active_seconds),
+            'learning_time_seconds'=> (int) $this->total_active_seconds,
             'sessions_count'       => (int) $this->sessions_count,
             'total_active_seconds' => (int) $this->total_active_seconds,
             'avg_attention'        => $avgAttention,
@@ -70,6 +74,25 @@ class UserPerformanceResource extends BaseResource
             $score >= 50 => 'average',
             default      => 'needs_improvement',
         };
+    }
+
+    /**
+     * Format learning time (seconds) as a human-readable "Xh Ym" string.
+     */
+    private function formatLearningTime(int $seconds): string
+    {
+        if ($seconds <= 0) {
+            return '0m';
+        }
+
+        $hours   = intdiv($seconds, 3600);
+        $minutes = intdiv($seconds % 3600, 60);
+
+        if ($hours > 0) {
+            return $minutes > 0 ? "{$hours}h {$minutes}m" : "{$hours}h";
+        }
+
+        return "{$minutes}m";
     }
 
     private function riskLevel(int $suspicious, float $attention): string

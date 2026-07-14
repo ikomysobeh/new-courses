@@ -42,27 +42,25 @@ class SendOnlineCourseAssignmentNotifications implements ShouldQueue
 
     private function sendManagerEmail(OnlineCourseAssigned $event): void
     {
-        if (! $event->assignedUser->report_to) {
-            return;
-        }
+        $managers = $event->assignedUser->managers()->get();
 
-        $manager = User::query()->find($event->assignedUser->report_to);
+        foreach ($managers as $manager) {
+            if (! $manager->email) {
+                continue;
+            }
 
-        if (! $manager || ! $manager->email) {
-            return;
-        }
-
-        try {
-            Mail::to($manager->email)->queue(
-                new OnlineCourseAssignedManagerMail(
-                    course:       $event->course,
-                    assignedUser: $event->assignedUser,
-                    manager:      $manager,
-                    assignedBy:   $event->assignedBy,
-                )
-            );
-        } catch (Throwable $exception) {
-            report($exception);
+            try {
+                Mail::to($manager->email)->queue(
+                    new OnlineCourseAssignedManagerMail(
+                        course:       $event->course,
+                        assignedUser: $event->assignedUser,
+                        manager:      $manager,
+                        assignedBy:   $event->assignedBy,
+                    )
+                );
+            } catch (Throwable $exception) {
+                report($exception);
+            }
         }
     }
 }

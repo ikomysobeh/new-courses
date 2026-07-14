@@ -14,11 +14,10 @@ class EvaluationNotificationService
 {
     public function previewNotification(array $userIds, array $filters): array
     {
-        $users = User::whereIn('id', $userIds)->get();
+        $users = User::with('managers:id,name,email')->whereIn('id', $userIds)->get();
 
-        // Resolve unique managers from report_to
-        $managerIds = $users->pluck('report_to')->filter()->unique()->values()->toArray();
-        $managers   = User::whereIn('id', $managerIds)->get();
+        // Resolve unique managers across all employees (each may have 1 or 2)
+        $managers = $users->flatMap(fn (User $u) => $u->managers)->unique('id')->values();
 
         $evalQuery = Evaluation::whereIn('user_id', $userIds);
         if (!empty($filters['start_date'])) {
@@ -56,16 +55,18 @@ class EvaluationNotificationService
         $failedTo  = [];
         $skippedTo = [];
 
-        // Group user IDs by their manager (report_to)
-        $users = User::whereIn('id', $userIds)->get();
+        // Group user IDs by each of their managers (a user may report to 1 or 2)
+        $users = User::with('managers')->whereIn('id', $userIds)->get();
 
         $byManager = [];
         foreach ($users as $user) {
-            if (!$user->report_to) {
+            if ($user->managers->isEmpty()) {
                 $skippedTo[] = ['id' => $user->id, 'reason' => 'no_manager'];
                 continue;
             }
-            $byManager[$user->report_to][] = $user->id;
+            foreach ($user->managers as $manager) {
+                $byManager[$manager->id][] = $user->id;
+            }
         }
 
         $allEvaluationIds = [];
@@ -254,16 +255,10 @@ class EvaluationNotificationService
             $rowEmployeeIds[$notifSend->id] = $ids->filter()->unique()->values()->toArray();
         }
 
-        // Load all involved employees (with report_to for manager resolution).
+        // Load all involved employees with their managers (1 or 2 each) for resolution.
         $employeeIdsToLoad = collect($rowEmployeeIds)->flatten()->unique()->values()->toArray();
-        $employees = User::whereIn('id', $employeeIdsToLoad)
-            ->get(['id', 'name', 'email', 'report_to'])
-            ->keyBy('id');
-
-        // Resolve managers from employees' report_to so they appear even for
-        // skipped-delivery rows (no evaluations matched, no manager email, etc.).
-        $managerIds = $employees->pluck('report_to')->filter()->unique()->values()->toArray();
-        $managers = User::whereIn('id', $managerIds)
+        $employees = User::with('managers:id,name,email')
+            ->whereIn('id', $employeeIdsToLoad)
             ->get(['id', 'name', 'email'])
             ->keyBy('id');
 
@@ -279,11 +274,9 @@ class EvaluationNotificationService
             $notifSend->resolved_employees = $rowEmployees->map($toPayload)->toArray();
 
             $notifSend->resolved_managers = $rowEmployees
-                ->pluck('report_to')
+                ->flatMap(fn ($u) => $u->managers)
                 ->filter()
-                ->unique()
-                ->map(fn ($mid) => $managers->get($mid))
-                ->filter()
+                ->unique('id')
                 ->map($toPayload)
                 ->values()
                 ->toArray();

@@ -42,4 +42,13 @@ class ReportingDatasetController extends Controller
         $data    = $this->sessionQuery->query($request->validated(), $perPage);
         return response()->json(LearningSessionFactResource::collection($data)->response()->getData(true));
     }
+
+    public function sessionFactShow(int $id): JsonResponse
+    {
+        $row = $this->sessionQuery->find($id);
+
+        abort_if($row === null, 404, 'Session fact not found.');
+
+        return response()->json(['data' => new LearningSessionFactResource($row)]);
+    }
 }

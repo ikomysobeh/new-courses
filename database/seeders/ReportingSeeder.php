@@ -783,12 +783,7 @@ class ReportingSeeder extends Seeder
                     'course_id'        => $cId,
                     'course_online_id' => null,
                     'total_score'      => $score,
-                    'performance_level'=> match (true) {
-                        $score >= 90 => 4,
-                        $score >= 75 => 3,
-                        $score >= 60 => 2,
-                        default      => 1,
-                    },
+                    'performance_level'=> \App\Enums\PerformanceLevel::getLevelByScore($score),
                     'created_at' => Carbon::now()->subDays(rand(5, 20)),
                     'updated_at' => Carbon::now()->subDays(rand(1, 4)),
                 ]);

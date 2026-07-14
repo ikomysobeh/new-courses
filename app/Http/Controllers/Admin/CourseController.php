@@ -18,7 +18,7 @@ class CourseController extends Controller
     /** Get all courses (admin view, paginated). */
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $courses = $this->courseService->getAllCoursesForAdmin($request->only('status', 'privacy', 'search'));
+        $courses = $this->courseService->getAllCoursesForAdmin($request->query());
 
         return CourseResource::collection($courses)
             ->additional([

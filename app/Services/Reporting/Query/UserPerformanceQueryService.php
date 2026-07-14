@@ -93,6 +93,12 @@ class UserPerformanceQueryService
         if (! empty($filters['user_id'])) {
             $q->where('u.id', $filters['user_id']);
         }
+        // Manager scope (direct reports only). user_id takes precedence when both are set.
+        if (empty($filters['user_id']) && ! empty($filters['manager_id'])) {
+            $q->whereIn('u.id', function ($sub) use ($filters) {
+                $sub->select('user_id')->from('user_manager')->where('manager_id', $filters['manager_id']);
+            });
+        }
         if (! empty($filters['role'])) {
             $q->where('u.role', $filters['role']);
         }
@@ -105,5 +111,15 @@ class UserPerformanceQueryService
         return $this->baseQuery($filters)
             ->orderByDesc('avg_progress')
             ->paginate($perPage);
+    }
+
+    /**
+     * Fetch the aggregated performance row for a single user (same shape as one list item).
+     */
+    public function find(int $userId, array $filters = []): ?object
+    {
+        $filters['user_id'] = $userId;
+
+        return $this->baseQuery($filters)->first();
     }
 }

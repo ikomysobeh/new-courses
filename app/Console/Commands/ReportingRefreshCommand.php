@@ -12,16 +12,18 @@ class ReportingRefreshCommand extends Command
                             {--date= : Refresh a single date (YYYY-MM-DD)}
                             {--from= : Start date for range refresh (YYYY-MM-DD)}
                             {--to=   : End date for range refresh (YYYY-MM-DD)}
-                            {--full  : Full rebuild from earliest session}';
+                            {--full  : Full rebuild from earliest session}
+                            {--progress : Rebuild the User Course Progress snapshot table}';
 
     protected $description = 'Refresh reporting tables from session and progress source data';
 
     public function handle(ReportingRefreshService $service): int
     {
-        $date  = $this->option('date');
-        $from  = $this->option('from');
-        $to    = $this->option('to');
-        $full  = $this->option('full');
+        $date     = $this->option('date');
+        $from     = $this->option('from');
+        $to       = $this->option('to');
+        $full     = $this->option('full');
+        $progress = $this->option('progress');
 
         // Conflict checks
         if ($full && ($date || $from || $to)) {
@@ -40,9 +42,15 @@ class ReportingRefreshCommand extends Command
         }
 
         try {
-            if ($full) {
+            if ($progress) {
+                $this->info('Rebuilding User Course Progress snapshot...');
+                $result = $service->refreshUserCourseProgress();
+            } elseif ($full) {
                 $this->info('Running full rebuild...');
                 $result = $service->refreshFull();
+                $this->info('Rebuilding User Course Progress snapshot...');
+                $progressResult = $service->refreshUserCourseProgress();
+                $result['rows_written'] += $progressResult['rows_written'];
             } elseif ($from && $to) {
                 $this->info("Running date range refresh: {$from} to {$to}...");
                 $result = $service->refreshDateRange(Carbon::parse($from), Carbon::parse($to));

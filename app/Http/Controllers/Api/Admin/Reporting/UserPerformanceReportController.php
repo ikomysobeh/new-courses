@@ -36,4 +36,13 @@ class UserPerformanceReportController extends Controller
 
         return response()->json(UserCourseProgressResource::collection($data)->response()->getData(true));
     }
+
+    public function performanceShow(UserPerformanceFilterRequest $request, int $id): JsonResponse
+    {
+        $row = $this->performance->find($id, $request->validated());
+
+        abort_if($row === null, 404, 'User performance record not found.');
+
+        return response()->json(['data' => new UserPerformanceResource($row)]);
+    }
 }

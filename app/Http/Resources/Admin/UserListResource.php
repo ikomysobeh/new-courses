@@ -23,6 +23,11 @@ class UserListResource extends BaseResource
                 'id'   => $this->manager->id,
                 'name' => $this->manager->name,
             ] : null),
+            // 1 or 2 managers (source of truth). Prefer this over the single `manager`.
+            'managers' => $this->whenLoaded('managers', fn () => $this->managers->map(fn ($m) => [
+                'id'   => $m->id,
+                'name' => $m->name,
+            ])->values()),
             'tier' => $this->whenLoaded('userLevelTier', fn () => $this->userLevelTier ? [
                 'id'         => $this->userLevelTier->id,
                 'tier_name'  => $this->userLevelTier->tier_name,

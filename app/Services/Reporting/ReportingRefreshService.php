@@ -5,6 +5,7 @@ namespace App\Services\Reporting;
 use App\Services\Reporting\Aggregation\DepartmentCourseDailyAggregatorService;
 use App\Services\Reporting\Aggregation\LearningSessionFactAggregatorService;
 use App\Services\Reporting\Aggregation\UserCourseDailyAggregatorService;
+use App\Services\Reporting\Aggregation\UserCourseProgressAggregatorService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +17,19 @@ class ReportingRefreshService
         protected UserCourseDailyAggregatorService     $userDaily,
         protected DepartmentCourseDailyAggregatorService $deptDaily,
         protected LearningSessionFactAggregatorService $sessionFact,
+        protected UserCourseProgressAggregatorService  $userCourseProgress,
     ) {}
+
+    /**
+     * Rebuild the User Course Progress snapshot table (online + traditional).
+     */
+    public function refreshUserCourseProgress(): array
+    {
+        return $this->runWithLog(
+            fn () => $this->userCourseProgress->rebuild(),
+            'user-course-progress'
+        );
+    }
 
     /**
      * Refresh all reporting tables for a single date (previous day default).

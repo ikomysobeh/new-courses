@@ -9,12 +9,12 @@ class PerformanceLevel
     const DEVELOPING     = 3;
     const UNDERPERFORMING = 4;
 
-    // Score ranges: [min, max]
+    // Score ranges on the 0-100 scale: [min, max]. Higher score = better.
     private static array $ranges = [
-        self::OUTSTANDING     => [13, 15],
-        self::RELIABLE        => [10, 12],
-        self::DEVELOPING      => [7,  9],
-        self::UNDERPERFORMING => [0,  6],
+        self::OUTSTANDING     => [85, 100],
+        self::RELIABLE        => [70, 84],
+        self::DEVELOPING      => [50, 69],
+        self::UNDERPERFORMING => [0,  49],
     ];
 
     private static array $labels = [

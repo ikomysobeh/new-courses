@@ -55,6 +55,7 @@ use App\Http\Controllers\Api\Admin\Reporting\QuizReportController;
 use App\Http\Controllers\Api\Admin\Reporting\UserPerformanceReportController;
 use App\Http\Controllers\Api\Admin\Reporting\EvaluationReportController;
 use App\Http\Controllers\Api\Admin\Reporting\ReportingExtraExportController;
+use App\Http\Controllers\Api\Admin\Reporting\UserCourseProgressExcelController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -334,11 +335,14 @@ Route::prefix('admin')->group(function () {
             // KPI
             Route::get('/kpi/overview',  [ReportingKpiController::class, 'overview']) ->name('admin.reporting.kpi.overview');
             Route::get('/kpi/trends',    [ReportingKpiController::class, 'trends'])   ->name('admin.reporting.kpi.trends');
+            Route::get('/kpi/monthly',            [ReportingKpiController::class, 'monthly'])           ->name('admin.reporting.kpi.monthly');
+            Route::get('/kpi/monthly-comparison', [ReportingKpiController::class, 'monthlyComparison']) ->name('admin.reporting.kpi.monthly-comparison');
 
             // Datasets
             Route::get('/datasets/user-course-daily',    [ReportingDatasetController::class, 'userCourseDaily'])    ->name('admin.reporting.datasets.user-course-daily');
             Route::get('/datasets/department-course-daily', [ReportingDatasetController::class, 'departmentCourseDaily'])->name('admin.reporting.datasets.department-course-daily');
             Route::get('/datasets/session-fact',         [ReportingDatasetController::class, 'sessionFact'])        ->name('admin.reporting.datasets.session-fact');
+            Route::get('/datasets/session-fact/{id}',    [ReportingDatasetController::class, 'sessionFactShow'])    ->name('admin.reporting.datasets.session-fact.show');
 
             // Exports
             Route::get('/export/user-course-daily',       [ReportingExportController::class, 'userCourseDaily'])       ->name('admin.reporting.export.user-course-daily');
@@ -364,6 +368,7 @@ Route::prefix('admin')->group(function () {
 
             // User performance & compliance
             Route::get('/user-performance',     [UserPerformanceReportController::class, 'performance'])  ->name('admin.reporting.user-performance');
+            Route::get('/user-performance/{id}', [UserPerformanceReportController::class, 'performanceShow'])->name('admin.reporting.user-performance.show');
             Route::get('/user-course-progress', [UserPerformanceReportController::class, 'courseProgress'])->name('admin.reporting.user-course-progress');
 
             // Evaluation-based department performance
@@ -377,6 +382,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/export/quiz/detailed',             [ReportingExtraExportController::class, 'quizDetailed'])       ->name('admin.reporting.export.quiz.detailed');
             Route::get('/export/user-performance',          [ReportingExtraExportController::class, 'userPerformance'])    ->name('admin.reporting.export.user-performance');
             Route::get('/export/user-course-progress',      [ReportingExtraExportController::class, 'userCourseProgress']) ->name('admin.reporting.export.user-course-progress');
+            Route::get('/export/user-course-progress-excel', [UserCourseProgressExcelController::class, 'export'])        ->name('admin.reporting.export.user-course-progress-excel');
             Route::get('/export/evaluation/department-performance', [ReportingExtraExportController::class, 'evaluationDepartment'])->name('admin.reporting.export.evaluation.department-performance');
         });
     });

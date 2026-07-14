@@ -11,6 +11,7 @@ use App\Models\EvaluationType;
 use App\Models\Course;
 use App\Models\CourseOnline;
 use App\Models\User;
+use App\Support\Filtering\FilterableQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,8 @@ use Illuminate\Validation\ValidationException;
 
 class EvaluationService
 {
+    use FilterableQuery;
+
     public function createEvaluation(array $data): Evaluation
     {
         $this->verifyCourseAssignment($data);
@@ -100,30 +103,31 @@ class EvaluationService
         return compact('created', 'updated', 'failed', 'errors');
     }
 
-    public function getAllForAdmin(array $filters): LengthAwarePaginator
+    public function getAllForAdmin(array $params): LengthAwarePaginator
     {
         $query = Evaluation::with(['user', 'department', 'course', 'courseOnline', 'histories']);
 
-        if (!empty($filters['course_type'])) {
-            $query->where('course_type', $filters['course_type']);
+        // Legacy explicit date range (start_date / end_date on created_at)
+        if (!empty($params['start_date'])) {
+            $query->whereDate('created_at', '>=', $params['start_date']);
         }
-        if (!empty($filters['department_id'])) {
-            $query->where('department_id', $filters['department_id']);
-        }
-        if (!empty($filters['user_id'])) {
-            $query->where('user_id', $filters['user_id']);
-        }
-        if (!empty($filters['performance_level'])) {
-            $query->where('performance_level', $filters['performance_level']);
-        }
-        if (!empty($filters['start_date'])) {
-            $query->whereDate('created_at', '>=', $filters['start_date']);
-        }
-        if (!empty($filters['end_date'])) {
-            $query->whereDate('created_at', '<=', $filters['end_date']);
+        if (!empty($params['end_date'])) {
+            $query->whereDate('created_at', '<=', $params['end_date']);
         }
 
-        return $query->latest()->paginate(20);
+        return $this->applyFilters($query, $params, [
+            'searchable'  => ['user.name', 'user.email'],
+            'filters'     => [
+                'course_type'       => 'exact',
+                'department_id'     => 'exact',
+                'user_id'           => 'exact',
+                'performance_level' => 'exact',
+            ],
+            'dateColumn'  => 'created_at',
+            'sortable'    => ['created_at', 'total_score', 'performance_level'],
+            'defaultSort' => ['created_at', 'desc'],
+            'perPage'     => 20,
+        ]);
     }
 
     public function getAllForUser(int $userId): LengthAwarePaginator

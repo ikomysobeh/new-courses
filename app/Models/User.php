@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -17,6 +18,21 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    /**
+     * Keep the user_manager pivot consistent with the legacy report_to column.
+     * Any write that sets report_to (factory, seeder, direct update, or the
+     * UserService primary-manager mirror) is reflected into the pivot so the
+     * managers()/subordinates() relations always see it.
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (User $user) {
+            if (($user->wasRecentlyCreated || $user->wasChanged('report_to')) && $user->report_to) {
+                $user->managers()->syncWithoutDetaching([$user->report_to]);
+            }
+        });
+    }
 
     protected $fillable = [
         'name',
@@ -62,14 +78,30 @@ class User extends Authenticatable
         return $this->belongsTo(UserLevelTier::class);
     }
 
+    /**
+     * Primary (first) manager, kept in sync via users.report_to for backward compatibility.
+     */
     public function manager(): BelongsTo
     {
         return $this->belongsTo(User::class, 'report_to');
     }
 
-    public function subordinates(): HasMany
+    /**
+     * All managers this user reports to (1 or 2). Source of truth = user_manager pivot.
+     */
+    public function managers(): BelongsToMany
     {
-        return $this->hasMany(User::class, 'report_to');
+        return $this->belongsToMany(User::class, 'user_manager', 'user_id', 'manager_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * All users who report to this user (their team). Direct reports only.
+     */
+    public function subordinates(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_manager', 'manager_id', 'user_id')
+            ->withTimestamps();
     }
 
     public function courseRegistrations(): HasMany
@@ -104,7 +136,7 @@ class User extends Authenticatable
 
     public function hasSuperiors(): bool
     {
-        return ! is_null($this->report_to);
+        return $this->managers()->exists();
     }
 
     public function hasSubordinates(): bool

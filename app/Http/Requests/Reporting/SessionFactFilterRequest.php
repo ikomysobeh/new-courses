@@ -17,6 +17,7 @@ class SessionFactFilterRequest extends FormRequest
             'date_from'       => ['nullable', 'date'],
             'date_to'         => ['nullable', 'date', 'after_or_equal:date_from'],
             'user_id'         => ['nullable', 'integer', 'exists:users,id'],
+            'manager_id'      => ['nullable', 'integer', 'exists:users,id'],
             'course_online_id'=> ['nullable', 'integer', 'exists:course_onlines,id'],
             'department_id'   => ['nullable', 'integer', 'exists:departments,id'],
             'is_suspicious'   => ['nullable', 'boolean'],
