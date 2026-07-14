@@ -20,10 +20,7 @@ class OnlineCourseController extends Controller
 
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $filters = $request->only(['status', 'search']);
-        $perPage = (int) $request->query('per_page', 15);
-
-        $courses = $this->service->getAllForAdmin($filters, $perPage);
+        $courses = $this->service->getAllForAdmin($request->query());
 
         return OnlineCourseResource::collection($courses)
             ->additional(['cards' => $this->service->getAdminCourseCards()]);

@@ -23,8 +23,7 @@ class BlogPostController extends Controller
 
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $perPage = (int) $request->query('per_page', 15);
-        $posts   = $this->postService->getAllForAdmin($perPage);
+        $posts = $this->postService->getAllForAdmin($request->query());
 
         return BlogPostResource::collection($posts);
     }

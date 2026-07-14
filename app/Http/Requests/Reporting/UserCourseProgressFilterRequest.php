@@ -19,6 +19,8 @@ class UserCourseProgressFilterRequest extends FormRequest
             'user_id'          => ['nullable', 'integer', 'exists:users,id'],
             'department_id'    => ['nullable', 'integer', 'exists:departments,id'],
             'course_online_id' => ['nullable', 'integer', 'exists:course_onlines,id'],
+            'course_type'      => ['nullable', 'in:traditional,online'],
+            'course_id'        => ['nullable', 'integer'],
             'status'           => ['nullable', 'in:not_started,in_progress,completed'],
             'per_page'         => ['nullable', 'integer', 'min:5', 'max:100'],
         ];

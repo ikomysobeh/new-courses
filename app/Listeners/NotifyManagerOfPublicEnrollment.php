@@ -13,22 +13,20 @@ class NotifyManagerOfPublicEnrollment implements ShouldQueue
 {
     public function handle(UserEnrolledInPublicCourse $event): void
     {
-        if (! $event->user->report_to) {
-            return;
-        }
+        $managers = $event->user->managers()->get();
 
-        $manager = User::query()->find($event->user->report_to);
+        foreach ($managers as $manager) {
+            if (! $manager->email) {
+                continue;
+            }
 
-        if (! $manager || ! $manager->email) {
-            return;
-        }
-
-        try {
-            Mail::to($manager->email)->queue(
-                new PublicCourseEnrollmentMail($event->course, $event->user, $manager)
-            );
-        } catch (Throwable $exception) {
-            report($exception);
+            try {
+                Mail::to($manager->email)->queue(
+                    new PublicCourseEnrollmentMail($event->course, $event->user, $manager)
+                );
+            } catch (Throwable $exception) {
+                report($exception);
+            }
         }
     }
 }

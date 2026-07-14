@@ -5,10 +5,13 @@ namespace App\Services\Support;
 use App\Models\BugReport;
 use App\Models\User;
 use App\Services\ActivityService;
+use App\Support\Filtering\FilterableQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class BugReportService
 {
+    use FilterableQuery;
+
     public function createReport(int $adminUserId, array $data): BugReport
     {
         $report = BugReport::create([
@@ -34,31 +37,22 @@ class BugReportService
         return $report->load(['reporter', 'assignee']);
     }
 
-    public function getAllForAdmin(array $filters = []): LengthAwarePaginator
+    public function getAllForAdmin(array $params = []): LengthAwarePaginator
     {
-        $query = BugReport::with(['reporter', 'assignee'])->latest();
+        $query = BugReport::with(['reporter', 'assignee']);
 
-        if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-
-        if (!empty($filters['priority'])) {
-            $query->where('priority', $filters['priority']);
-        }
-
-        if (!empty($filters['assigned_to'])) {
-            $query->where('assigned_to', $filters['assigned_to']);
-        }
-
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        return $query->paginate(15);
+        return $this->applyFilters($query, $params, [
+            'searchable'  => ['title', 'description'],
+            'filters'     => [
+                'status'      => 'exact',
+                'priority'    => 'exact',
+                'assigned_to' => 'exact',
+            ],
+            'dateColumn'  => 'created_at',
+            'sortable'    => ['created_at', 'status', 'priority'],
+            'defaultSort' => ['created_at', 'desc'],
+            'perPage'     => 15,
+        ]);
     }
 
     public function getById(int $id): BugReport

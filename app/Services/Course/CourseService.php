@@ -12,6 +12,7 @@ use App\Models\CourseAvailability;
 use App\Models\CourseCompletion;
 use App\Models\CourseRegistration;
 use App\Models\User;
+use App\Support\Filtering\FilterableQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
@@ -21,6 +22,8 @@ use Illuminate\Validation\ValidationException;
 
 class CourseService
 {
+    use FilterableQuery;
+
     public function getAdminCourseCards(): array
     {
         return [
@@ -72,27 +75,20 @@ class CourseService
     // Admin: Courses
     // -------------------------------------------------------------------------
 
-    public function getAllCoursesForAdmin(array $filters = []): LengthAwarePaginator
+    public function getAllCoursesForAdmin(array $params = []): LengthAwarePaginator
     {
         $query = Course::query()
             ->with(['availabilities'])
-            ->withCount('registrations')
-            ->orderByDesc('id');
+            ->withCount('registrations');
 
-        if (! empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-
-        if (! empty($filters['privacy'])) {
-            $query->where('privacy', $filters['privacy']);
-        }
-
-        if (! empty($filters['search'])) {
-            $search = '%' . $filters['search'] . '%';
-            $query->where('name', 'like', $search);
-        }
-
-        return $query->paginate(15);
+        return $this->applyFilters($query, $params, [
+            'searchable'  => ['name'],
+            'filters'     => ['status' => 'exact', 'privacy' => 'exact'],
+            'dateColumn'  => 'created_at',
+            'sortable'    => ['name', 'created_at', 'id'],
+            'defaultSort' => ['id', 'desc'],
+            'perPage'     => 15,
+        ]);
     }
 
     public function getCourseByIdForAdmin(int $id): Course

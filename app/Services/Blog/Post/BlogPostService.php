@@ -4,12 +4,15 @@ namespace App\Services\Blog\Post;
 
 use App\Models\PodcastPost;
 use App\Services\Blog\Media\BlogMediaService;
+use App\Support\Filtering\FilterableQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class BlogPostService
 {
+    use FilterableQuery;
+
     public function __construct(
         private readonly BlogMediaService $mediaService,
     ) {}
@@ -48,18 +51,27 @@ class BlogPostService
             ->get();
     }
 
-    public function getAllForAdmin(int $perPage = 15): LengthAwarePaginator
+    public function getAllForAdmin(array $params = []): LengthAwarePaginator
     {
-        return PodcastPost::query()
+        $query = PodcastPost::query()
             ->with(['creator:id,name'])
-            ->orderByDesc('created_at')
-            ->paginate($perPage);
+            ->withCount(['likes', 'comments']);
+
+        return $this->applyFilters($query, $params, [
+            'searchable'  => ['title', 'excerpt', 'creator.name'],
+            'filters'     => ['status' => 'exact'],
+            'dateColumn'  => 'created_at',
+            'sortable'    => ['title', 'created_at', 'published_at'],
+            'defaultSort' => ['created_at', 'desc'],
+            'perPage'     => 15,
+        ]);
     }
 
     public function getByIdForAdmin(int $id): PodcastPost
     {
         return PodcastPost::query()
             ->with(['creator:id,name', 'comments.user:id,name', 'likes', 'mediable'])
+            ->withCount(['likes', 'comments'])
             ->findOrFail($id);
     }
 

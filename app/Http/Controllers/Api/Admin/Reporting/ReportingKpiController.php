@@ -4,14 +4,19 @@ namespace App\Http\Controllers\Api\Admin\Reporting;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reporting\KpiFilterRequest;
+use App\Http\Requests\Reporting\MonthlyKpiFilterRequest;
 use App\Http\Resources\Reporting\KpiOverviewResource;
 use App\Services\Reporting\Query\KpiQueryService;
+use App\Services\Reporting\Query\MonthlyKpiQueryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
 class ReportingKpiController extends Controller
 {
-    public function __construct(protected KpiQueryService $kpi) {}
+    public function __construct(
+        protected KpiQueryService $kpi,
+        protected MonthlyKpiQueryService $monthlyKpi,
+    ) {}
 
     public function overview(KpiFilterRequest $request): JsonResponse
     {
@@ -32,6 +37,33 @@ class ReportingKpiController extends Controller
 
         $data = Cache::remember($cacheKey, now()->addHour(), function () use ($filters) {
             return $this->kpi->trends($filters);
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function monthly(MonthlyKpiFilterRequest $request): JsonResponse
+    {
+        $filters  = $request->validated();
+        $cacheKey = 'reporting:kpi:monthly:' . md5(serialize($filters));
+
+        $data = Cache::remember($cacheKey, now()->addHour(), function () use ($filters) {
+            return [
+                'overview'      => $this->monthlyKpi->monthlyOverview($filters),
+                'by_department' => $this->monthlyKpi->monthlyByDepartment($filters),
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function monthlyComparison(MonthlyKpiFilterRequest $request): JsonResponse
+    {
+        $filters  = $request->validated();
+        $cacheKey = 'reporting:kpi:monthly-comparison:' . md5(serialize($filters));
+
+        $data = Cache::remember($cacheKey, now()->addHour(), function () use ($filters) {
+            return $this->monthlyKpi->monthlyComparison($filters);
         });
 
         return response()->json(['data' => $data]);

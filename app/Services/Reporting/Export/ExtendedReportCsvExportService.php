@@ -141,16 +141,18 @@ class ExtendedReportCsvExportService
     public function exportUserPerformance(array $filters = []): StreamedResponse
     {
         return $this->stream('user-performance',
-            ['user_id', 'user_name', 'email', 'department', 'total_assignments', 'completed_courses', 'in_progress_courses', 'completion_rate', 'avg_progress', 'sessions_count', 'total_active_seconds', 'avg_attention', 'suspicious_sessions', 'quiz_attempts', 'quiz_passed', 'avg_quiz_pct'],
+            ['user_id', 'user_name', 'email', 'department', 'total_assignments', 'completed_courses', 'in_progress_courses', 'completion_rate', 'progress', 'learning_time_minutes', 'avg_progress', 'sessions_count', 'total_active_seconds', 'avg_attention', 'suspicious_sessions', 'quiz_attempts', 'quiz_passed', 'avg_quiz_pct'],
             fn ($handle) => $this->performance->baseQuery($filters)->orderByDesc('avg_progress')->chunk(500, function ($rows) use ($handle) {
                 foreach ($rows as $row) {
                     $completionRate = $row->total_assignments > 0
                         ? round($row->completed_courses / $row->total_assignments * 100, 2)
                         : 0;
+                    $learningMinutes = (int) round(((int) $row->total_active_seconds) / 60);
                     fputcsv($handle, [
                         $row->user_id, $row->user_name, $row->user_email, $row->department_name,
                         $row->total_assignments, $row->completed_courses, $row->in_progress_courses,
-                        $completionRate, round((float) $row->avg_progress, 2),
+                        $completionRate, round((float) $row->avg_progress, 2), $learningMinutes,
+                        round((float) $row->avg_progress, 2),
                         $row->sessions_count, $row->total_active_seconds,
                         round((float) $row->avg_attention, 1), $row->suspicious_sessions,
                         $row->quiz_attempts_count, $row->quiz_passed_count, round((float) $row->avg_quiz_pct, 2),
