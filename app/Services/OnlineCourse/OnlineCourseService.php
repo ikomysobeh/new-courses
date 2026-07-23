@@ -132,36 +132,29 @@ class OnlineCourseService
 
     private function storeImage(UploadedFile $file): string
     {
+        // storeAs streams the uploaded temp file to disk instead of buffering the
+        // whole file in memory via getContent() — much faster/lighter for big files.
         $uuid      = (string) Str::uuid();
         $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
-        $path      = "course-images/{$uuid}_{$sanitized}";
 
-        Storage::disk('public')->put($path, $file->getContent());
-
-        return $path;
+        return $file->storeAs('course-images', "{$uuid}_{$sanitized}", 'public');
     }
 
     private function storeThumbnail(UploadedFile $file): string
     {
         $uuid      = (string) Str::uuid();
         $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
-        $path      = "course-thumbnails/{$uuid}_{$sanitized}";
 
-        Storage::disk('public')->put($path, $file->getContent());
-
-        return $path;
+        return $file->storeAs('course-thumbnails', "{$uuid}_{$sanitized}", 'public');
     }
 
     private function uploadPdf(UploadedFile $file): array
     {
         $uuid      = (string) Str::uuid();
         $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
-        $path      = "course-pdfs/{$uuid}_{$sanitized}";
-
-        Storage::disk('public')->put($path, $file->getContent());
 
         return [
-            'file_path'  => $path,
+            'file_path'  => $file->storeAs('course-pdfs', "{$uuid}_{$sanitized}", 'public'),
             'file_size'  => $file->getSize(),
         ];
     }
@@ -170,12 +163,9 @@ class OnlineCourseService
     {
         $uuid      = (string) Str::uuid();
         $sanitized = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
-        $path      = "course-attachments/{$uuid}_{$sanitized}";
-
-        Storage::disk('public')->put($path, $file->getContent());
 
         return [
-            'attachment_path'      => $path,
+            'attachment_path'      => $file->storeAs('course-attachments', "{$uuid}_{$sanitized}", 'public'),
             'attachment_name'      => $file->getClientOriginalName(),
             'attachment_extension' => $file->getClientOriginalExtension(),
         ];

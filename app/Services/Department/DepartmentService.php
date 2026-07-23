@@ -21,7 +21,7 @@ class DepartmentService
             ],
             [
                 'key' => 'root_departments',
-                'title' => 'Root Departments',
+                'title' => 'Parent Departments',
                 'value' => Department::query()->whereNull('parent_id')->count(),
             ],
             [

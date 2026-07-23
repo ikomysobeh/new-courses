@@ -24,12 +24,16 @@ class UserQuizAttemptResource extends BaseResource
             'total_points'   => $this->quiz?->total_points,
             'passed'         => (bool) $this->passed,
             'quiz'           => $this->whenLoaded('quiz', fn () => new UserQuizResource($this->quiz)),
+            // Whether ANY answer is still awaiting manual grading (open-text with
+            // no is_correct yet) — the frontend shows "Under Review" for these.
+            'pending_manual_grading' => $this->whenLoaded('answers', fn () => $this->answers
+                ->contains(fn ($a) => $a->is_correct === null)),
             'answers'        => $this->whenLoaded('answers', function () {
-                $includeIsCorrect = $this->resolveIncludeIsCorrect();
+                $includeCorrectAnswer = $this->resolveIncludeCorrectAnswer();
 
-                return $this->answers->map(function ($answer) use ($includeIsCorrect) {
+                return $this->answers->map(function ($answer) use ($includeCorrectAnswer) {
                     $resource = new UserQuizAnswerResource($answer);
-                    $resource->includeIsCorrect = $includeIsCorrect;
+                    $resource->includeCorrectAnswer = $includeCorrectAnswer;
 
                     return $resource;
                 });
@@ -39,7 +43,7 @@ class UserQuizAttemptResource extends BaseResource
         ];
     }
 
-    private function resolveIncludeIsCorrect(): bool
+    private function resolveIncludeCorrectAnswer(): bool
     {
         if (!$this->relationLoaded('quiz') || !$this->quiz) {
             return false;

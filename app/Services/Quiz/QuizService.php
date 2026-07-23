@@ -78,13 +78,26 @@ class QuizService
 
             ->withMax(['attempts as user_total_score' => fn ($q) => $q->where('user_id', $userId)->whereNotNull('completed_at')], 'total_score')
 
+            ->withCount(['attempts as attempts_count' => fn ($q) => $q->where('user_id', $userId)])
+
+            // Latest attempt (for the status badge on each card).
+            ->with(['attempts' => fn ($q) => $q->where('user_id', $userId)->orderByDesc('id')])
+
+            // Whether the latest completed attempt still awaits manual grading.
+            ->withExists(['attempts as user_result_pending' => fn ($q) => $q
+                ->where('user_id', $userId)
+                ->whereNotNull('completed_at')
+                ->whereHas('answers', fn ($a) => $a
+                    ->whereNull('is_correct')
+                    ->whereHas('question', fn ($qq) => $qq->where('type', 'text')))])
+
             ->get();
 
     }
 
 
 
-    public function getById(int $id): Quiz
+    public function getById(int $id, ?int $userId = null): Quiz
 
     {
 
@@ -93,6 +106,9 @@ class QuizService
             ->with(['questions' => fn ($q) => $q->orderBy('order')])
 
             ->with('module')
+
+            ->when($userId !== null, fn ($query) => $query
+                ->withCount(['attempts as attempts_count' => fn ($q) => $q->where('user_id', $userId)]))
 
             ->findOrFail($id);
 

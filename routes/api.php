@@ -463,6 +463,7 @@ Route::prefix('user')->group(function () {
         // Blog routes
         Route::prefix('blog-posts')->group(function () {
             Route::get('/getAll',                [BlogFeedController::class,    'index'])   ->name('user.blog-posts.getAll');
+            Route::get('/authors',               [BlogFeedController::class,    'authors']) ->name('user.blog-posts.authors');
             Route::get('/getBySlug/{slug}',      [BlogFeedController::class,    'show'])    ->name('user.blog-posts.getBySlug');
             Route::post('/like/{postId}',        [BlogLikeController::class,    'like'])    ->name('user.blog-posts.like');
             Route::delete('/unlike/{postId}',    [BlogLikeController::class,    'unlike'])  ->name('user.blog-posts.unlike');

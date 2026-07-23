@@ -34,7 +34,7 @@ class QuizController extends Controller
      */
     public function getById(Request $request, int $id): UserQuizResource
     {
-        $quiz = $this->quizService->getById($id);
+        $quiz = $this->quizService->getById($id, $request->user()->id);
 
         return new UserQuizResource($quiz);
     }
