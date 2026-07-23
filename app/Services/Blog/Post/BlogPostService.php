@@ -3,9 +3,11 @@
 namespace App\Services\Blog\Post;
 
 use App\Models\PodcastPost;
+use App\Models\User;
 use App\Services\Blog\Media\BlogMediaService;
 use App\Support\Filtering\FilterableQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,13 +19,29 @@ class BlogPostService
         private readonly BlogMediaService $mediaService,
     ) {}
 
-    public function getPublicFeed(int $perPage = 15): LengthAwarePaginator
+    public function getPublicFeed(array $params = [], int $perPage = 15): LengthAwarePaginator
     {
         return PodcastPost::query()
             ->published()
             ->with(['creator:id,name'])
+            ->when(
+                !empty($params['author_id']),
+                fn ($q) => $q->where('created_by', (int) $params['author_id']),
+            )
             ->orderByDesc('published_at')
             ->paginate($perPage);
+    }
+
+    /**
+     * Distinct authors (id + name) who have at least one published post.
+     */
+    public function getPublishedAuthors(): Collection
+    {
+        return User::query()
+            ->select('id', 'name')
+            ->whereIn('id', PodcastPost::query()->published()->select('created_by'))
+            ->orderBy('name')
+            ->get();
     }
 
     public function getPostBySlug(string $slug): PodcastPost

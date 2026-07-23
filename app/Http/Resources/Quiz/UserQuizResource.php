@@ -45,6 +45,58 @@ class UserQuizResource extends BaseResource
                     ->where('user_id', $request->user()->id)
                     ->whereNotNull('completed_at')
                     ->max('total_score'),
+            'max_attempts'         => $this->max_attempts,
+            // How many attempts this user has made on this quiz.
+            'attempts_count'       => isset($this->attempts_count)
+                ? (int) $this->attempts_count
+                : QuizAttempt::query()
+                    ->where('quiz_id', $this->id)
+                    ->where('user_id', $request->user()->id)
+                    ->count(),
+            // Latest attempt summary (drives the status badge on the list cards).
+            'last_attempt'         => $this->relationLoaded('attempts')
+                ? (function () {
+                    $a = $this->attempts->first(); // ordered newest-first
+                    if (!$a) {
+                        return null;
+                    }
+                    $completed = $a->completed_at !== null;
+                    return [
+                        'id'           => $a->id,
+                        'started_at'   => $a->started_at,
+                        'submitted_at' => $a->completed_at,
+                        'score'        => $a->score,
+                        'total_score'  => $a->total_score,
+                        'total_points' => $this->total_points,
+                        'passed'       => $completed ? (bool) $a->passed : null,
+                    ];
+                })()
+                : null,
+            // True when the user's latest completed attempt still has open-text
+            // answers awaiting manual grading — result is not final ("Under Review").
+            'user_result_pending'  => (function () use ($request) {
+                // Preloaded via getAllForUser (withExists) — the list path.
+                if (isset($this->user_result_pending)) {
+                    return (bool) $this->user_result_pending;
+                }
+                // Detail path: compute for the latest completed attempt.
+                if (!$this->relationLoaded('questions')) {
+                    return false;
+                }
+                $attempt = QuizAttempt::query()
+                    ->where('quiz_id', $this->id)
+                    ->where('user_id', $request->user()->id)
+                    ->whereNotNull('completed_at')
+                    ->latest('id')
+                    ->first();
+                if (!$attempt) {
+                    return false;
+                }
+                return $attempt->answers()
+                    ->whereNull('is_correct')
+                    ->whereHas('question', fn ($q) => $q->where('type', 'text'))
+                    ->exists();
+            })(),
             'questions'            => $this->whenLoaded(
                 'questions',
                 fn () => UserQuizQuestionResource::collection($this->questions)

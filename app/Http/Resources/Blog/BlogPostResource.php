@@ -4,6 +4,7 @@ namespace App\Http\Resources\Blog;
 
 use Illuminate\Http\Request;
 use App\Http\Resources\BaseResource;
+use App\Services\Blog\Media\BlogMediaService;
 use Illuminate\Support\Facades\Storage;
 
 class BlogPostResource extends BaseResource
@@ -30,6 +31,8 @@ class BlogPostResource extends BaseResource
                 function () {
                     $media     = $this->mediable;
                     $mediaType = class_basename($this->mediable_type ?? '');
+                    $mediaSvc  = app(BlogMediaService::class);
+                    $streamUrl = $mediaSvc->resolveStreamUrl($this->mediable_type, $this->mediable_id);
 
                     if ($mediaType === 'Video') {
                         return [
@@ -42,6 +45,8 @@ class BlogPostResource extends BaseResource
                                 ? Storage::disk('public')->url($media->thumbnail_path)
                                 : null,
                             'video_category_id' => $media?->video_category_id,
+                            'stream_url'        => $streamUrl,
+                            'subtitle_url'      => $mediaSvc->resolveSubtitleUrl($this->mediable_type, $this->mediable_id),
                         ];
                     }
 
@@ -56,6 +61,7 @@ class BlogPostResource extends BaseResource
                                 ? Storage::disk('public')->url($media->thumbnail_path)
                                 : null,
                             'audio_category_id' => $media?->audio_category_id,
+                            'stream_url'        => $streamUrl,
                         ];
                     }
 

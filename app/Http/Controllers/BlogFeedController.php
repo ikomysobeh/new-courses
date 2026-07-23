@@ -7,6 +7,7 @@ use App\Http\Resources\Blog\BlogPostDetailResource;
 use App\Services\Blog\Media\BlogMediaService;
 use App\Services\Blog\Post\BlogPostService;
 use App\Services\Blog\Reaction\BlogLikeService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -21,9 +22,23 @@ class BlogFeedController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $perPage = (int) $request->query('per_page', 15);
-        $posts   = $this->postService->getPublicFeed($perPage);
+        $posts   = $this->postService->getPublicFeed(
+            $request->only(['author_id']),
+            $perPage,
+        );
 
         return BlogPostCardResource::collection($posts);
+    }
+
+    /**
+     * Distinct authors who have at least one published post — powers the
+     * blog feed's author filter dropdown.
+     */
+    public function authors(): JsonResponse
+    {
+        return response()->json([
+            'data' => $this->postService->getPublishedAuthors(),
+        ]);
     }
 
     public function show(Request $request, string $slug): BlogPostDetailResource

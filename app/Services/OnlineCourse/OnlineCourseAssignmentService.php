@@ -6,6 +6,7 @@ use App\Events\OnlineCourseAssigned;
 use App\Models\CourseOnline;
 use App\Models\CourseOnlineAssignment;
 use App\Models\User;
+use App\Models\UserCourseProgress;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class OnlineCourseAssignmentService
@@ -13,7 +14,14 @@ class OnlineCourseAssignmentService
     public function getAllAssignments(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = CourseOnlineAssignment::query()
-            ->with(['course', 'user', 'assignedBy'])
+            ->with(['course:id,name,deadline', 'user', 'assignedBy'])
+            // Per-row completion flag (1 = this user completed this course) so the
+            // resource can derive `is_overdue` without an N+1 query.
+            ->addSelect(['course_completed' => UserCourseProgress::query()
+                ->selectRaw("CASE WHEN status = 'completed' THEN 1 ELSE 0 END")
+                ->whereColumn('user_course_progress.user_id', 'course_online_assignments.user_id')
+                ->whereColumn('user_course_progress.course_online_id', 'course_online_assignments.course_online_id')
+                ->limit(1)])
             ->latest();
 
         if (!empty($filters['course_online_id'])) {
@@ -34,6 +42,30 @@ class OnlineCourseAssignmentService
                     $cq->where('name', 'like', "%{$term}%");
                 });
             });
+        }
+
+        // Overdue = the course deadline has passed AND the user has not completed it.
+        if (isset($filters['is_overdue']) && $filters['is_overdue'] !== '') {
+            $wantOverdue = filter_var($filters['is_overdue'], FILTER_VALIDATE_BOOLEAN);
+
+            $completedExists = function ($q) {
+                $q->from('user_course_progress')
+                    ->whereColumn('user_course_progress.user_id', 'course_online_assignments.user_id')
+                    ->whereColumn('user_course_progress.course_online_id', 'course_online_assignments.course_online_id')
+                    ->where('status', 'completed');
+            };
+
+            if ($wantOverdue) {
+                $query->whereHas('course', fn ($c) => $c
+                    ->whereNotNull('deadline')->where('deadline', '<', now()))
+                    ->whereNotExists($completedExists);
+            } else {
+                $query->where(function ($outer) use ($completedExists) {
+                    $outer->whereDoesntHave('course', fn ($c) => $c
+                        ->whereNotNull('deadline')->where('deadline', '<', now()))
+                        ->orWhereExists($completedExists);
+                });
+            }
         }
 
         return $query->paginate($perPage);

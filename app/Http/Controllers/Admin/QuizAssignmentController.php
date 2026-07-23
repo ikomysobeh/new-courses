@@ -20,9 +20,15 @@ class QuizAssignmentController extends Controller
      */
     public function getAll(Request $request): AnonymousResourceCollection
     {
-        $assignments = $this->assignmentService->getAssignmentsList(
-            $request->only(['quiz_id', 'user_id', 'notification_sent'])
-        );
+        $filters = $request->only(['quiz_id', 'user_id']);
+
+        // Query-string values arrive as strings ("true"/"false"); cast to a real
+        // boolean so the Sent / Not-sent filter matches the boolean column.
+        if ($request->has('notification_sent')) {
+            $filters['notification_sent'] = $request->boolean('notification_sent');
+        }
+
+        $assignments = $this->assignmentService->getAssignmentsList($filters);
 
         return QuizAssignmentResource::collection($assignments)
             ->additional(['cards' => $this->assignmentService->getAdminAssignmentCards()]);
