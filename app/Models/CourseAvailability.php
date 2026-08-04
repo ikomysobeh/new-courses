@@ -12,6 +12,7 @@ class CourseAvailability extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'course_id',
         'start_date',
         'end_date',

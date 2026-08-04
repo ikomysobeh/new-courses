@@ -13,6 +13,7 @@ class Quiz extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'legacy_id',
         'course_id',
         'course_online_id',
         'module_id',

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EvaluationHistory extends Model
 {
     protected $fillable = [
+        'legacy_id',
         'evaluation_id',
         'course_online_id',
         'config_name',

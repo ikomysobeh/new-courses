@@ -11,6 +11,7 @@ class CourseAssignment extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'course_id',
         'user_id',
         'assigned_by',

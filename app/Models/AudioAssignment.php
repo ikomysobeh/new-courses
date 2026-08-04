@@ -11,6 +11,7 @@ class AudioAssignment extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'audio_id',
         'user_id',
         'assigned_by',

@@ -13,6 +13,7 @@ class ModuleContent extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'module_id',
         'content_type',
         'title',

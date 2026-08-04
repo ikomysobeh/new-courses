@@ -15,6 +15,7 @@ class Audio extends Model
     protected $table = 'audios';
 
     protected $fillable = [
+        'legacy_id',
         'name',
         'description',
         'local_path',

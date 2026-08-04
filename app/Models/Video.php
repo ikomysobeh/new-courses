@@ -13,6 +13,7 @@ class Video extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'legacy_id',
         'name',
         'description',
         'file_path',

@@ -12,6 +12,7 @@ class LearningSession extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'user_id',
         'course_online_id',
         'content_id',

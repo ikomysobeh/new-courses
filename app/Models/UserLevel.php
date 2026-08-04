@@ -11,6 +11,7 @@ class UserLevel extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'code',
         'name',
         'hierarchy_level',

@@ -12,6 +12,7 @@ class UserLevelTier extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'user_level_id',
         'tier_name',
         'tier_order',

@@ -11,6 +11,7 @@ class UserContentProgress extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'user_id',
         'content_id',
         'course_online_id',

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Evaluation extends Model
 {
     protected $fillable = [
+        'legacy_id',
         'user_id',
         'department_id',
         'course_type',

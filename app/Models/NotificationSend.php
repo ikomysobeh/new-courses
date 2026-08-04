@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class NotificationSend extends Model
 {
     protected $fillable = [
+        'legacy_id',
         'type',
         'subject',
         'message',

@@ -11,6 +11,7 @@ class QuizAnswer extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'quiz_attempt_id',
         'quiz_question_id',
         'answer',

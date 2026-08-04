@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ActivityLog extends Model
 {
     protected $fillable = [
+        'legacy_id',
         'user_id',
         'description',
         'action',

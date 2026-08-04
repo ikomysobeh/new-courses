@@ -13,6 +13,7 @@ class PostLike extends Model
     protected $table = 'post_likes';
 
     protected $fillable = [
+        'legacy_id',
         'podcast_post_id',
         'user_id',
     ];

@@ -11,6 +11,7 @@ class VideoQuality extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'video_id',
         'quality',
         'file_path',

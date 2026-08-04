@@ -13,6 +13,7 @@ class AudioProgress extends Model
     protected $table = 'audio_progress';
 
     protected $fillable = [
+        'legacy_id',
         'user_id',
         'audio_id',
         'current_time',

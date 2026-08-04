@@ -10,6 +10,7 @@ class EmployeeFeedback extends Model
     protected $table = 'employee_feedback';
 
     protected $fillable = [
+        'legacy_id',
         'user_id',
         'type',
         'title',

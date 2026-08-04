@@ -12,6 +12,7 @@ class QuizAssignment extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'user_id',
         'quiz_id',
         'assigned_by',
