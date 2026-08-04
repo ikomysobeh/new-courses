@@ -11,6 +11,7 @@ class Clocking extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'user_id',
         'course_id',
         'clock_in',

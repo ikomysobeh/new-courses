@@ -17,6 +17,7 @@ class PodcastPost extends Model
     protected $table = 'podcast_posts';
 
     protected $fillable = [
+        'legacy_id',
         'title',
         'slug',
         'excerpt',

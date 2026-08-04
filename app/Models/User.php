@@ -35,6 +35,7 @@ class User extends Authenticatable
     }
 
     protected $fillable = [
+        'legacy_id',
         'name',
         'email',
         'password',

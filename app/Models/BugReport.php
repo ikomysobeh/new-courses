@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class BugReport extends Model
 {
     protected $fillable = [
+        'legacy_id',
         'reported_by',
         'assigned_to',
         'priority',

@@ -13,6 +13,7 @@ class PostComment extends Model
     protected $table = 'post_comments';
 
     protected $fillable = [
+        'legacy_id',
         'podcast_post_id',
         'user_id',
         'body',

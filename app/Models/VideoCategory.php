@@ -11,6 +11,7 @@ class VideoCategory extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'name',
         'slug',
         'sort_order',

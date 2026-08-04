@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class EvaluationConfig extends Model
 {
     protected $fillable = [
+        'legacy_id',
         'name',
         'max_score',
         'applies_to',

@@ -14,6 +14,7 @@ class CourseModule extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'course_online_id',
         'name',
         'description',

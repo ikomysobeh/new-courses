@@ -11,6 +11,7 @@ class CourseAnalytics extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'course_online_id',
         'total_enrollments',
         'active_learners',

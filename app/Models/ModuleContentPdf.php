@@ -11,6 +11,7 @@ class ModuleContentPdf extends Model
     use HasFactory;
 
     protected $fillable = [
+        'legacy_id',
         'module_content_id',
         'file_path',
         'pdf_page_count',

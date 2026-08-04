@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EvaluationType extends Model
 {
     protected $fillable = [
+        'legacy_id',
         'evaluation_config_id',
         'type_name',
         'score_value',

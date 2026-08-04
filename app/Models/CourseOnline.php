@@ -14,6 +14,7 @@ class CourseOnline extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'legacy_id',
         'name',
         'description',
         'image_path',
