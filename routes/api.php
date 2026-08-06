@@ -175,6 +175,7 @@ Route::prefix('admin')->group(function () {
             Route::delete('/upload-chunk/revert', [VideoController::class, 'revertChunk'])->name('admin.videos.upload-chunk.revert');
             Route::post('/{id}/retry-transcode', [VideoController::class, 'retryTranscode'])->name('admin.videos.retry-transcode');
             Route::get('/{id}/stream', [VideoController::class, 'stream'])->name('admin.videos.stream');
+            Route::get('/{id}/stream-url', [VideoController::class, 'streamUrl'])->name('admin.videos.stream-url');
             Route::get('/{id}/subtitle', [VideoController::class, 'getSubtitle'])->name('admin.videos.subtitle.get');
             Route::get('/{id}/subtitle/raw', [VideoController::class, 'streamSubtitle'])->name('admin.videos.subtitle.raw');
             Route::post('/{id}/subtitle', [VideoController::class, 'uploadSubtitle'])->name('admin.videos.subtitle.upload');
