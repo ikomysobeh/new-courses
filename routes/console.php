@@ -32,3 +32,13 @@ Schedule::call(function () {
 
 // Warm KPI cache at 01:00
 Schedule::job(new RefreshKpiCacheJob)->dailyAt('01:00')->name('refresh-kpi-cache');
+
+// Process queued jobs in short bursts — shared hosting can't run a persistent
+// `queue:work` daemon, so the scheduler drives it. Notifications here (course
+// assignment emails, reports, etc.) aren't time-critical, so every 30 minutes
+// is enough; --max-time gives it room to drain a large batch (e.g. assigning
+// a course to hundreds of users at once) before the next tick.
+Schedule::command('queue:work --stop-when-empty --max-time=1700')
+    ->everyThirtyMinutes()
+    ->withoutOverlapping()
+    ->name('queue-work');
