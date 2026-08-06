@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VideoController extends Controller
@@ -155,6 +156,30 @@ class VideoController extends Controller
         $size     = filesize($fullPath);
 
         return $this->streamWithRangeSupport($request, $fullPath, 'video/mp4', $size);
+    }
+
+    /**
+     * Return a short-lived signed URL for the video, so the browser can
+     * play it directly via <video src=...> and issue its own Range
+     * requests instead of the frontend fetching the whole file first.
+     */
+    public function streamUrl(int $id): JsonResponse
+    {
+        $video = $this->videoService->getVideoByIdForAdmin($id);
+
+        abort_unless(
+            $video->file_path && Storage::disk('local')->exists($video->file_path),
+            404,
+            'Video file not found.'
+        );
+
+        return response()->json([
+            'url' => URL::temporarySignedRoute(
+                'media.video-direct',
+                now()->addHours(4),
+                ['video_id' => $video->id],
+            ),
+        ]);
     }
 
     /**
