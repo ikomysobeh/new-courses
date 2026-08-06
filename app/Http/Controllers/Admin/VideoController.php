@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\StreamsRangedFiles;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreVideoRequest;
 use App\Http\Requests\Admin\UpdateVideoRequest;
@@ -16,10 +17,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VideoController extends Controller
 {
+    use StreamsRangedFiles;
+
     public function __construct(
         private readonly VideoService $videoService,
         private readonly VideoChunkUploadService $chunkService,
@@ -138,7 +141,7 @@ class VideoController extends Controller
      * Stream the raw video file for admin preview.
      * Supports Range requests so the browser can seek without downloading the whole file.
      */
-    public function stream(int $id): BinaryFileResponse
+    public function stream(Request $request, int $id): StreamedResponse
     {
         $video = $this->videoService->getVideoByIdForAdmin($id);
 
@@ -148,7 +151,10 @@ class VideoController extends Controller
             'Video file not found.'
         );
 
-        return response()->file(Storage::disk('local')->path($video->file_path));
+        $fullPath = Storage::disk('local')->path($video->file_path);
+        $size     = filesize($fullPath);
+
+        return $this->streamWithRangeSupport($request, $fullPath, 'video/mp4', $size);
     }
 
     /**
