@@ -7,6 +7,7 @@ use App\Models\Video;
 use App\Models\VideoQuality;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -57,6 +58,12 @@ class VideoService
 
         $video = Video::query()->create($data);
 
+        Log::info('[transcode] Video created, requesting transcode', [
+            'video_id'  => $video->id,
+            'name'      => $video->name,
+            'file_path' => $video->file_path,
+        ]);
+
         $this->transcodingService->requestTranscoding($video);
 
         return $video;
@@ -94,6 +101,8 @@ class VideoService
         VideoQuality::query()->where('video_id', $id)->delete();
 
         $video->update(['transcode_status' => 'pending']);
+
+        Log::info('[transcode] Retry requested', ['video_id' => $video->id]);
 
         $this->transcodingService->requestTranscoding($video);
 
