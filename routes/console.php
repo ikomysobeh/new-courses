@@ -16,7 +16,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // Phase 6 scheduled jobs
-Schedule::job(new CleanGhostSessionsJob)->hourly()->name('clean-ghost-sessions');
+Schedule::job(new CleanGhostSessionsJob)->hourly()->withoutOverlapping()->name('clean-ghost-sessions');
 Schedule::job(new GenerateDailyReportJob)->dailyAt('02:00')->name('generate-daily-report');
 
 // Phase 7 reporting jobs
