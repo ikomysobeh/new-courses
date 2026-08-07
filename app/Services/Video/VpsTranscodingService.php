@@ -14,16 +14,23 @@ class VpsTranscodingService
     {
         // Generate a signed URL so the VPS can download the original video file.
         // The signed URL is valid for 4 hours and requires no auth token.
-        $videoUrl = URL::temporarySignedRoute(
+        $videoUrl    = URL::temporarySignedRoute(
             'media.video-direct',
             now()->addHours(4),
             ['video_id' => $video->id]
         );
+        $callbackUrl = route('transcode.callback');
+
+        Log::info('[transcode] Preparing VPS request', [
+            'video_id'     => $video->id,
+            'video_url'    => $videoUrl,
+            'callback_url' => $callbackUrl,
+        ]);
 
         $sent = $this->vpsClient->sendTranscodeRequest([
             'video_id'     => (string) $video->id,
             'video_url'    => $videoUrl,
-            'callback_url' => route('transcode.callback'),
+            'callback_url' => $callbackUrl,
             'qualities'    => ['720p', '480p', '360p'],
         ]);
 

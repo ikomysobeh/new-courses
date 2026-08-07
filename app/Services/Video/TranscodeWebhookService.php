@@ -15,16 +15,32 @@ class TranscodeWebhookService
 
     public function handle(array $payload): void
     {
+        Log::info('[transcode] Webhook payload received', [
+            'video_id' => $payload['video_id'] ?? null,
+            'status'   => $payload['status'] ?? null,
+            'keys'     => array_keys($payload),
+        ]);
+
         $secret = config('app.transcode_secret');
 
         if ($secret) {
             $signature = $payload['signature'] ?? '';
             $expected  = hash_hmac('sha256', json_encode($payload['video_id'] ?? ''), $secret);
 
+            if ($expected !== $signature) {
+                Log::warning('[transcode] Webhook rejected: signature mismatch', [
+                    'video_id' => $payload['video_id'] ?? null,
+                ]);
+            }
+
             abort_if($expected !== $signature, 403, 'Invalid transcode callback signature.');
         }
 
         $video = Video::query()->find($payload['video_id'] ?? null);
+
+        if ($video === null) {
+            Log::error('[transcode] Webhook video not found', ['video_id' => $payload['video_id'] ?? null]);
+        }
 
         abort_if($video === null, 404, 'Video not found.');
 
@@ -72,6 +88,8 @@ class TranscodeWebhookService
         $directory    = "videos/transcoded/{$video->id}";
         $relativePath = "{$directory}/{$quality}.mp4";
         $savePath     = Storage::disk('local')->path($relativePath);
+
+        Log::info("[transcode] Downloading {$quality} for video {$video->id}", ['url' => $url]);
 
         Storage::disk('local')->makeDirectory($directory);
 
