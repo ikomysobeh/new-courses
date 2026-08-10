@@ -30,8 +30,12 @@ class LearningSession extends Model
         'fullscreen_count',
         'video_completion_percentage',
         'attention_score',
+        'attention_score_config_id',
         'is_suspicious',
         'events_log',
+        'watched_segments',
+        'last_played_position',
+        'unwatched_seconds_skipped',
     ];
 
     protected function casts(): array
@@ -44,12 +48,20 @@ class LearningSession extends Model
             'is_suspicious'               => 'boolean',
             'attention_score'             => 'integer',
             'events_log'                  => 'array',
+            'watched_segments'            => 'array',
+            'last_played_position'        => 'float',
+            'unwatched_seconds_skipped'   => 'float',
         ];
     }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function attentionScoreConfig(): BelongsTo
+    {
+        return $this->belongsTo(AttentionScoreConfig::class, 'attention_score_config_id');
     }
 
     public function courseOnline(): BelongsTo

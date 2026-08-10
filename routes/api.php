@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\OnlineCourse\OnlineCourseController;
 use App\Http\Controllers\Admin\OnlineCourse\OnlineCourseAssignmentController;
 use App\Http\Controllers\Admin\VideoCategoryController;
 use App\Http\Controllers\Admin\EvaluationConfigController;
+use App\Http\Controllers\Admin\AttentionScoreConfigController;
 use App\Http\Controllers\Admin\EvaluationTypeController;
 use App\Http\Controllers\Admin\EvaluationController;
 use App\Http\Controllers\Admin\EvaluationHistoryController;
@@ -259,6 +260,20 @@ Route::prefix('admin')->group(function () {
             Route::put('/update/{id}',     [EvaluationConfigController::class, 'update'])      ->name('admin.evaluation-configs.update');
             Route::delete('/delete/{id}',  [EvaluationConfigController::class, 'delete'])      ->name('admin.evaluation-configs.delete');
             Route::post('/{id}/types/create', [EvaluationConfigController::class, 'createType'])->name('admin.evaluation-configs.types.create');
+        });
+
+        // Attention score config routes
+        Route::prefix('attention-score-config')->group(function () {
+            Route::get('/getActive',  [AttentionScoreConfigController::class, 'getActive'])  ->name('admin.attention-score-config.getActive');
+            Route::get('/getHistory', [AttentionScoreConfigController::class, 'getHistory']) ->name('admin.attention-score-config.getHistory');
+            Route::post('/preview',   [AttentionScoreConfigController::class, 'preview'])    ->name('admin.attention-score-config.preview');
+            Route::post('/save',      [AttentionScoreConfigController::class, 'save'])       ->name('admin.attention-score-config.save');
+            Route::post('/restore/{id}', [AttentionScoreConfigController::class, 'restore']) ->name('admin.attention-score-config.restore');
+        });
+
+        Route::prefix('attention-score-recalculation-jobs')->group(function () {
+            Route::get('/getStatus/{id}', [AttentionScoreConfigController::class, 'getRecalculationJobStatus'])
+                ->name('admin.attention-score-recalculation-jobs.getStatus');
         });
 
         // Evaluation type routes
