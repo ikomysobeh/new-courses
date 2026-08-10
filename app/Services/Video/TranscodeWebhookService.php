@@ -44,6 +44,16 @@ class TranscodeWebhookService
 
         abort_if($video === null, 404, 'Video not found.');
 
+        $this->processResult($video, $payload);
+    }
+
+    /**
+     * Apply a transcode result to a video — shared by the real webhook (after
+     * signature verification) and the "job already completed on the VPS"
+     * path, where we synthesize the same shape ourselves without a signature.
+     */
+    public function processResult(Video $video, array $payload): void
+    {
         $status = $payload['status'] ?? 'failed';
 
         if ($status === 'failed') {
