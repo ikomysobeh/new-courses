@@ -18,11 +18,14 @@ class VpsApiClient
         $this->projectKey = config('services.transcoding.project_key', '');
     }
 
-    public function sendTranscodeRequest(array $data): bool
+    /**
+     * @return array{ok: bool, already_completed: bool}
+     */
+    public function sendTranscodeRequest(array $data): array
     {
         if (empty($this->url)) {
             Log::warning('VpsApiClient: TRANSCODING_URL is not configured.');
-            return false;
+            return ['ok' => false, 'already_completed' => false];
         }
 
         $endpoint = "{$this->url}/api/transcode";
@@ -47,23 +50,35 @@ class VpsApiClient
                 'body'     => $response->body(),
             ]);
 
+            if ($response->status() === 409) {
+                $body = $response->json() ?? [];
+
+                if (($body['status'] ?? null) === 'completed') {
+                    Log::info('[transcode] VPS already has a completed job for this video', [
+                        'video_id' => $data['video_id'] ?? null,
+                        'job_id'   => $body['job_id'] ?? null,
+                    ]);
+                    return ['ok' => true, 'already_completed' => true];
+                }
+            }
+
             if (!$response->successful()) {
                 Log::error('[transcode] VPS returned non-2xx status', [
                     'video_id' => $data['video_id'] ?? null,
                     'status'   => $response->status(),
                     'body'     => $response->body(),
                 ]);
-                return false;
+                return ['ok' => false, 'already_completed' => false];
             }
 
-            return true;
+            return ['ok' => true, 'already_completed' => false];
         } catch (\Throwable $e) {
             Log::error('[transcode] Exception sending request to VPS', [
                 'video_id' => $data['video_id'] ?? null,
                 'error'    => $e->getMessage(),
                 'endpoint' => $endpoint,
             ]);
-            return false;
+            return ['ok' => false, 'already_completed' => false];
         }
     }
 

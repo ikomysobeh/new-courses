@@ -8,7 +8,12 @@ use Illuminate\Support\Facades\URL;
 
 class VpsTranscodingService
 {
-    public function __construct(private readonly VpsApiClient $vpsClient) {}
+    private const QUALITIES = ['720p', '480p', '360p'];
+
+    public function __construct(
+        private readonly VpsApiClient $vpsClient,
+        private readonly TranscodeWebhookService $webhookService,
+    ) {}
 
     public function requestTranscoding(Video $video): void
     {
@@ -27,14 +32,38 @@ class VpsTranscodingService
             'callback_url' => $callbackUrl,
         ]);
 
-        $sent = $this->vpsClient->sendTranscodeRequest([
+        $result = $this->vpsClient->sendTranscodeRequest([
             'video_id'     => (string) $video->id,
             'video_url'    => $videoUrl,
             'callback_url' => $callbackUrl,
-            'qualities'    => ['720p', '480p', '360p'],
+            'qualities'    => self::QUALITIES,
         ]);
 
-        if ($sent) {
+        // The VPS dedupes jobs by (project_key, video_id) and has no way to force
+        // a new job or resend its callback for one it already finished. Since its
+        // download URLs are deterministic, reconstruct them ourselves and process
+        // the result the same way we would a real callback.
+        if ($result['already_completed']) {
+            Log::info('[transcode] Reconstructing result for already-completed VPS job', [
+                'video_id' => $video->id,
+            ]);
+
+            $baseUrl    = rtrim(config('services.transcoding.url', ''), '/');
+            $projectKey = $this->vpsClient->getProjectKey();
+
+            $downloadUrls = [];
+            foreach (self::QUALITIES as $quality) {
+                $downloadUrls[$quality] = "{$baseUrl}/api/download/{$projectKey}/{$video->id}/{$quality}";
+            }
+
+            $this->webhookService->processResult($video, [
+                'status'        => 'completed',
+                'download_urls' => $downloadUrls,
+            ]);
+            return;
+        }
+
+        if ($result['ok']) {
             $video->update(['transcode_status' => 'processing']);
             Log::info('Transcode request sent to VPS', ['video_id' => $video->id]);
         } else {
