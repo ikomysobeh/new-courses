@@ -2,16 +2,24 @@
 
 namespace App\Services\OnlineCourse\User;
 
+use App\Models\AttentionScoreConfig;
 use App\Models\CourseOnlineAssignment;
 use App\Models\LearningSession;
 use App\Models\ModuleContent;
 use App\Models\UserContentProgress;
 use App\Models\UserCourseProgress;
+use App\Services\AttentionScore\AttentionScoreConfigService;
+use App\Services\AttentionScore\AttentionScoreEngine;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class LearningSessionService
 {
+    public function __construct(
+        private readonly AttentionScoreEngine $attentionScoreEngine,
+        private readonly AttentionScoreConfigService $attentionScoreConfigService,
+    ) {}
+
     public function startSession(int $userId, int $courseId, int $contentId, string $type): array
     {
         // Verify user is assigned to course
@@ -111,6 +119,9 @@ class LearningSessionService
             (float) ($session->video_completion_percentage ?? 0),
             (float) $data['completion_percentage']
         );
+
+        [$watchedSegments, $lastPosition, $unwatchedSkipped] = $this->applyPlayedRanges($session, $data);
+
         $session->update([
             'last_progress_at'            => now(),
             'active_playback_time'        => $data['active_playback_time'],
@@ -120,6 +131,9 @@ class LearningSessionService
             'replay_count'                => $data['replay_count'] ?? $session->replay_count,
             'pause_count'                 => $data['pause_count'] ?? $session->pause_count,
             'speed_changes'               => $data['speed_changes'] ?? $session->speed_changes,
+            'watched_segments'            => $watchedSegments,
+            'last_played_position'        => $lastPosition,
+            'unwatched_seconds_skipped'   => $unwatchedSkipped,
         ]);
 
         // Upsert user_content_progress
@@ -180,21 +194,28 @@ class LearningSessionService
         $content = ModuleContent::find($session->content_id);
 
         $wallClock  = max(0, (int) now()->diffInSeconds($session->session_start));
+        [$watchedSegments, $lastPosition, $unwatchedSkipped] = $this->applyPlayedRanges($session, $data);
+        $data['unwatched_seconds_skipped'] = $unwatchedSkipped;
         $attention  = $this->calculateAttentionScore($session, $content, $data);
         $suspicious = $this->isSuspicious($data, $content?->duration);
 
         $contentCompleted = false;
 
         DB::transaction(function () use (
-            $session, $userId, $data, $wallClock, $attention, $suspicious, $content, &$contentCompleted
+            $session, $userId, $data, $wallClock, $attention, $suspicious, $content,
+            $watchedSegments, $lastPosition, $unwatchedSkipped, &$contentCompleted
         ) {
             // Update session
             $session->update([
                 'session_end'                 => now(),
                 'wall_clock_seconds'          => $wallClock,
                 'attention_score'             => $attention,
+                'attention_score_config_id'   => $session->attention_score_config_id,
                 'is_suspicious'               => $suspicious ? 1 : 0,
                 'active_playback_time'        => $data['active_playback_time'],
+                'watched_segments'            => $watchedSegments,
+                'last_played_position'        => $lastPosition,
+                'unwatched_seconds_skipped'   => $unwatchedSkipped,
                 'video_completion_percentage' => max(
                     (float) ($session->video_completion_percentage ?? 0),
                     (float) $data['completion_percentage']
@@ -279,6 +300,11 @@ class LearningSessionService
         ];
     }
 
+    /**
+     * @param array{unwatched_seconds_skipped?: float} $data optionally carries a
+     *   precomputed unwatched_seconds_skipped (set by endSession); otherwise
+     *   falls back to the session's accumulated column.
+     */
     public function calculateAttentionScore(
         LearningSession $session,
         ?ModuleContent $content,
@@ -290,54 +316,75 @@ class LearningSessionService
         );
 
         if ($session->content_type === 'pdf') {
-            return (int) min(100, $completionPct);
+            return $this->attentionScoreEngine->calculatePdfScore($completionPct);
         }
 
-        $duration = $content?->duration ?? 0;
-        $base     = 50;
+        $config = $this->resolveConfig($session);
+        $session->attention_score_config_id = $config->id;
 
-        // Time ratio scoring
-        if ($duration > 0) {
-            $ratio = ($data['active_playback_time'] ?? $session->active_playback_time) / $duration;
+        $metrics = [
+            'active_playback_time'      => $data['active_playback_time'] ?? $session->active_playback_time,
+            'video_duration'            => $content?->duration ?? 0,
+            'completion_percentage'     => $completionPct,
+            'speed_changes'             => $data['speed_changes'] ?? $session->speed_changes,
+            'unwatched_seconds_skipped' => $data['unwatched_seconds_skipped'] ?? $session->unwatched_seconds_skipped ?? 0,
+        ];
 
-            if ($ratio >= 0.80 && $ratio <= 2.00) {
-                $base += 25;
-            } elseif ($ratio >= 0.50) {
-                $base += 10;
-            } elseif ($ratio < 0.30) {
-                $base -= 25;
-            } elseif ($ratio > 2.00) {
-                $base -= 15;
+        $result = $this->attentionScoreEngine->calculateVideoScore($metrics, $config);
+
+        return $result['score'];
+    }
+
+    /**
+     * Uses the config the session was already tagged with (so an in-flight
+     * session isn't rescored mid-way with a config that didn't exist when it
+     * started), falling back to the currently active config for new sessions.
+     */
+    private function resolveConfig(LearningSession $session): AttentionScoreConfig
+    {
+        if ($session->attention_score_config_id) {
+            $existing = AttentionScoreConfig::find($session->attention_score_config_id);
+            if ($existing) {
+                return $existing;
             }
         }
 
-        // Completion bonus
-        if ($completionPct >= 90) {
-            $base += 20;
-        } elseif ($completionPct >= 70) {
-            $base += 10;
-        } elseif ($completionPct < 20) {
-            $base -= 20;
+        return $this->attentionScoreConfigService->getActiveConfig();
+    }
+
+    /**
+     * Merges any newly-reported played ranges into the session's
+     * watched-segments map and accumulates unwatched_seconds_skipped for
+     * gaps that jump over content never previously watched.
+     *
+     * @param array{played_ranges?: array<array{0:float,1:float}>, playback_position?: float} $data
+     * @return array{0: array, 1: float, 2: float} [watchedSegments, lastPosition, unwatchedSecondsSkipped]
+     */
+    private function applyPlayedRanges(LearningSession $session, array $data): array
+    {
+        $segments  = $session->watched_segments ?? [];
+        $lastPos   = (float) ($session->last_played_position ?? 0);
+        $unwatched = (float) ($session->unwatched_seconds_skipped ?? 0);
+
+        $ranges = $data['played_ranges'] ?? [];
+
+        foreach ($ranges as $range) {
+            $start = (float) $range[0];
+            $end   = (float) $range[1];
+
+            if ($end <= $start) {
+                continue;
+            }
+
+            if ($start > $lastPos) {
+                $unwatched += $this->attentionScoreEngine->computeUnwatchedSecondsSkipped($segments, $lastPos, $start);
+            }
+
+            $segments = $this->attentionScoreEngine->mergeWatchedSegment($segments, $start, $end);
+            $lastPos  = max($lastPos, $end);
         }
 
-        // Engagement adjustments
-        $replayCount = $data['replay_count'] ?? $session->replay_count;
-        $skipCount   = $data['skip_count'] ?? $session->skip_count;
-        $speedChange = $data['speed_changes'] ?? $session->speed_changes;
-
-        if ($replayCount >= 3) {
-            $base += 5;
-        }
-        if ($skipCount > 15) {
-            $base -= 15;
-        } elseif ($skipCount > 8) {
-            $base -= 8;
-        }
-        if ($speedChange > 3) {
-            $base -= 5;
-        }
-
-        return max(0, min(100, $base));
+        return [$segments, $lastPos, $unwatched];
     }
 
     public function isSuspicious(array $data, ?int $videoDuration): bool

@@ -2,6 +2,7 @@
 
 namespace App\Services\Reporting\Progress;
 
+use App\Services\AttentionScore\AttentionScoreConfigService;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -12,11 +13,13 @@ use Illuminate\Support\Facades\DB;
  *  - quiz score comes from quiz_attempts + quizzes (no module_quiz_results table)
  *
  * Traditional courses: (completion x 0.3333) + (progress x 0.3333) + (quiz x 0.3334)
- * Online courses:      (completion x 0.25) + (progress x 0.25) + (attention x 0.25)
- *                      + (quiz x 0.25) - suspicious_penalty
+ * Online courses:      config-driven blended weights (default: completion/progress/
+ *                      attention/quiz x 0.25 each) - suspicious_penalty
  */
 class LearningScoreCalculator
 {
+    public function __construct(private readonly AttentionScoreConfigService $attentionScoreConfigService) {}
+
     public function calculate(
         float $completionRate,
         float $progressPercentage,
@@ -31,19 +34,40 @@ class LearningScoreCalculator
                 + ($progressPercentage * 0.3333)
                 + ($quizScore * 0.3334);
         } else {
+            $weights = $this->attentionScoreConfigService->getActiveConfig()->config['blended_score_weights'];
+
             $suspiciousPenalty = 0.0;
             if ($totalSessions > 0) {
-                $suspiciousPenalty = ($suspiciousActivities / $totalSessions) * 10;
+                $suspiciousPenalty = ($suspiciousActivities / $totalSessions) * $weights['suspicious_penalty_multiplier'];
             }
 
-            $finalScore = ($completionRate * 0.25)
-                + ($progressPercentage * 0.25)
-                + ($attentionScore * 0.25)
-                + ($quizScore * 0.25)
+            $finalScore = ($completionRate * $weights['completion'])
+                + ($progressPercentage * $weights['progress'])
+                + ($attentionScore * $weights['attention'])
+                + ($quizScore * $weights['quiz'])
                 - $suspiciousPenalty;
         }
 
         return max(0.0, min(100.0, $finalScore));
+    }
+
+    /**
+     * Risk level for a learner based on their average attention score,
+     * using config-driven thresholds.
+     */
+    public function getRiskLevel(float $avgAttention): string
+    {
+        $levels = $this->attentionScoreConfigService->getActiveConfig()->config['risk_levels'];
+
+        if ($avgAttention < $levels['high_below']) {
+            return 'high';
+        }
+
+        if ($avgAttention < $levels['medium_below']) {
+            return 'medium';
+        }
+
+        return 'low';
     }
 
     /**
