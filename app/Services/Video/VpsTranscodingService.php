@@ -25,15 +25,17 @@ class VpsTranscodingService
             ['video_id' => $video->id]
         );
         $callbackUrl = route('transcode.callback');
+        $token       = $video->transcodeToken();
 
         Log::info('[transcode] Preparing VPS request', [
             'video_id'     => $video->id,
+            'token'        => $token,
             'video_url'    => $videoUrl,
             'callback_url' => $callbackUrl,
         ]);
 
         $result = $this->vpsClient->sendTranscodeRequest([
-            'video_id'     => (string) $video->id,
+            'video_id'     => $token,
             'video_url'    => $videoUrl,
             'callback_url' => $callbackUrl,
             'qualities'    => self::QUALITIES,
@@ -53,7 +55,7 @@ class VpsTranscodingService
 
             $downloadUrls = [];
             foreach (self::QUALITIES as $quality) {
-                $downloadUrls[$quality] = "{$baseUrl}/api/download/{$projectKey}/{$video->id}/{$quality}";
+                $downloadUrls[$quality] = "{$baseUrl}/api/download/{$projectKey}/{$token}/{$quality}";
             }
 
             $this->webhookService->processResult($video, [
