@@ -36,10 +36,11 @@ class TranscodeWebhookService
             abort_if($expected !== $signature, 403, 'Invalid transcode callback signature.');
         }
 
-        $video = Video::query()->find($payload['video_id'] ?? null);
+        $token = $payload['video_id'] ?? null;
+        $video = $token !== null ? Video::findByTranscodeToken((string) $token) : null;
 
         if ($video === null) {
-            Log::error('[transcode] Webhook video not found', ['video_id' => $payload['video_id'] ?? null]);
+            Log::error('[transcode] Webhook video not found', ['video_id' => $token]);
         }
 
         abort_if($video === null, 404, 'Video not found.');
