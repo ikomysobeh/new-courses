@@ -67,7 +67,7 @@
             @if($loginLink)
                 <a href="{{ $loginLink }}" class="cta-button" style="color: #ffffff !important; text-decoration: none !important;">🎧 Listen Now</a>
             @else
-                <a href="{{ url('/') }}" class="cta-button" style="color: #ffffff !important; text-decoration: none !important;">🎧 Listen Now</a>
+                <a href="{{ config('app.frontend_url') }}" class="cta-button" style="color: #ffffff !important; text-decoration: none !important;">🎧 Listen Now</a>
             @endif
         </div>
 

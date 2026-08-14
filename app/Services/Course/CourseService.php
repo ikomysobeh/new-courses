@@ -78,7 +78,7 @@ class CourseService
     public function getAllCoursesForAdmin(array $params = []): LengthAwarePaginator
     {
         $query = Course::query()
-            ->with(['availabilities'])
+            ->with(['availabilities' => fn ($q) => $q->active()])
             ->withCount('registrations');
 
         return $this->applyFilters($query, $params, [
@@ -94,7 +94,7 @@ class CourseService
     public function getCourseByIdForAdmin(int $id): Course
     {
         return Course::query()
-            ->with(['availabilities', 'creator'])
+            ->with(['availabilities' => fn ($q) => $q->active(), 'creator'])
             ->withCount('registrations')
             ->findOrFail($id);
     }
@@ -126,7 +126,7 @@ class CourseService
             PublicCourseCreated::dispatch($course);
         }
 
-        return $course->load('availabilities');
+        return $course->load(['availabilities' => fn ($q) => $q->active()]);
     }
 
     public function updateCourse(int $id, array $data, User $admin): Course
@@ -187,7 +187,7 @@ class CourseService
             PrivacyChangedToPublic::dispatch($course->fresh(), $assignedUserIds);
         }
 
-        return $course->fresh()->load('availabilities');
+        return $course->fresh()->load(['availabilities' => fn ($q) => $q->active()]);
     }
 
     public function deleteCourse(int $id): void
@@ -380,7 +380,7 @@ class CourseService
             })
             ->where('status', '!=', 'archived')
             ->with([
-                'availabilities',
+                'availabilities' => fn ($q) => $q->active(),
                 'registrations' => fn ($q) => $q->where('user_id', $user->id),
                 'assignments'   => fn ($q) => $q->where('user_id', $user->id),
             ])
@@ -411,7 +411,7 @@ class CourseService
         }
 
         $course->load([
-            'availabilities' => fn ($q) => $q->orderBy('start_date'),
+            'availabilities' => fn ($q) => $q->active()->orderBy('start_date'),
             'registrations'  => fn ($q) => $q->where('user_id', $user->id),
         ]);
 
@@ -550,7 +550,7 @@ class CourseService
     {
         return CourseRegistration::query()
             ->where('user_id', $user->id)
-            ->with(['course.availabilities', 'availability'])
+            ->with(['course', 'course.availabilities' => fn ($q) => $q->active(), 'availability'])
             ->orderByDesc('registered_at')
             ->get();
     }

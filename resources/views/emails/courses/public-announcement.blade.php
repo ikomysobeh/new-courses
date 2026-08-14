@@ -397,7 +397,7 @@
             <h4>🔐 Quick Access to Enroll</h4>
             <p>Ready to join this course? Use the secure link below to access the course page and enroll in your preferred schedule:</p>
 
-            <a href="{{ $loginLink ?? url('/courses/' . ($course->id ?? '')) }}" class="login-button">
+            <a href="{{ $loginLink ?? rtrim(config('app.frontend_url'), '/') . '/courses/' . ($course->id ?? '') }}" class="login-button">
                 🚀 View Course & Select Schedule
             </a>
 
@@ -405,15 +405,15 @@
                 <div class="security-note">
                     <strong>🛡️ Security Information:</strong><br>
                     • This is a secure, personalized access link<br>
-                    • The link expires after 24 hours for your protection<br>
-                    • It can only be used once and will log you in automatically<br>
+                    • The link stays valid for 7 days for your convenience<br>
+                    • It will log you in automatically each time you use it<br>
                     • No password required - just click and start exploring!
                 </div>
             @endif
 
             <p style="color: #6366f1; font-size: 14px; margin-top: 20px;">
                 <strong>Your Email:</strong> {{ $userEmail }}<br>
-                <strong>Course Platform:</strong> {{ config('app.url') }}
+                <strong>Course Platform:</strong> {{ config('app.frontend_url') }}
             </p>
         </div>
 
@@ -442,7 +442,7 @@
  | Empowering Growth Through Learning</p>
         <p>This public course announcement was sent to <a href="mailto:{{ $userEmail }}">{{ $userEmail }}</a></p>
         <p style="margin-top: 15px;">
-            <a href="{{ config('app.url') }}">Visit our Learning Portal</a> |
+            <a href="{{ config('app.frontend_url') }}">Visit our Learning Portal</a> |
             <a href="mailto:thedevelopmentzone@onepne.com">Contact Support</a>
         </p>
     </div>

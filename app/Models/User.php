@@ -150,7 +150,7 @@ class User extends Authenticatable
     public function generateAudioLoginLink(int $audioId): string
     {
         $token = Str::random(64);
-        $expiresAt = now()->addHours(24);
+        $expiresAt = now()->addDays(7);
 
         $this->update([
             'login_token' => hash('sha256', $token),
@@ -171,7 +171,7 @@ class User extends Authenticatable
     public function generateCourseLoginLink(int $courseId): string
     {
         $token     = Str::random(64);
-        $expiresAt = now()->addHours(72);
+        $expiresAt = now()->addDays(7);
 
         $this->update([
             'login_token'            => hash('sha256', $token),
@@ -192,7 +192,7 @@ class User extends Authenticatable
     public function generateOnlineCourseLoginLink(int $courseOnlineId): string
     {
         $token     = Str::random(64);
-        $expiresAt = now()->addHours(72);
+        $expiresAt = now()->addDays(7);
 
         $this->update([
             'login_token'            => hash('sha256', $token),

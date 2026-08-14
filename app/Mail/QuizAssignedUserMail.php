@@ -48,7 +48,7 @@ class QuizAssignedUserMail extends Mailable implements ShouldQueue
         $this->deadline          = $quiz->deadline;
         $this->enforceDeadline   = false; // quizzes don't have a strict enforce flag; adjust if needed
         $this->timeLimitMinutes  = $quiz->time_limit_minutes;
-        $this->quizLink          = config('app.url') . '/quizzes/' . $quiz->id;
+        $this->quizLink          = rtrim((string) config('app.frontend_url'), '/') . '/quizzes/' . $quiz->id;
 
         if ($quiz->deadline) {
             $now      = Carbon::now();

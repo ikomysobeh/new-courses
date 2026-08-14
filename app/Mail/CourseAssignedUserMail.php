@@ -33,7 +33,7 @@ class CourseAssignedUserMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        $course = $this->course->loadMissing('availabilities');
+        $course = $this->course->load(['availabilities' => fn ($q) => $q->active()]);
 
         return new Content(
             view: 'emails.courses.assigned-user',

@@ -34,7 +34,7 @@ class CourseAssignedManagerMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        $course = $this->course->loadMissing('availabilities');
+        $course = $this->course->load(['availabilities' => fn ($q) => $q->active()]);
         $assignedUsers = collect([$this->assignedUser->loadMissing('department')]);
         $assignmentDate = CourseAssignment::query()
             ->where('course_id', $this->course->id)
