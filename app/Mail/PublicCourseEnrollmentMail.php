@@ -32,7 +32,7 @@ class PublicCourseEnrollmentMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        $course = $this->course->loadMissing('availabilities');
+        $course = $this->course->load(['availabilities' => fn ($q) => $q->active()]);
         $assignedUsers = collect([$this->enrolledUser->loadMissing('department')]);
 
         return new Content(

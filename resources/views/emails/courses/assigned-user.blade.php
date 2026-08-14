@@ -380,14 +380,14 @@
             <div class="security-note">
                 <strong>🛡️ Security Information:</strong><br>
                 • This is a secure, personalized login link<br>
-                • The link expires after 24 hours for your protection<br>
-                • It can only be used once and will log you in automatically<br>
+                • The link stays valid for 7 days for your convenience<br>
+                • It will log you in automatically each time you use it<br>
                 • No password required - just click and start learning!
             </div>
 
             <p style="color: #6366f1; font-size: 14px; margin-top: 20px;">
                 <strong>Email:</strong> {{ $userEmail }}<br>
-                <strong>Course Platform:</strong> {{ config('app.url') }}
+                <strong>Course Platform:</strong> {{ config('app.frontend_url') }}
             </p>
         </div>
 
@@ -414,7 +414,7 @@
         <p>© {{ date('Y') }} The Training And Development Department | Empowering Growth Through Learning</p>
         <p>This personalized learning invitation was sent to <a href="mailto:{{ $userEmail }}">{{ $userEmail }}</a></p>
         <p style="margin-top: 15px;">
-            <a href="{{ config('app.url') }}">Visit our Learning Portal</a> |
+            <a href="{{ config('app.frontend_url') }}">Visit our Learning Portal</a> |
             <a href="mailto:thedevelopmentzone@onepne.com">Contact Support</a>
         </p>
     </div>

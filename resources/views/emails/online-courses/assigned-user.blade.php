@@ -78,7 +78,7 @@
                 <a href="{{ $loginLink }}" class="cta-button">Start Learning Now</a>
             </div>
             <div class="link-notice">
-                This secure link is valid for <strong>72 hours</strong>. If it expires, contact your administrator to resend it.
+                This secure link is valid for <strong>7 days</strong> and can be used as many times as you need during that window.
             </div>
         @else
             <p>Please log in to the platform to access your assigned course.</p>

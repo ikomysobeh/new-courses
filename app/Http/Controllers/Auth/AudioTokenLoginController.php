@@ -34,9 +34,7 @@ class AudioTokenLoginController extends Controller
         $plainToken = $user->createToken('audio-email-login')->plainTextToken;
 
         $user->update([
-            'login_token'            => null,
-            'login_token_expires_at' => null,
-            'last_login_at'          => now(),
+            'last_login_at' => now(),
         ]);
 
         $frontendBase = rtrim((string) config('app.frontend_url'), '/');
