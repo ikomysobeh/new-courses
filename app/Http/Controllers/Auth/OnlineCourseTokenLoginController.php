@@ -34,8 +34,7 @@ class OnlineCourseTokenLoginController extends Controller
         $plainToken = $user->createToken('online-course-email-login')->plainTextToken;
 
         $user->update([
-            'login_token'            => null,
-            'login_token_expires_at' => null,
+            
             'last_login_at'          => now(),
         ]);
 
