@@ -5,6 +5,7 @@ namespace App\Services\Quiz;
 use App\Models\QuizAnswer;
 use App\Models\QuizAttempt;
 use App\Models\QuizQuestion;
+use App\Services\OnlineCourse\User\ContentProgressService;
 use Illuminate\Support\Facades\DB;
 
 class QuizGradingService
@@ -97,6 +98,19 @@ class QuizGradingService
                 'total_score'  => (int) $totalScore,
                 'passed'       => $passed,
             ]);
+
+            // A required quiz gates course completion, but course status is only
+            // ever recomputed on content progress. Without this, a user who
+            // finishes all content and passes the quiz afterwards stays stuck at
+            // 'in_progress' forever. Runs on fail too, so a manual re-grade below
+            // the threshold can take a course back out of 'completed'.
+            if ($attempt->quiz->course_online_id) {
+                app(ContentProgressService::class)->recalculateCourseProgress(
+                    $attempt->user_id,
+                    $attempt->quiz->course_online_id,
+                    touchLastAccessed: false,
+                );
+            }
         });
     }
 

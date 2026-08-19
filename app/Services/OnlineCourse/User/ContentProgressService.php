@@ -13,7 +13,14 @@ use Illuminate\Support\Facades\DB;
 
 class ContentProgressService
 {
-    public function recalculateCourseProgress(int $userId, int $courseOnlineId): void
+    /**
+     * Recompute a user's course status from required content + required quizzes.
+     *
+     * $touchLastAccessed should be false when the caller is not the user
+     * themselves consuming content (quiz grading, admin manual grading,
+     * backfills) so the report's "Last Access" column keeps its real meaning.
+     */
+    public function recalculateCourseProgress(int $userId, int $courseOnlineId, bool $touchLastAccessed = true): void
     {
         // Load all required content IDs for the course in one query
         $requiredContentIds = ModuleContent::whereHas('module', function ($q) use ($courseOnlineId) {
@@ -55,14 +62,22 @@ class ContentProgressService
             'completed_content_items' => $completed,
             'progress_percentage'     => $percentage,
             'status'                  => $status,
-            'last_accessed_at'        => now(),
         ];
 
+        if ($touchLastAccessed) {
+            $updateData['last_accessed_at'] = now();
+        }
+
+        $existing = UserCourseProgress::where('user_id', $userId)
+            ->where('course_online_id', $courseOnlineId)
+            ->first();
+
         if ($status === 'completed') {
-            $existing = UserCourseProgress::where('user_id', $userId)
-                ->where('course_online_id', $courseOnlineId)
-                ->first();
             $updateData['completed_at'] = $existing?->completed_at ?? now();
+        } elseif ($existing?->completed_at !== null) {
+            // No longer completed (content unpublished, manual re-grade below the
+            // pass threshold) - drop the stale completion timestamp.
+            $updateData['completed_at'] = null;
         }
 
         UserCourseProgress::updateOrCreate(
