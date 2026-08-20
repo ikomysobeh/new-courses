@@ -16,14 +16,14 @@ class FeedbackResource extends BaseResource
             'description'    => $this->description,
             'status'         => $this->status,
             'admin_response' => $this->admin_response,
-            'user'           => $this->when($this->relationLoaded('user'), fn () => [
+            'user'           => $this->when($this->relationLoaded('user') && $this->user, fn () => [
                 'id'         => $this->user->id,
                 'name'       => $this->user->name,
                 'department' => $this->when(
-                    $this->user->relationLoaded('department'),
+                    $this->user->relationLoaded('department') && $this->user->department,
                     fn () => [
-                        'id'   => optional($this->user->department)->id,
-                        'name' => optional($this->user->department)->name,
+                        'id'   => $this->user->department->id,
+                        'name' => $this->user->department->name,
                     ]
                 ),
             ]),
