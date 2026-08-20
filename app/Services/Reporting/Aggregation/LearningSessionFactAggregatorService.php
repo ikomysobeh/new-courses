@@ -39,6 +39,7 @@ class LearningSessionFactAggregatorService
             [$row],
             ['session_id'],
             [
+                'department_id',
                 'active_playback_time',
                 'wall_clock_seconds',
                 'completion_percentage',
