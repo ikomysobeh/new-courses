@@ -59,6 +59,7 @@ class GenerateDailyReportJob implements ShouldQueue
                 ],
                 ['user_id', 'course_online_id', 'report_date'],
                 [
+                    'department_id',
                     'sessions_count',
                     'active_playback_time',
                     'content_items_completed',

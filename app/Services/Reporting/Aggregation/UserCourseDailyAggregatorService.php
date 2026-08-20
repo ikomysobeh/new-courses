@@ -90,7 +90,7 @@ class UserCourseDailyAggregatorService
             DB::table('reporting_user_course_daily')->upsert(
                 $chunk,
                 ['user_id', 'course_online_id', 'report_date'],
-                ['sessions_count', 'active_playback_time', 'content_items_completed', 'course_progress_pct', 'updated_at']
+                ['department_id', 'sessions_count', 'active_playback_time', 'content_items_completed', 'course_progress_pct', 'updated_at']
             );
         }
 
