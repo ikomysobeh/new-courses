@@ -31,9 +31,19 @@ class FeedbackService
         return $feedback;
     }
 
+    /**
+     * Authors are soft-deletable. Without withTrashed() the relation resolves to
+     * null for feedback left by a deactivated employee, which loses the submitter
+     * name in the admin views.
+     */
+    private static function authorEagerLoad(): array
+    {
+        return ['user' => fn ($q) => $q->withTrashed()->with('department')];
+    }
+
     public function getAllForAdmin(array $filters = []): LengthAwarePaginator
     {
-        $query = EmployeeFeedback::with('user.department')->latest();
+        $query = EmployeeFeedback::with(self::authorEagerLoad())->latest();
 
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -60,7 +70,7 @@ class FeedbackService
 
     public function getById(int $id): EmployeeFeedback
     {
-        return EmployeeFeedback::with('user.department')->findOrFail($id);
+        return EmployeeFeedback::with(self::authorEagerLoad())->findOrFail($id);
     }
 
     public function getForUser(int $userId, array $filters = []): LengthAwarePaginator
@@ -95,7 +105,7 @@ class FeedbackService
             ['status' => $status]
         );
 
-        return $feedback->load('user.department');
+        return $feedback->load(self::authorEagerLoad());
     }
 
     public function updateStatus(int $id, string $status): EmployeeFeedback
@@ -113,6 +123,6 @@ class FeedbackService
             ['old_status' => $oldStatus, 'new_status' => $status]
         );
 
-        return $feedback->load('user.department');
+        return $feedback->load(self::authorEagerLoad());
     }
 }
